@@ -90,19 +90,16 @@ contract copyRightContract {
 
 contract copyRightRecord {
     uint public ownersCount;
-    address[] public contracts;
     address[] public owners;
     mapping(address => uint) public shares;
     uint public totalShare;
     string public metaData;   //or hash, so that it could be stored in fixed-size array?
-    address[] contractsAddress;
+    address[] public contractsAddress;
     uint public contractsCount;
     mapping(address => uint) public contractLastCollectTime;
     uint public registerTime;
-    bool isEffective;
+    bool public isEffective;
     uint lastWithdrawTime;
-    
-    //maybe record all buyers here?
     
     event paymentRecord(uint indexed time, address indexed _to, uint indexed amount);
     event record(uint indexed regTime, address indexed owner, string indexed metaDataHash);
