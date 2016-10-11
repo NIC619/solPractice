@@ -2,6 +2,8 @@
 
 A self enforcing copyright contract implemented in Ethereum Solidity smart contract language.
 
+This project only includes copyRight.sol, sorry for putting other codes together with it. Will organize it in the future.
+
 IMPORTANT NOTE: Don't use this project in production. The code is for research and demonstration purpose.
 
 
@@ -28,13 +30,7 @@ IMPORTANT NOTE: Don't use this project in production. The code is for research a
 - **Owners collect moner**: owners collect money from all transaction contracts with _collectMoney_ function and distribute proportionally to owners based on their shares with _withdraw_ (function which is an internal function).  **However, the _collectMoney_ function does not work. For the moment, my guess is that in _collectMoney_ function, the program iterates over all transaction contracts hence evm is not able to measure the approximate gas consumptions and results in failure.**
 
 
-## Under development
-
-- [ ] GameScoreBet.sol
-- [ ] paymentByInstallment.sol
-
-
-## Meetup talk (zh-tw, Not in English)
+## Taipei Ethereum Meetup talk (zh-tw, Not in English)
 
 I've demo this project in the [Taipei Ethereum Meetup](http://www.meetup.com/Taipei-Ethereum-Meetup/) . Check out video and slides to learn more about this project.
 
