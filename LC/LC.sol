@@ -121,7 +121,7 @@ contract letterOfCredit {
     if (msg.sender == applicant &&  (stringsEqual(cargoStatus, "importCheck") && (stringsEqual(paymentStatus, "payingBankPaid"))) ) {
       if (msg.value >= 1500000000000000000000) {    //1500 unit
         paymentChecked(cargoMetadata, msg.sender, now);
-        paymentStatus = "ngBankPaid";
+        paymentStatus = "applicantPaid";
         openingBank.send(1500000000000000000000);
         paymentChecked(cargoMetadata, openingBank, now);
       }
