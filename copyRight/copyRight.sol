@@ -1,3 +1,5 @@
+pragma solidity ^0.4.2;
+
 contract copyRightContract {
     address public buyer;   //buyer initiate the contract
     address public copyRightRecordAddress;   //or hard-coded by application?
@@ -13,7 +15,7 @@ contract copyRightContract {
     uint public lastPaidTime;
     uint public durationLeft;
     
-    event paymentRecord(uint indexed time, uint indexed amount);
+    event paymentRecord(uint time, uint amount);
     
     function copyRightContract(address theBuyer, uint price) {
         buyer = theBuyer;
@@ -34,7 +36,7 @@ contract copyRightContract {
         totalCount += 1;
     }
     
-    function payByCount() {
+    function payByCount() payable {
         if(msg.sender != buyer || isOperating == false) throw;
         if(msg.value < (totalCount - paidCount)*pricePerCount*1 ether) throw;   //didn't pay enough
         else {
@@ -43,7 +45,7 @@ contract copyRightContract {
         }
     }
     /////////////////////////////////////////     pattern 2    /////////////////////////////////////////
-    function oneTime() {
+    function oneTime() payable {
         if(msg.sender != buyer || isOperating == false) throw;
         if(msg.value < 150 ether || oneTimeHasPaid) throw;   //replace 15000 with price for one-time payment
         else {
@@ -57,7 +59,7 @@ contract copyRightContract {
         else return false;
     }
     
-    function payByTime() {
+    function payByTime() payable {
         if(msg.sender != buyer || isOperating == false) throw;
         var periodsPaid = msg.value/30 ether;
         var payTime = now;
@@ -82,13 +84,16 @@ contract copyRightContract {
             paymentRecord(now, balance);
             return true;
         }
-        else throw;
+        else return false;
     }
     
     function terminateContract() returns (bool){
         if (msg.sender != copyRightRecordAddress || isOperating == false) return false;
         isOperating = false;
         return true;
+    }
+
+    function () payable {
     }
 }
 
@@ -109,7 +114,7 @@ contract copyRightRecord {
     bool public isEffective;
     uint public lastWithdrawTime;
     
-    event paymentRecord(uint indexed time, address indexed _to, uint indexed amount);
+    event paymentRecord(uint time, address _to, uint amount);
     event record(uint indexed regTime, address indexed owner, string indexed metaDataHash);
     event revokeRecord(string metadata, string revokeDetail);
     event newContractRecord(uint time, address indexed buyer, address indexed contractAddress);
@@ -245,6 +250,9 @@ contract copyRightRecord {
             }
             else return false;
         }
+    }
+
+    function () payable {
     }
 }
 
