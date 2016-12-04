@@ -56,11 +56,11 @@ contract tokensManage{
     }
     
     /////////Functions checking status of a token
-    function checkStatus(string _tokenName) returns(bool){
+    function checkStatus(string _tokenName) constant returns(bool){
         return tokenList[_tokenName].isActive; 
     }
     
-    function checkAmountIssued(string _tokenName) returns(uint){
+    function checkAmountIssued(string _tokenName) constant returns(uint){
         return tokenList[_tokenName].amountIssued; 
     }
 }
