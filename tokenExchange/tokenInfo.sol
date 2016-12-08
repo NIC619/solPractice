@@ -1,6 +1,7 @@
 contract tokenInfo{
     address public owner;
     address public ownerContract;
+    address public multisigAddr;
     string public tokenName;
     uint public amountIssued;
     bool public isActive;
@@ -11,22 +12,37 @@ contract tokenInfo{
         //bool isRecordExist;
     }
     mapping (address => holders) public holderMapping;
-    address[] public holderList;
+    mapping (address => bool) public exchangeContractMapping;
+    //address[] public holderList;
  
     //function tokenInfo(address _owner, string _tokenName, uint _amountIssued, uint _expireTime) {
-    function tokenInfo(address _owner, string _tokenName, uint _amountIssued) {
+    function tokenInfo(address _owner, string _tokenName, uint _amountIssued, address _multisigAddr) {
         owner = _owner;
         ownerContract = msg.sender;
+        multisigAddr = _multisigAddr;
         tokenName = _tokenName;
         amountIssued = _amountIssued;
         isActive = true;
         //holderMapping[_owner] = holders(_amountIssued, _expireTime, true);
         holderMapping[_owner] = holders(_amountIssued);
-        holderList.push(_owner);
+        //holderList.push(_owner);
     }
     
-    modifier onlyOwner { if(msg.sender == owner) _;}
+    modifier permissionCheck { 
+        if( exchangeContractMapping[msg.sender] != true && msg.sender != owner) throw;
+        _;
+    }
     modifier onlyOwnerContract { if(msg.sender == ownerContract) _;}
+    modifier onlyMultisig { if(msg.sender == multisigAddr) _;}
+    
+    /////////Functions update exchange contracts information
+    function newExchangeContract(address addr) onlyMultisig {
+        exchangeContractMapping[addr] = true;
+    }
+    
+    function deleteExchangeContract(address addr) onlyMultisig {
+        exchangeContractMapping[addr] = false;
+    }
     
     /////////Functions issue/revoke token
     function issue(uint _amount) onlyOwnerContract {
@@ -38,7 +54,7 @@ contract tokenInfo{
     }
     
     /////////Functions update status of each token holders
-    function update(address _giver, address _taker, uint _amount) onlyOwner returns (bool){
+    function update(address _giver, address _taker, uint _amount) permissionCheck returns (bool){
         if(_taker == 0x0){
             if(holderMapping[_giver].amount >= _amount){
                 holderMapping[_giver].amount -= _amount;
