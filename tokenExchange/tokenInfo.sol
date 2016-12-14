@@ -1,20 +1,29 @@
+pragma solidity ^0.4.2;
 contract tokenInfo{
-    address public owner;
-    address public ownerContract;
+    address public owner;                                       //owner of tokenManage
+    address public ownerContract;                               //tokenManage
     address public multisigAddr;
     string public tokenName;
     uint public amountIssued;
     bool public isActive;
-    struct holders {
-        //address holder;
+    struct holders {                                            //this could be simply replaced by uint amount
+        //address holder;                                       //if amount is the only information stored here
         uint amount;
-        //uint expireTime;
+        //uint expireTime;                                      //implement if token will expire
         //bool isRecordExist;
     }
-    mapping (address => holders) public holderMapping;
-    mapping (address => bool) public exchangeContractMapping;
+    mapping (address => holders) public holderMapping;          //map address to their token holding
+    mapping (address => bool) public exchangeContractMapping;   //record if certain exchange contracts are related to us
     //address[] public holderList;
- 
+    
+    modifier permissionCheck {          //check if caller is owner or priviledged exchange contracts
+        if( exchangeContractMapping[msg.sender] != true && msg.sender != owner) throw;
+        _;
+    }
+    modifier onlyOwnerContract { if(msg.sender == ownerContract) _;}
+    modifier onlyMultisig { if(msg.sender == multisigAddr) _;}
+    
+    
     //function tokenInfo(address _owner, string _tokenName, uint _amountIssued, uint _expireTime) {
     function tokenInfo(address _owner, string _tokenName, uint _amountIssued, address _multisigAddr) {
         owner = _owner;
@@ -28,12 +37,6 @@ contract tokenInfo{
         //holderList.push(_owner);
     }
     
-    modifier permissionCheck { 
-        if( exchangeContractMapping[msg.sender] != true && msg.sender != owner) throw;
-        _;
-    }
-    modifier onlyOwnerContract { if(msg.sender == ownerContract) _;}
-    modifier onlyMultisig { if(msg.sender == multisigAddr) _;}
     
     /////////Functions update exchange contracts information
     function newExchangeContract(address addr) onlyMultisig {
@@ -44,35 +47,38 @@ contract tokenInfo{
         exchangeContractMapping[addr] = false;
     }
     
-    /////////Functions issue/revoke token
-    function issue(uint _amount) onlyOwnerContract {
-        holderMapping[owner].amount += _amount;
-    }
     
-    function revoke() onlyOwnerContract {
+    /////////Functions issue/revoke token
+    function issue(uint _amount) onlyOwnerContract {        //for now, owner can issue as many as he want
+        holderMapping[owner].amount += _amount;             //if specific permission controll is desired,
+    }                                                       //just modify the modifier
+    
+    function revoke() onlyOwnerContract {                   //same as above
         isActive = false;
     }
     
+    
     /////////Functions update status of each token holders
     function update(address _giver, address _taker, uint _amount) permissionCheck returns (bool){
-        if(_taker == 0x0){
-            if(holderMapping[_giver].amount >= _amount){
+        if(_taker == 0x0){                                  //redeem tokens, no taker specified
+            if(holderMapping[_giver].amount >= _amount){    //check his token balance
                 holderMapping[_giver].amount -= _amount;
                 return true;
             }
-            else return false;
+            else
+                return false;
         }
-        
-        if(holderMapping[_giver].amount >= _amount){
+        else if(holderMapping[_giver].amount >= _amount){
             holderMapping[_giver].amount -= _amount;
             holderMapping[_taker].amount += _amount;
             return true;
         }
-        else return false;
+        else
+            return false;
     }
     
     
-    
+    //below functions are implemented with setting in which we assume token will expire
     /*
     function update(uint _type, address _giver, address _taker, uint _amount) onlyOwner returns (uint){
         //taker condition check

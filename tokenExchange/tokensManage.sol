@@ -8,10 +8,13 @@ contract tokensManage{
         uint amountIssued;
         bool isActive;
     }
-    mapping (string => tokens)  tokenList;
+    mapping (string => tokens)  tokenList;  //record all tokens owned
     uint public tokenAmount;
     
-    function stringsEqual(string storage _a, string memory _b) internal returns (bool) {
+    modifier onlyOwner { if(msg.sender == owner) _;}
+    
+    /////////Utility Functions - string compare
+    function stringsEqual(string storage _a, string memory _b) internal constant returns (bool) {
 		bytes storage a = bytes(_a);
 		bytes memory b = bytes(_b);
 		if (a.length != b.length)
@@ -22,27 +25,28 @@ contract tokensManage{
 		return true;
     }
     
+    /////////Constructor
     function tokensManage(address _multiSigAddr){
         owner = msg.sender;
         multiSigAddr = _multiSigAddr;
     }
-    
-    modifier onlyOwner { if(msg.sender == owner) _;}
-    
+
+    /////////Functions updating ownership
     function changeOwner(address newOwner) onlyOwner{
         owner = newOwner;
     }
     
     /////////Functions create/issue/revoke token
     function newToken(string _tokenName, uint _amountIssued) onlyOwner{
-        if(stringsEqual(tokenList[_tokenName].tokenName, _tokenName)) throw;
+        if(stringsEqual(tokenList[_tokenName].tokenName, _tokenName)) throw;    //check if this tokenName has been used before
         var addr = new tokenInfo(owner, _tokenName, _amountIssued);
         tokenList[_tokenName] = tokens(_tokenName, addr, _amountIssued, true);
         tokenAmount += 1;
     }
     
     function issueToken(string _tokenName, uint amount) onlyOwner{
-        if(!stringsEqual(tokenList[_tokenName].tokenName, _tokenName)) throw;
+        if(!stringsEqual(tokenList[_tokenName].tokenName, _tokenName) || !tokenList[_tokenName].isActive) throw;
+            //check if this token really exist and is active right now
         tokenInfo token = tokenInfo(tokenList[_tokenName].tokenContractAddr);
         token.issue(amount);
         tokenList[_tokenName].amountIssued += amount;
