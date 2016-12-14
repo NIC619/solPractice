@@ -1,6 +1,7 @@
 pragma solidity ^0.4.2;
 contract tokensManage{
     address public owner;
+    address public multiSigAddr;
     struct tokens {
         string tokenName;
         address tokenContractAddr;
@@ -21,8 +22,9 @@ contract tokensManage{
 		return true;
     }
     
-    function tokensManage(){
+    function tokensManage(address _multiSigAddr){
         owner = msg.sender;
+        multiSigAddr = _multiSigAddr;
     }
     
     modifier onlyOwner { if(msg.sender == owner) _;}
