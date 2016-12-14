@@ -3,6 +3,10 @@ contract tokenExchange{
     
 }
 
+contract tokenInfo {
+    function newExchangeContract(address addr);
+}
+
 contract multiSig {
     address public thirdParty;
 
@@ -22,7 +26,7 @@ contract multiSig {
     mapping(bytes32 => voteInfo) votes;
     
     
-    function multiSig(address owner) {
+    function multiSig() {
         thirdParty = msg.sender;
 
     }
@@ -67,10 +71,17 @@ contract multiSig {
         if(msg.sender != votes[_voteIdentifier].companyA && msg.sender != votes[_voteIdentifier].companyB)
             return 1;                                           //check if msg.sender if one of the company, return 1 if not
         votes[_voteIdentifier].ifVoteUp[msg.sender] = true;
-        if(votes[_voteIdentifier].ifVoteUp[thirdParty] && votes[_voteIdentifier].ifVoteUp[votes[_voteIdentifier].companyA] && votes[_voteIdentifier].ifVoteUp[votes[_voteIdentifier].companyB])
-            tokenExchange newEx = new tokenExchange(votes[_voteIdentifier].companyA, votes[_voteIdentifier].companyB,
-                votes[_voteIdentifier].tokenOfA, votes[_voteIdentifier].tokenOfB, votes[_voteIdentifier].portionOfTokenA, votes[_voteIdentifier].portionOfTokenB, votes[_voteIdentifier].exchangeLimitOfA);
-        return 2;
+        if(votes[_voteIdentifier].ifVoteUp[thirdParty] && votes[_voteIdentifier].ifVoteUp[votes[_voteIdentifier].companyA] && votes[_voteIdentifier].ifVoteUp[votes[_voteIdentifier].companyB]) {
+            //all up vote collected, create contract
+            tokenExchange newEx = new tokenExchange(votes[_voteIdentifier].companyA, votes[_voteIdentifier].companyB,votes[_voteIdentifier].tokenOfA,
+                votes[_voteIdentifier].tokenOfB, votes[_voteIdentifier].portionOfTokenA, votes[_voteIdentifier].portionOfTokenB, votes[_voteIdentifier].exchangeLimitOfA);
+            tokenInfo(votes[_voteIdentifier].tokenOfA).newExchangeContract(newEx);//inform tokenOfA and tokenOfB contract
+            tokenInfo(votes[_voteIdentifier].tokenOfB).newExchangeContract(newEx);//
+            votes[_voteIdentifier].voteIdentifier = 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff;
+            return 3;                                            //return 3 for vote completion
+        }
+        else
+            return 2;                                           //vote updated but not complete yet, return 2
         
     }
 }
