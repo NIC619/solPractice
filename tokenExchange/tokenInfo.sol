@@ -1,7 +1,6 @@
 pragma solidity ^0.4.2;
 contract tokenInfo{
-    address public owner;                                       //owner of tokenManage
-    address public ownerContract;                               //tokenManage
+    address public ownerContract;                               //tokenManage contract
     address public multisigAddr;
     string public tokenName;
     uint public amountIssued;
@@ -17,24 +16,23 @@ contract tokenInfo{
     //address[] public holderList;
     
     modifier permissionCheck {          //check if caller is owner or priviledged exchange contracts
-        if( exchangeContractMapping[msg.sender] != true && msg.sender != owner) throw;
+        if( exchangeContractMapping[msg.sender] != true && msg.sender != ownerContract) throw;
         _;
     }
     modifier onlyOwnerContract { if(msg.sender == ownerContract) _;}
     modifier onlyMultisig { if(msg.sender == multisigAddr) _;}
     
     
-    //function tokenInfo(address _owner, string _tokenName, uint _amountIssued, uint _expireTime) {
-    function tokenInfo(address _owner, string _tokenName, uint _amountIssued, address _multisigAddr) {
-        owner = _owner;
+    //function tokenInfo(string _tokenName, uint _amountIssued, uint _expireTime) {
+    function tokenInfo(string _tokenName, uint _amountIssued, address _multisigAddr) {
         ownerContract = msg.sender;
         multisigAddr = _multisigAddr;
         tokenName = _tokenName;
         amountIssued = _amountIssued;
         isActive = true;
-        //holderMapping[_owner] = holders(_amountIssued, _expireTime, true);
-        holderMapping[_owner] = holders(_amountIssued);
-        //holderList.push(_owner);
+        //holderMapping[msg.sender] = holders(_amountIssued, _expireTime, true);
+        holderMapping[msg.sender] = holders(_amountIssued);
+        //holderList.push(msg.sender);
     }
     
     
@@ -50,7 +48,7 @@ contract tokenInfo{
     
     /////////Functions issue/revoke token
     function issue(uint _amount) onlyOwnerContract {        //for now, owner can issue as many as he want
-        holderMapping[owner].amount += _amount;             //if specific permission controll is desired,
+        holderMapping[ownerContract].amount += _amount;             //if specific permission controll is desired,
     }                                                       //just modify the modifier
     
     function revoke() onlyOwnerContract {                   //same as above
