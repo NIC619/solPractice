@@ -1,12 +1,4 @@
 pragma solidity ^0.4.2;
-contract tokenExchange{
-    
-}
-
-contract tokenInfo {
-    function newExchangeContract(address addr);
-}
-
 contract multiSig {
     address public thirdParty;
 
