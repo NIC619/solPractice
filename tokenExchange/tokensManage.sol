@@ -307,8 +307,8 @@ contract tokensManage{
     modifier onlyOwner { if(msg.sender == owner) _;}
     
     /////////Utility Functions - string compare
-    function stringsEqual(string storage _a, string memory _b) internal constant returns (bool) {
-		bytes storage a = bytes(_a);
+    function stringsEqual(string _a, string _b) internal constant returns (bool) {
+		bytes memory a = bytes(_a);
 		bytes memory b = bytes(_b);
 		if (a.length != b.length)
 			return false;
