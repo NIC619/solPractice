@@ -1,4 +1,5 @@
-contract ecrecoverTest{
+pragma solidity ^0.4.0;
+contract Ecrecover{
     
     /*
     
@@ -16,7 +17,7 @@ contract ecrecoverTest{
     then compare it with the address you were checking
     
     */
-    function checkEC2(bytes32 _hsh, uint8 _v, bytes32 _r, bytes32 _s) returns(address){
+    function check(bytes32 _hsh, uint8 _v, bytes32 _r, bytes32 _s) constant returns(address){
         return ecrecover(_hsh, _v, _r, _s);
     }
 }
