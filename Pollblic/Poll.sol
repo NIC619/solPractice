@@ -13,7 +13,7 @@ contract Poll
     ContractStatus public               contractStatus;
     bool public                         ifEncrypt;
     address public                      encryptionKey;
-    mapping(address => User)            mapUsers;
+    mapping(address => User) public     mapUsers;
     mapping(address => RevealedAnswer)  mapRevealedAnswer;
     uint8 public                        numberOfQuestions;
     Question[] public                   listOfQuestions;
@@ -28,7 +28,7 @@ contract Poll
     struct Question {
         QuestionType    questionType;
         string          question;
-        string[]        options;
+        mapping(uint8 => bytes32)        options;
     }
 
     // Answer
@@ -54,15 +54,25 @@ contract Poll
         mapping(uint8 => Answer)         answers;
     }
 
+    // Constructor
+    function Poll(bool _ifEncrypt, address _encryptionKey, uint8 _numberOfQuestions ) {
+        indexContractAddr   =   msg.sender;
+        contractStatus      =   ContractStatus.Preparing;
+        if(_ifEncrypt)
+            encryptionKey   =   _encryptionKey;
+        numberOfQuestions   =   _numberOfQuestions;
+        listOfQuestions.length  =   _numberOfQuestions;
+        
+    }
 
     // GET functions
     function getQuestion(uint8 questionNumber) constant returns(QuestionType, string) {
         if(questionNumber >= numberOfQuestions) throw;
         return(listOfQuestions[questionNumber].questionType, listOfQuestions[questionNumber].question);
     }
-    function getQuestionOption(uint8 questionNumber, uint8 optionNumber) constant returns(string) {
+    function getQuestionOption(uint8 questionNumber, uint8 optionNumber) constant returns(bytes32) {
         if(questionNumber >= numberOfQuestions) throw;
-        if(optionNumber >= listOfQuestions[questionNumber].options.length) throw;
+        if(optionNumber >= numberOfOptions[questionNumber]) throw;
         if(listOfQuestions[questionNumber].questionType == QuestionType.ShortAnswer) throw;
         return(listOfQuestions[questionNumber].options[optionNumber]);
     }
@@ -76,5 +86,20 @@ contract Poll
     function getRevealedAnswer(address user, uint8 answerNumber) constant returns(string, uint8[]) {
         if(answerNumber >= numberOfQuestions) throw;
         return(mapRevealedAnswer[user].answers[answerNumber].shortAnswer, mapUsers[user].answers[answerNumber].choices);
+    }
+
+    // Add Question function
+    function addQuestion(uint8 _questionNumber, uint8 _questionType, string _question, uint8 _numberOfOptions, bytes32[] _options) {
+        if(_questionNumber >= numberOfQuestions) throw;
+        if(_questionType > 2 || _questionType <= 0) throw;
+        listOfQuestions[_questionNumber].questionType       =   QuestionType(_questionType);
+        listOfQuestions[_questionNumber].question           =   _question;
+        if(_questionType != 2) {
+            numberOfOptions[_questionNumber]                =   _numberOfOptions;
+            for(var i = 0 ; i < _numberOfOptions ; i++){
+                listOfQuestions[_questionNumber].options[i] =   _options[i];
+            }
+        }
+        
     }
 }
