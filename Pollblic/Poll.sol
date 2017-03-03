@@ -21,6 +21,7 @@ contract Poll
 
     // Question
     enum QuestionType {
+        NotSet,
         SingleChoice,
         MultipleChoice,
         ShortAnswer
@@ -73,7 +74,7 @@ contract Poll
     function getQuestionOption(uint8 questionNumber, uint8 optionNumber) constant returns(bytes32) {
         if(questionNumber >= numberOfQuestions) throw;
         if(optionNumber >= numberOfOptions[questionNumber]) throw;
-        if(listOfQuestions[questionNumber].questionType == QuestionType.ShortAnswer) throw;
+        if(listOfQuestions[questionNumber].questionType == QuestionType.ShortAnswer || listOfQuestions[questionNumber].questionType == QuestionType.NotSet) return 0x0;
         return(listOfQuestions[questionNumber].options[optionNumber]);
     }
     function getUserStatus(address user) constant returns(UserStatus, uint) {
@@ -91,15 +92,18 @@ contract Poll
     // Add Question function
     function addQuestion(uint8 _questionNumber, uint8 _questionType, string _question, uint8 _numberOfOptions, bytes32[] _options) {
         if(_questionNumber >= numberOfQuestions) throw;
-        if(_questionType > 2 || _questionType <= 0) throw;
+        if(_questionType > 3 || _questionType <= 0) throw;
+        if(listOfQuestions[_questionNumber].questionType != QuestionType.NotSet) throw;
         listOfQuestions[_questionNumber].questionType       =   QuestionType(_questionType);
         listOfQuestions[_questionNumber].question           =   _question;
-        if(_questionType != 2) {
+        if(_questionType != 3) {
             numberOfOptions[_questionNumber]                =   _numberOfOptions;
             for(var i = 0 ; i < _numberOfOptions ; i++){
                 listOfQuestions[_questionNumber].options[i] =   _options[i];
             }
-        }
+        }      
+    }
+    function addAnswer(uint8 _questionNumber, string _shortAnswer, uint8[] _choices) {
         
     }
 }
