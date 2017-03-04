@@ -1,6 +1,7 @@
 pragma solidity ^0.4.2;
 contract Poll
 {
+    address public owner;
     // Index Contract
     address public indexContractAddr;
 
@@ -34,16 +35,20 @@ contract Poll
 
     // Answer
     struct Answer {
-        uint8            questionNumber;
+        //uint8            questionNumber;
+        bool             answered;
         uint8[]          choices;
         string           shortAnswer;
     }
     struct RevealedAnswer {
-        mapping(uint8 => Answer)        answers;
+        bool                            ifAllRevealed;
+        mapping(uint8 => Answer)        revealedAnswers;
+        uint8                           revealedAnswersCount;
     }
 
     // User
     enum UserStatus {
+        NotSet,
         Answering,
         Answered,
         Paid,
@@ -52,18 +57,31 @@ contract Poll
     struct User {
         UserStatus                      status;
         uint                            timeToPay;
-        mapping(uint8 => Answer)         answers;
+        mapping(uint8 => Answer)        answers;
+        uint8                           answeredCount;
     }
 
     // Constructor
-    function Poll(bool _ifEncrypt, address _encryptionKey, uint8 _numberOfQuestions ) {
+    function Poll(address _owner, bool _ifEncrypt, address _encryptionKey, uint8 _numberOfQuestions ) {
         indexContractAddr   =   msg.sender;
+        owner               =   _owner;
         contractStatus      =   ContractStatus.Preparing;
         if(_ifEncrypt)
             encryptionKey   =   _encryptionKey;
         numberOfQuestions   =   _numberOfQuestions;
         listOfQuestions.length  =   _numberOfQuestions;
         
+    }
+
+    modifier onlyOwner {
+        if(msg.sender == owner) {
+            _;
+        }
+    }
+    modifier onlyIndex {
+        if(msg.sender == indexContractAddr) {
+            _;
+        }
     }
 
     // GET functions
@@ -86,11 +104,11 @@ contract Poll
     }
     function getRevealedAnswer(address user, uint8 answerNumber) constant returns(string, uint8[]) {
         if(answerNumber >= numberOfQuestions) throw;
-        return(mapRevealedAnswer[user].answers[answerNumber].shortAnswer, mapUsers[user].answers[answerNumber].choices);
+        return(mapRevealedAnswer[user].revealedAnswers[answerNumber].shortAnswer, mapUsers[user].answers[answerNumber].choices);
     }
 
     // Add Question function
-    function addQuestion(uint8 _questionNumber, uint8 _questionType, string _question, uint8 _numberOfOptions, bytes32[] _options) {
+    function addQuestion(uint8 _questionNumber, uint8 _questionType, string _question, uint8 _numberOfOptions, bytes32[] _options) onlyOwner {
         if(_questionNumber >= numberOfQuestions) throw;
         if(_questionType > 3 || _questionType <= 0) throw;
         if(listOfQuestions[_questionNumber].questionType != QuestionType.NotSet) throw;
@@ -104,6 +122,60 @@ contract Poll
         }      
     }
     function addAnswer(uint8 _questionNumber, string _shortAnswer, uint8[] _choices) {
-        
+        if(_questionNumber >= numberOfQuestions) throw;
+        if(mapUsers[msg.sender].answeredCount == numberOfQuestions) throw;
+        if(mapUsers[msg.sender].status == UserStatus.NotSet) {
+            mapUsers[msg.sender].status = UserStatus.Answering;
+        }
+        if(mapUsers[msg.sender].answers[_questionNumber].answered) throw;
+        if(listOfQuestions[_questionNumber].questionType == QuestionType.SingleChoice) {
+            if(_choices.length != 1) throw;
+            mapUsers[msg.sender].answers[_questionNumber].choices.push(_choices[0]);
+        }
+        else if(listOfQuestions[_questionNumber].questionType == QuestionType.MultipleChoice) {
+            if(_choices.length == 0) throw;
+            mapUsers[msg.sender].answers[_questionNumber].choices = _choices;
+        }
+        else {
+            mapUsers[msg.sender].answers[_questionNumber].shortAnswer = _shortAnswer;
+        }
+
+        mapUsers[msg.sender].answers[_questionNumber].answered = true;
+        mapUsers[msg.sender].answeredCount += 1;
+        if(mapUsers[msg.sender].answeredCount == numberOfQuestions) {
+            mapUsers[msg.sender].timeToPay      = now + 3 days;
+            mapUsers[msg.sender].status         = UserStatus.Answered;
+        }
+    }
+    function revealAnswer(address _user, uint8 _questionNumber, string _shortAnswer, uint8[] _choices) onlyOwner {
+        if(_questionNumber >= numberOfQuestions) throw;
+        if(mapUsers[_user].status != UserStatus.Answered) throw;
+        if(mapRevealedAnswer[_user].revealedAnswersCount == numberOfQuestions) throw;
+        if(mapRevealedAnswer[_user].revealedAnswers[_questionNumber].answered) throw;
+        if(listOfQuestions[_questionNumber].questionType == QuestionType.SingleChoice) {
+            if(_choices.length != 1) throw;
+            mapRevealedAnswer[_user].revealedAnswers[_questionNumber].choices.push(_choices[0]);
+        }
+        else if(listOfQuestions[_questionNumber].questionType == QuestionType.MultipleChoice) {
+            if(_choices.length == 0) throw;
+            mapRevealedAnswer[_user].revealedAnswers[_questionNumber].choices = _choices;
+        }
+        else {
+            mapRevealedAnswer[_user].revealedAnswers[_questionNumber].shortAnswer = _shortAnswer;
+        }
+
+        mapRevealedAnswer[_user].revealedAnswers[_questionNumber].answered = true;
+        mapRevealedAnswer[_user].revealedAnswersCount += 1;
+        if(mapRevealedAnswer[_user].revealedAnswersCount == numberOfQuestions) {
+            mapRevealedAnswer[_user].ifAllRevealed  = true;
+            mapUsers[_user].status                  = UserStatus.Revoked;
+        }
+    }
+    function paymentConfirm(address _user) onlyIndex returns (bool) {
+        if(mapUsers[_user].status == UserStatus.Answered && mapUsers[_user].timeToPay <= now) {
+            mapUsers[_user].status = UserStatus.Paid;
+            return true;
+        }
+        else return false;
     }
 }
