@@ -130,11 +130,15 @@ contract Poll
         if(mapUsers[msg.sender].answers[_questionNumber].answered) throw;
         if(listOfQuestions[_questionNumber].questionType == QuestionType.SingleChoice) {
             if(_choices.length != 1) throw;
+            if(_choices[0] >= numberOfOptions[_questionNumber]) throw;
             mapUsers[msg.sender].answers[_questionNumber].choices.push(_choices[0]);
         }
         else if(listOfQuestions[_questionNumber].questionType == QuestionType.MultipleChoice) {
             if(_choices.length == 0) throw;
-            mapUsers[msg.sender].answers[_questionNumber].choices = _choices;
+            for(var i = 0; i <= _choices.length; i++) {
+                if(_choices[i] >= numberOfOptions[_questionNumber]) throw;
+                mapUsers[msg.sender].answers[_questionNumber].choices.push( _choices[i]);
+            }
         }
         else {
             mapUsers[msg.sender].answers[_questionNumber].shortAnswer = _shortAnswer;
@@ -143,7 +147,7 @@ contract Poll
         mapUsers[msg.sender].answers[_questionNumber].answered = true;
         mapUsers[msg.sender].answeredCount += 1;
         if(mapUsers[msg.sender].answeredCount == numberOfQuestions) {
-            mapUsers[msg.sender].timeToPay      = now + 3 days;
+            mapUsers[msg.sender].timeToPay      = now + 1 minutes;
             mapUsers[msg.sender].status         = UserStatus.Answered;
         }
     }
