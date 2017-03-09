@@ -13,7 +13,7 @@ var _encryptionKey = 0x0;
 var _numberOfQuestions = 2;
 var _owner = web3.eth.accounts[0];
 
-var instance = abiPoll.new(_owner, _ifEncrypt, _encryptionKey, _numberOfQuestions, {from: web3.eth.accounts[0], data: binaryPoll, gas: 4700000},function(err, contract){
+abiPoll.new(_owner, _ifEncrypt, _encryptionKey, _numberOfQuestions, {from: web3.eth.accounts[0], data: binaryPoll, gas: 4700000},function(err, contract){
 	if(err) console.log(err);
 	else {
 		// console.log(contract.transactionHash);
