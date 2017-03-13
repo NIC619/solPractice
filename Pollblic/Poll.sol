@@ -11,6 +11,7 @@ contract Poll
         Open,
         Close
     }
+    bytes32 public                      pollID;
     ContractStatus public               contractStatus;
     bool public                         ifEncrypt;
     address public                      encryptionKey;
@@ -62,7 +63,8 @@ contract Poll
     }
 
     // Constructor
-    function Poll(address _owner, bool _ifEncrypt, address _encryptionKey, uint8 _numberOfQuestions ) {
+    function Poll(bytes32 _pollID ,address _owner, bool _ifEncrypt, address _encryptionKey, uint8 _numberOfQuestions ) {
+        pollID              =   _pollID;
         indexContractAddr   =   msg.sender;
         owner               =   _owner;
         contractStatus      =   ContractStatus.Preparing;
@@ -151,6 +153,18 @@ contract Poll
             mapUsers[msg.sender].status         = UserStatus.Answered;
         }
     }
+
+    // inform index contract
+    function informIndexOpen() onlyOwner {
+        Index index = Index(indexContractAddr);
+            if(!index.updatePollStatus(id, true)) throw;
+    }
+    function informIndexClose() onlyOwner {
+        Index index = Index(indexContractAddr);
+            if(!index.updatePollStatus(id, false)) throw;
+    }
+
+    // reveal user answer
     function revealAnswer(address _user, uint8 _questionNumber, string _shortAnswer, uint8[] _choices) onlyOwner {
         if(_questionNumber >= numberOfQuestions) throw;
         if(mapUsers[_user].status != UserStatus.Answered) throw;
@@ -173,8 +187,21 @@ contract Poll
         if(mapRevealedAnswer[_user].revealedAnswersCount == numberOfQuestions) {
             mapRevealedAnswer[_user].ifAllRevealed  = true;
             mapUsers[_user].status                  = UserStatus.Revoked;
+            Index index = Index(indexContractAddr);
+            index.userAnswerRevoke();
         }
     }
+
+    function userWithdraw() {
+        if(mapUsers[_user].status == UserStatus.Answered && mapUsers[_user].timeToPay <= now) {
+            mapUsers[_user].status = UserStatus.Paid;
+            Index index = Index(indexContractAddr);
+            if(!index.userAnswerConfirm()) throw;
+        }
+        else throw;
+    }
+
+    //not used
     function paymentConfirm(address _user) onlyIndex returns (bool) {
         if(mapUsers[_user].status == UserStatus.Answered && mapUsers[_user].timeToPay <= now) {
             mapUsers[_user].status = UserStatus.Paid;
