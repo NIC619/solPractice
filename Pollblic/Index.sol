@@ -3,16 +3,18 @@ contract Index {
 
 
     // Overall
-    address public                          anonymousUserAddr;
-    address[] public                        allOwnerList;
-    mapping(address=>uint)                  ownerIndexInAllOwnerList;
-    mapping(address=>PollOwner)             ownerRecordMapping;
-    mapping(bytes32=>PollRecord)            idToPollRecordMapping;
-    mapping(address=>UserRecord)            userRecordMapping;
-    mapping(address=>bool)                  ifPollContractCanCall;      //true only if poll contract status is open
+    address public                          anonymousUserAddr;                                    // address of anonymous answer helper, NOT USED YET
+    address[] public                        allOwnerList;                       // list of all owners of polls
+    mapping(address=>uint)                  ownerIndexInAllOwnerList;           // index of owner in the above list
+    mapping(address=>PollOwner)             ownerRecordMapping;                 // mapping of owner to their record
+    mapping(bytes32=>PollRecord)            idToPollRecordMapping;              // mapping of poll id to poll
+    mapping(address=>UserRecord)            userRecordMapping;                  // mapping of user address to their record
 
-    modifier canPollCall {
-        if(!ifPollContractCanCall[msg.sender]) throw;
+    // only the poll contract can call this function 
+    modifier onlyThePoll(bytes32 _id) {
+        if(idToPollRecordMapping[_id].pollContractAddr == msg.sender)
+            _;
+        else throw;
     }
 
     // Contructor
@@ -25,13 +27,14 @@ contract Index {
     enum PollContractStatus {
         Preparing,
         Open,
+        ShutDown,
         Close
     }
     // Poll record
     struct PollRecord {
         address                 pollContractAddr;
         address                 owner;
-        PollContractStatus      contractStatus;
+        //PollContractStatus      contractStatus;
         uint32                  startTime;
         uint32                  expireTime;             //currently not used
         uint64                  totalNeeded;
@@ -64,9 +67,9 @@ contract Index {
     function getPollOwnerByID(bytes32 _id) constant returns(address) {
         return idToPollRecordMapping[_id].owner;
     }
-    function getPollStatusByID(bytes32 _id) constant returns(uint) {
-        return idToPollRecordMapping[_id].contractStatus;
-    }
+    // function getPollStatusByID(bytes32 _id) constant returns(uint) {
+    //     return idToPollRecordMapping[_id].contractStatus;
+    // }
     function getPollStartTimeByID(bytes32 _id) constant returns(uint32) {
         return idToPollRecordMapping[_id].startTime;
     }
@@ -98,7 +101,8 @@ contract Index {
         if(idToPollRecordMapping[_id].startTime != 0) throw;
 
         // initiate the poll
-        var newPollAddr = new Poll(_id, msg.sender, _ifEncrypt, _encryptionKey, _numberOfQuestions);
+        var newPollAddr = new Poll(_id, msg.sender, now + _lifeTime, _totalNeeded, _ifEncrypt, _encryptionKey, _numberOfQuestions);
+        //initialize poll struct
         PollRecord newPollRecord = PollRecord(
                                         newPollAddr,
                                         msg.sender,
@@ -125,22 +129,31 @@ contract Index {
         }
     }
 
-    // poll inform its status
-    function updatePollStatus(bytes32 _id, bool trueForOpen) return(bool) {
-        if(idToPollRecordMapping[_id].pollContractAddr != msg.sender) throw;
-        if(trueForOpen) {
+    // update poll status, may be called by the poll only
+    /*
+    function updatePollStatus(bytes32 _id, uint8 _contractStatus) onlyThePoll(_id) return(bool) {
+        // open the poll
+        if(PollContractStatus(_contractStatus) == PollContractStatus.Open) {
             if(idToPollRecordMapping[_id].contractStatus == PollContractStatus.Preparing){
                 idToPollRecordMapping[_id].contractStatus = PollContractStatus.Open;
-                ifPollContractCanCall[msg.sender] = true;
                 return true;
             }
             else
                 return false;
         }
+        // shut down the poll
+        else if(PollContractStatus(_contractStatus) == PollContractStatus.ShutDown) {
+            if(idToPollRecordMapping[_id].contractStatus == PollContractStatus.Preparing || idToPollRecordMapping[_id].contractStatus == PollContractStatus.Open){
+                idToPollRecordMapping[_id].contractStatus = PollContractStatus.ShutDown;
+                return true;
+            }
+            else
+                return false;
+        }
+        // close the poll, optional by owner because there has not yet been a function to enforce
         else {
             if(idToPollRecordMapping[_id].contractStatus == PollContractStatus.Open){
                 idToPollRecordMapping[_id].contractStatus = PollContractStatus.Close;
-                ifPollContractCanCall[msg.sender] = false;
                 return true;
             }
             else
@@ -148,10 +161,12 @@ contract Index {
         }
         
     }
+    */
 
-    // poll confirm user answer function
-    function userAnswerConfirm(bytes32 _id, address _user) canPollCall returns(bool) {
-        if(user.send(idToPollRecordMapping[_id].price)) {
+    // poll confirm user answer function, return true if payment made successfully
+                                                                                              // should be made as a withdraw pattern instead of send
+    function userAnswerConfirm(bytes32 _id, address _user) onlyThePoll(_id) returns(bool) {
+        if(_user.send(idToPollRecordMapping[_id].price)) {
             idToPollRecordMapping[_id].issuedCount += 1;
             if(userRecordMapping[_user].totalAnswered == 0) {
                 userRecordMapping[_user] = UserRecord(1, 1);
@@ -165,7 +180,7 @@ contract Index {
         else return false;
     }
     // poll revoke user answer function
-    function userAnswerRevoke(bytes32 _id, address _user) canPollCall {
+    function userAnswerRevoke(bytes32 _id, address _user) onlyThePoll(_id) {
         if(userRecordMapping[_user].totalAnswered == 0) {
             userRecordMapping[_user] = UserRecord(1, 0);
         }

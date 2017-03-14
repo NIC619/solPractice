@@ -9,17 +9,27 @@ contract Poll
     enum ContractStatus {
         Preparing,
         Open,
+        ShutDown,
         Close
     }
+    // poll meta-data
     bytes32 public                      pollID;
     ContractStatus public               contractStatus;
+    uint32 public                       expireTime;
+    uint64 public                       totalNeeded;
+    uint64 pulbic                       totalAnswered;
     bool public                         ifEncrypt;
     address public                      encryptionKey;
-    mapping(address => User) public     mapUsers;
-    mapping(address => RevealedAnswer)  mapRevealedAnswer;
-    uint8 public                        numberOfQuestions;
+    // lock time
+    uint public                         paymentLockTime;                // time to wait until user can withdraw
+    uint public                         shutDownTime;                   // time until which user can no longer add answer
+    // user 
+    mapping(address => User) public     mapUsers;                       // mapping of user address to user record
+    // question
+    uint8 public                        numberOfQuestions;              
     Question[] public                   listOfQuestions;
-    mapping(uint8 => uint8) public      numberOfOptions;        //number of options for certain question
+    mapping(uint8 => uint8) public      numberOfOptions;                // number of options for certain question
+    mapping(address => RevealedAnswer)  mapRevealedAnswer;              // mapping of user address to revealed answer record
 
     // Question
     enum QuestionType {
@@ -63,23 +73,27 @@ contract Poll
     }
 
     // Constructor
-    function Poll(bytes32 _pollID ,address _owner, bool _ifEncrypt, address _encryptionKey, uint8 _numberOfQuestions ) {
-        pollID              =   _pollID;
-        indexContractAddr   =   msg.sender;
-        owner               =   _owner;
-        contractStatus      =   ContractStatus.Preparing;
+    function Poll(bytes32 _pollID ,address _owner, uint _expireTime, uint64 _totalNeeded, bool _ifEncrypt, address _encryptionKey, uint _paymentLockTime, uint8 _numberOfQuestions ) {
+        pollID                  =   _pollID;
+        indexContractAddr       =   msg.sender;
+        owner                   =   _owner;
+        expireTime              =   _expireTime;
+        totalNeeded             =   _totalNeeded;
+        contractStatus          =   ContractStatus.Preparing;
         if(_ifEncrypt)
-            encryptionKey   =   _encryptionKey;
-        numberOfQuestions   =   _numberOfQuestions;
+            encryptionKey       =   _encryptionKey;
+        numberOfQuestions       =   _numberOfQuestions;
         listOfQuestions.length  =   _numberOfQuestions;
-        
+        paymentLockTime         =   _paymentLockTime;
     }
 
+    // only owner can call
     modifier onlyOwner {
         if(msg.sender == owner) {
             _;
         }
     }
+    // only index contract can call
     modifier onlyIndex {
         if(msg.sender == indexContractAddr) {
             _;
@@ -111,9 +125,14 @@ contract Poll
 
     // Add Question function
     function addQuestion(uint8 _questionNumber, uint8 _questionType, string _question, uint8 _numberOfOptions, bytes32[] _options) onlyOwner {
+        // contract status check:   question only be added in Preparing stage
+        if(contractStatus == ContractStatus.Open || contractStatus == ContractStatus.Close || contractStatus == ContractStatus.ShutDown) throw;
+        
+        // input format check
         if(_questionNumber >= numberOfQuestions) throw;
         if(_questionType > 3 || _questionType <= 0) throw;
         if(listOfQuestions[_questionNumber].questionType != QuestionType.NotSet) throw;
+        
         listOfQuestions[_questionNumber].questionType       =   QuestionType(_questionType);
         listOfQuestions[_questionNumber].question           =   _question;
         if(_questionType != 3) {
@@ -123,13 +142,32 @@ contract Poll
             }
         }      
     }
+
+    // Add Answer function
     function addAnswer(uint8 _questionNumber, string _shortAnswer, uint8[] _choices) {
+        // contract status check:
+        // Open stage:  everyone can add answer
+        // ShutDown or Close stage: can only finish unfinished questions, before shutDownTime
+        if(now > expireTime) throw;
+        if(contractStatus == ContractStatus.Preparing) throw;
+        if(contractStatus == ContractStatus.ShutDown) {
+            if(mapUsers[msg.sender].answeredCount == 0) throw;
+            if(shutDownTime > 0 && now > shutDownTime) throw;
+        }
+
+        // input format check
         if(_questionNumber >= numberOfQuestions) throw;
         if(mapUsers[msg.sender].answeredCount == numberOfQuestions) throw;
+        if(mapUsers[msg.sender].answers[_questionNumber].answered) throw;
+
+        // if it's first time the user answer, increment totalAnswered by 1 and close the poll if limit reached
         if(mapUsers[msg.sender].status == UserStatus.NotSet) {
             mapUsers[msg.sender].status = UserStatus.Answering;
+            totalAnswered  += 1;
+            if(totalAnswered >= totalNeeded) 
+                contractStatus = ContractStatus.Close;
         }
-        if(mapUsers[msg.sender].answers[_questionNumber].answered) throw;
+
         if(listOfQuestions[_questionNumber].questionType == QuestionType.SingleChoice) {
             if(_choices.length != 1) throw;
             if(_choices[0] >= numberOfOptions[_questionNumber]) throw;
@@ -149,23 +187,42 @@ contract Poll
         mapUsers[msg.sender].answers[_questionNumber].answered = true;
         mapUsers[msg.sender].answeredCount += 1;
         if(mapUsers[msg.sender].answeredCount == numberOfQuestions) {
-            mapUsers[msg.sender].timeToPay      = now + 1 minutes;
+            mapUsers[msg.sender].timeToPay      = now + paymentLockTime;
             mapUsers[msg.sender].status         = UserStatus.Answered;
         }
     }
 
-    // inform index contract
-    function informIndexOpen() onlyOwner {
-        Index index = Index(indexContractAddr);
-            if(!index.updatePollStatus(id, true)) throw;
+    // status change and !inform index contract
+    function openPoll() onlyOwner {
+        if(contractStatus == ContractStatus.Preparing) {
+            //Index index = Index(indexContractAddr);
+            //if(!index.updatePollStatus(id, PollContractStatus.Open)) throw;
+            contractStatus = ContractStatus.Open;
+        }
+        else throw;
     }
-    function informIndexClose() onlyOwner {
-        Index index = Index(indexContractAddr);
-            if(!index.updatePollStatus(id, false)) throw;
+    function shutDownPoll() onlyOwner {
+        if(contractStatus == ContractStatus.Preparing || contractStatus == ContractStatus.Open) {
+            Index index = Index(indexContractAddr);
+            //if(!index.updatePollStatus(id, PollContractStatus.ShutDown)) throw;
+            //contractStatus = ContractStatus.ShutDown;
+            shutDownTime = now + 2 * paymentLockTime;                                                               //need to adjust the lock time
+        }
+        else throw;
     }
-
+    /*
+    function closePoll() onlyOwner {
+        if(contractStatus == ContractStatus.Close) {
+            //Index index = Index(indexContractAddr);
+            //if(!index.updatePollStatus(id, PollContractStatus.Close)) throw;
+        }
+        else throw;
+    }
+    */
+    
     // reveal user answer
     function revealAnswer(address _user, uint8 _questionNumber, string _shortAnswer, uint8[] _choices) onlyOwner {
+        if(contractStatus == ContractStatus.Preparing) throw;
         if(_questionNumber >= numberOfQuestions) throw;
         if(mapUsers[_user].status != UserStatus.Answered) throw;
         if(mapRevealedAnswer[_user].revealedAnswersCount == numberOfQuestions) throw;
@@ -188,25 +245,17 @@ contract Poll
             mapRevealedAnswer[_user].ifAllRevealed  = true;
             mapUsers[_user].status                  = UserStatus.Revoked;
             Index index = Index(indexContractAddr);
-            index.userAnswerRevoke();
+            index.userAnswerRevoke(pollID, _user);
         }
     }
 
     function userWithdraw() {
-        if(mapUsers[_user].status == UserStatus.Answered && mapUsers[_user].timeToPay <= now) {
-            mapUsers[_user].status = UserStatus.Paid;
+        if(mapUsers[msg.sender].status == UserStatus.Answered && mapUsers[msg.sender].timeToPay <= now) {
+            mapUsers[msg.sender].status = UserStatus.Paid;
             Index index = Index(indexContractAddr);
-            if(!index.userAnswerConfirm()) throw;
+            if(!index.userAnswerConfirm(pollID, msg.sender)) throw;
         }
         else throw;
     }
 
-    //not used
-    function paymentConfirm(address _user) onlyIndex returns (bool) {
-        if(mapUsers[_user].status == UserStatus.Answered && mapUsers[_user].timeToPay <= now) {
-            mapUsers[_user].status = UserStatus.Paid;
-            return true;
-        }
-        else return false;
-    }
 }
