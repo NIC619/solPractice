@@ -1,3 +1,4 @@
+import "./Poll.sol";
 pragma solidity ^0.4.2;
 contract Index {
 
@@ -35,8 +36,8 @@ contract Index {
         address                 pollContractAddr;
         address                 owner;
         //PollContractStatus      contractStatus;
-        uint32                  startTime;
-        uint32                  expireTime;             //currently not used
+        uint                    startTime;
+        uint                    expireTime;
         uint64                  totalNeeded;
         uint64                  price;
         uint64                  issuedCount;
@@ -70,10 +71,10 @@ contract Index {
     // function getPollStatusByID(bytes32 _id) constant returns(uint) {
     //     return idToPollRecordMapping[_id].contractStatus;
     // }
-    function getPollStartTimeByID(bytes32 _id) constant returns(uint32) {
+    function getPollStartTimeByID(bytes32 _id) constant returns(uint) {
         return idToPollRecordMapping[_id].startTime;
     }
-    function getPollExpireTimeByID(bytes32 _id) constant returns(uint32) {
+    function getPollExpireTimeByID(bytes32 _id) constant returns(uint) {
         return idToPollRecordMapping[_id].expireTime;
     }
     function getPollPriceByID(bytes32 _id) constant returns(uint64) {
@@ -92,7 +93,8 @@ contract Index {
                 uint64 _totalNeeded,
                 uint64 _price,
                 string _title,
-                uint32 _lifeTime,
+                uint _lifeTime,
+                uint _paymentLockTime,
                 bool _ifEncrypt,
                 address _encryptionKey,
                 uint8 _numberOfQuestions
@@ -101,12 +103,12 @@ contract Index {
         if(idToPollRecordMapping[_id].startTime != 0) throw;
 
         // initiate the poll
-        var newPollAddr = new Poll(_id, msg.sender, now + _lifeTime, _totalNeeded, _ifEncrypt, _encryptionKey, _numberOfQuestions);
+        var newPollAddr = new Poll(_id, msg.sender, now + _lifeTime, _totalNeeded, _ifEncrypt, _encryptionKey, _paymentLockTime, _numberOfQuestions);
         //initialize poll struct
-        PollRecord newPollRecord = PollRecord(
+        PollRecord memory newPollRecord = PollRecord(
                                         newPollAddr,
                                         msg.sender,
-                                        PollContractStatus.Preparing,
+                                        //PollContractStatus.Preparing,
                                         now,
                                         now + _lifeTime,
                                         _totalNeeded,

@@ -1,3 +1,4 @@
+import "./AbstractIndex.sol";
 pragma solidity ^0.4.2;
 contract Poll
 {
@@ -15,9 +16,9 @@ contract Poll
     // poll meta-data
     bytes32 public                      pollID;
     ContractStatus public               contractStatus;
-    uint32 public                       expireTime;
+    uint public                         expireTime;
     uint64 public                       totalNeeded;
-    uint64 pulbic                       totalAnswered;
+    uint64 public                       totalAnswered;
     bool public                         ifEncrypt;
     address public                      encryptionKey;
     // lock time
@@ -195,7 +196,7 @@ contract Poll
     // status change and !inform index contract
     function openPoll() onlyOwner {
         if(contractStatus == ContractStatus.Preparing) {
-            //Index index = Index(indexContractAddr);
+            //AbstractIndex index = AbstractIndex(indexContractAddr);
             //if(!index.updatePollStatus(id, PollContractStatus.Open)) throw;
             contractStatus = ContractStatus.Open;
         }
@@ -203,9 +204,9 @@ contract Poll
     }
     function shutDownPoll() onlyOwner {
         if(contractStatus == ContractStatus.Preparing || contractStatus == ContractStatus.Open) {
-            Index index = Index(indexContractAddr);
+            //AbstractIndex index = AbstractIndex(indexContractAddr);
             //if(!index.updatePollStatus(id, PollContractStatus.ShutDown)) throw;
-            //contractStatus = ContractStatus.ShutDown;
+            contractStatus = ContractStatus.ShutDown;
             shutDownTime = now + 2 * paymentLockTime;                                                               //need to adjust the lock time
         }
         else throw;
@@ -213,7 +214,7 @@ contract Poll
     /*
     function closePoll() onlyOwner {
         if(contractStatus == ContractStatus.Close) {
-            //Index index = Index(indexContractAddr);
+            //AbstractIndex index = AbstractIndex(indexContractAddr);
             //if(!index.updatePollStatus(id, PollContractStatus.Close)) throw;
         }
         else throw;
@@ -244,7 +245,7 @@ contract Poll
         if(mapRevealedAnswer[_user].revealedAnswersCount == numberOfQuestions) {
             mapRevealedAnswer[_user].ifAllRevealed  = true;
             mapUsers[_user].status                  = UserStatus.Revoked;
-            Index index = Index(indexContractAddr);
+            AbstractIndex index = AbstractIndex(indexContractAddr);
             index.userAnswerRevoke(pollID, _user);
         }
     }
@@ -252,7 +253,7 @@ contract Poll
     function userWithdraw() {
         if(mapUsers[msg.sender].status == UserStatus.Answered && mapUsers[msg.sender].timeToPay <= now) {
             mapUsers[msg.sender].status = UserStatus.Paid;
-            Index index = Index(indexContractAddr);
+            AbstractIndex index = AbstractIndex(indexContractAddr);
             if(!index.userAnswerConfirm(pollID, msg.sender)) throw;
         }
         else throw;
