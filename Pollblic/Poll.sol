@@ -68,6 +68,7 @@ contract Poll
     }
     struct User {
         UserStatus                      status;
+        bytes32                         encryptedUserKey;
         uint                            timeToPay;
         mapping(uint8 => Answer)        answers;
         uint8                           answeredCount;
@@ -115,6 +116,9 @@ contract Poll
     function getUserStatus(address user) constant returns(UserStatus, uint) {
         return(mapUsers[user].status, mapUsers[user].timeToPay);
     }
+    function getUserKey(address user) constant returns(bytes32) {
+        return(mapUsers[user].encryptedUserKey);
+    }
     function getAnswer(address user, uint8 answerNumber) constant returns(string, uint8[]) {
         if(answerNumber >= numberOfQuestions) throw;
         return(mapUsers[user].answers[answerNumber].shortAnswer, mapUsers[user].answers[answerNumber].choices);
@@ -142,6 +146,17 @@ contract Poll
                 listOfQuestions[_questionNumber].options[i] =   _options[i];
             }
         }      
+    }
+
+    function addEncryptedUserKey(bytes32 _encryptedUserKey) {
+        if(mapUsers[msg.sender].encryptedUserKey == 0x0) {
+            mapUsers[msg.sender].encryptedUserKey = _encryptedUserKey;
+            if(mapUsers[msg.sender].answeredCount == numberOfQuestions && mapUsers[msg.sender].status == UserStatus.Answering) {
+                mapUsers[msg.sender].timeToPay      = now + paymentLockTime;
+                mapUsers[msg.sender].status         = UserStatus.Answered;
+            }
+        }
+        else throw;
     }
 
     // Add Answer function
@@ -188,8 +203,10 @@ contract Poll
         mapUsers[msg.sender].answers[_questionNumber].answered = true;
         mapUsers[msg.sender].answeredCount += 1;
         if(mapUsers[msg.sender].answeredCount == numberOfQuestions) {
-            mapUsers[msg.sender].timeToPay      = now + paymentLockTime;
-            mapUsers[msg.sender].status         = UserStatus.Answered;
+            if((ifEncrypt && mapUsers[msg.sender].encryptedUserKey!=0) || (!ifEncrypt)) {
+                mapUsers[msg.sender].timeToPay      = now + paymentLockTime;
+                mapUsers[msg.sender].status         = UserStatus.Answered;
+            } 
         }
     }
 

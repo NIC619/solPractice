@@ -1,3 +1,9 @@
+// ENV
+var inputShutDownTime;
+if(process.argv.length == 2) inputShutDownTime = Math.random()*3000;
+else inputShutDownTime = process.argv[2];
+console.log("contract shut down in " + inputShutDownTime + " milli secondes...");
+
 // Set up
 var Web3 = require('web3');
 var web3 = new Web3();
@@ -64,7 +70,7 @@ abiPoll.new(_id, _owner, _expireTime, _totalNeeded, _ifEncrypt, _encryptionKey, 
 									}
 									);
 								}
-								,300);
+								,inputShutDownTime);
 				});
 			});
     	}
