@@ -44,17 +44,33 @@ abiPoll.new(_id, _owner, _expireTime, _totalNeeded, _ifEncrypt, _encryptionKey, 
 						addA(contract, web3.eth.accounts[1], 0, "blabla",[], function(tx_id){
 							addA(contract, web3.eth.accounts[1], 1, "", [2], function(tx_id){
 								console.log("addA done!");
-									getA(contract, web3.eth.accounts[1], 0, function(){
-										getA(contract, web3.eth.accounts[1], 1, function(){
-											console.log("getA done!");
+								getA(contract, web3.eth.accounts[1], 0, function(){
+									getA(contract, web3.eth.accounts[1], 1, function(){
+										console.log("getA done!");
+									});
+								});
+								console.log("total answered: " + contract.totalAnswered());
+								revealA(contract, web3.eth.accounts[1], 0, "blabla", [], function(tx_id){
+									revealA(contract, web3.eth.accounts[1],1,"",[1], function(tx_id){
+										console.log("revealA done!");
+										getRevealA(contract, web3.eth.accounts[1], 0, function(){
+											getRevealA(contract, web3.eth.accounts[1], 1, function(){
+												console.log("getRevealA done!");
+												getUserStatus(web3.eth.accounts[1], function(){
+
+												});
+											});
 										});
 									});
-								console.log("total answered: " + contract.totalAnswered());
+								});
 								addA(contract, web3.eth.accounts[2], 1, "", [0], function(tx_id){
 									addA(contract, web3.eth.accounts[2], 0, "asso",[], function(tx_id){
 										console.log("addA2 done!");
 										console.log("total answered: " + contract.totalAnswered());
 										console.log("contract status: " + contract.contractStatus().toString());
+										getUserStatus(web3.eth.accounts[2], function(){
+
+										});
 									});
 								});
 							});
@@ -111,8 +127,49 @@ function getA(instance, _user, _questionNumber, cb) {
 		else {
 			var ans = "short answer: " + result[0] + ", choice: ";
 			for(var i = 0; i < result[1].length ; i++) {
-				console.log(result[1][i].toString() + " ");
+				ans += (result[1][i].toString() + " ");
 			}
+			console.log(ans);
+		}
+		cb();
+	})
+}
+function revealA(instance, _user, _questionNumber,_shortAnswer, _choices, cb) {
+	instance.revealAnswer(_user, _questionNumber,_shortAnswer, _choices, {from: web3.eth.accounts[0], gas:300000}, function(err, tx_id) {
+		if(err) {
+			console.log("in revealA: " + err);
+			return;
+		}
+		else {
+			console.log("revealA tx id: " + tx_id);
+		}
+		cb();
+	})
+}
+function getRevealA(instance, _user, _questionNumber, cb) {
+	instance.getRevealedAnswer(_user, _questionNumber, function(err, result){
+		if(err) {
+			console.log("in getRevealA: " + err);
+			return;
+		}
+		else {
+			var ans = "short answer: " + result[0] + ", choice: ";
+			for(var i = 0; i < result[1].length ; i++) {
+				ans += (result[1][i].toString() + " ");
+			}
+			console.log(ans);
+		}
+		cb();
+	})
+}
+function getUserStatus(instance, _user, cb) {
+	instance.getUserStatus(_user, function(err, result){
+		if(err) {
+			console.log("in getA: " + err);
+			return;
+		}
+		else {
+			console.log("User status: " + result[0].toString() + ", please withdraw in " + ((new Date()).getTime()/1000 - result[1].toString()) + " secondes." );
 		}
 		cb();
 	})

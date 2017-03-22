@@ -122,8 +122,49 @@ function getA(instance, _user, _questionNumber, cb) {
 		else {
 			var ans = "short answer: " + result[0] + ", choice: ";
 			for(var i = 0; i < result[1].length ; i++) {
-				console.log(result[1][i].toString() + " ");
+				ans += (result[1][i].toString() + " ");
 			}
+			console.log(ans);
+		}
+		cb();
+	})
+}
+function revealA(instance, _user, _questionNumber,_shortAnswer, _choices, cb) {
+	instance.revealAnswer(_user, _questionNumber,_shortAnswer, _choices, {from: web3.eth.accounts[0], gas:300000}, function(err, tx_id) {
+		if(err) {
+			console.log("in revealA: " + err);
+			return;
+		}
+		else {
+			console.log("revealA tx id: " + tx_id);
+		}
+		cb();
+	})
+}
+function getRevealA(instance, _user, _questionNumber, cb) {
+	instance.getRevealedAnswer(_user, _questionNumber, function(err, result){
+		if(err) {
+			console.log("in getRevealA: " + err);
+			return;
+		}
+		else {
+			var ans = "short answer: " + result[0] + ", choice: ";
+			for(var i = 0; i < result[1].length ; i++) {
+				ans += (result[1][i].toString() + " ");
+			}
+			console.log(ans);
+		}
+		cb();
+	})
+}
+function getUserStatus(instance, _user, cb) {
+	instance.getUserStatus(_user, function(err, result){
+		if(err) {
+			console.log("in getA: " + err);
+			return;
+		}
+		else {
+			console.log("User status: " + result[0].toString() + ", please withdraw in " + ((new Date()).getTime()/1000 - result[1].toString()) + " secondes." );
 		}
 		cb();
 	})

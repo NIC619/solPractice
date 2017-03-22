@@ -4,7 +4,6 @@ contract Index {
 
 
     // Overall
-    address public                          anonymousUserAddr;                                    // address of anonymous answer helper, NOT USED YET
     address[] public                        allOwnerList;                       // list of all owners of polls
     mapping(address=>uint)                  ownerIndexInAllOwnerList;           // index of owner in the above list
     mapping(address=>PollOwner)             ownerRecordMapping;                 // mapping of owner to their record
@@ -19,8 +18,7 @@ contract Index {
     }
 
     // Contructor
-    function Index(address _anonymousUserAddr) {
-        anonymousUserAddr = _anonymousUserAddr;
+    function Index() {
         allOwnerList.push(0x0);
     }
 
