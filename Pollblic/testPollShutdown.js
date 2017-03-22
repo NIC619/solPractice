@@ -5,6 +5,7 @@ else inputShutDownTime = process.argv[2];
 console.log("contract shut down in " + inputShutDownTime + " milli secondes...");
 
 // Set up
+var funcPoll = require("./funcPoll.js");
 var Web3 = require('web3');
 var web3 = new Web3();
 if(!web3.currentProvider)
@@ -37,24 +38,24 @@ abiPoll.new(_id, _owner, _expireTime, _totalNeeded, _ifEncrypt, _encryptionKey, 
          	//console.log('Contract mined! address: ' + contract.address + ' transactionHash: ' + contract.transactionHash);
 			//console.log("contract status: " + contract.contractStatus().toString());
 			console.log( (contract.expireTime() - (new Date()).getTime() )/1000 + " seconds left until contract close...");
-			addQ(contract, 0, 3, "Q1: short answer", 0, [],function(tx_id){
-				addQ(contract, 1, 1, "Q2: single answer", 3, ["A1", "A2", "A3"], function(tx_id){
+			funcPoll.addQ(contract, web3.eth.accounts[0], 0, 3, "Q1: short answer", 0, [],function(tx_id){
+				funcPoll.addQ(contract, web3.eth.accounts[0], 1, 1, "Q2: single answer", 3, ["A1", "A2", "A3"], function(tx_id){
 					console.log("addQ done!");
-					// shutP(contract,function(){
+					// funcPoll.shutP(contract,function(){
 					// 	console.log("contract status: " + contract.contractStatus().toString());
 					// 	// console.log("contract.shutDownTime(): " + contract.shutDownTime());
 					// 	// console.log("current time: " + (new Date()).getTime() );
 					// 	console.log("contract shutted down in " + ( (contract.shutDownTime()) - ((new Date()).getTime()/1000) ) + " seconds...");
 					// });
 
-					openP(contract, function(){
+					funcPoll.openP(contract, web3.eth.accounts[0], function(){
 						console.log("contract status: " + contract.contractStatus().toString());
-						addA(contract, web3.eth.accounts[1], 0, "blabla",[], function(tx_id){
-							addA(contract, web3.eth.accounts[1], 1, "", [2], function(tx_id){
+						funcPoll.addA(contract, web3.eth.accounts[1], 0, "blabla",[], function(tx_id){
+							funcPoll.addA(contract, web3.eth.accounts[1], 1, "", [2], function(tx_id){
 								console.log("addA done!");
 								console.log("total answered: " + contract.totalAnswered());
-								addA(contract, web3.eth.accounts[2], 1, "", [0], function(tx_id){
-									addA(contract, web3.eth.accounts[2], 0, "asso",[], function(tx_id){
+								funcPoll.addA(contract, web3.eth.accounts[2], 1, "", [0], function(tx_id){
+									funcPoll.addA(contract, web3.eth.accounts[2], 0, "asso",[], function(tx_id){
 										console.log("addA2 done!");
 										console.log("total answered: " + contract.totalAnswered());
 										console.log("contract status: " + contract.contractStatus().toString());
@@ -64,7 +65,7 @@ abiPoll.new(_id, _owner, _expireTime, _totalNeeded, _ifEncrypt, _encryptionKey, 
 						});
 					});	
 					setTimeout( function (){
-									shutP(contract,function(){
+									funcPoll.shutP(contract, web3.eth.accounts[0], function(){
 										console.log("contract status: " + contract.contractStatus().toString());
 										console.log("contract shutted down in " + ( (contract.shutDownTime()) - ((new Date()).getTime()/1000) ) + " seconds...");
 									}
@@ -76,120 +77,3 @@ abiPoll.new(_id, _owner, _expireTime, _totalNeeded, _ifEncrypt, _encryptionKey, 
     	}
 	}
 });
-
-function addQ(instance, _questionNumber, _questionType, _question, _numberOfOptions, _options, cb) {
-	instance.addQuestion.sendTransaction(_questionNumber, _questionType, _question, _numberOfOptions, _options, {from: web3.eth.accounts[0], gas: 300000}, function(err, result){
-		if(err) {
-			console.log("in addQ: " + err);
-			return;
-		}
-		else {
-			console.log("addQ tx id: " + result);
-		}
-		cb(result);
-	});
-}
-function getQ(instance, _questionNumber, cb) {
-	instance.getQuestion(_questionNumber, function(err,result){
-		if(err) {
-			console.log("in getQ: " + err);
-			return;
-		}
-		else {
-			console.log(result[0].toString());
-		}
-		cb();
-	})
-}
-function addA(instance, _user, _questionNumber,_shortAnswer, _choices, cb) {
-	instance.addAnswer(_questionNumber, _shortAnswer, _choices, {from: _user, gas: 300000}, function(err, tx_id){
-		if(err) {
-			console.log("in addA: " + err);
-			return;
-		}
-		else {
-			console.log("addA tx id: " + tx_id);
-		}
-		cb();
-	})
-}
-function getA(instance, _user, _questionNumber, cb) {
-	instance.getAnswer(_user, _questionNumber, function(err, result){
-		if(err) {
-			console.log("in getA: " + err);
-			return;
-		}
-		else {
-			var ans = "short answer: " + result[0] + ", choice: ";
-			for(var i = 0; i < result[1].length ; i++) {
-				ans += (result[1][i].toString() + " ");
-			}
-			console.log(ans);
-		}
-		cb();
-	})
-}
-function revealA(instance, _user, _questionNumber,_shortAnswer, _choices, cb) {
-	instance.revealAnswer(_user, _questionNumber,_shortAnswer, _choices, {from: web3.eth.accounts[0], gas:300000}, function(err, tx_id) {
-		if(err) {
-			console.log("in revealA: " + err);
-			return;
-		}
-		else {
-			console.log("revealA tx id: " + tx_id);
-		}
-		cb();
-	})
-}
-function getRevealA(instance, _user, _questionNumber, cb) {
-	instance.getRevealedAnswer(_user, _questionNumber, function(err, result){
-		if(err) {
-			console.log("in getRevealA: " + err);
-			return;
-		}
-		else {
-			var ans = "short answer: " + result[0] + ", choice: ";
-			for(var i = 0; i < result[1].length ; i++) {
-				ans += (result[1][i].toString() + " ");
-			}
-			console.log(ans);
-		}
-		cb();
-	})
-}
-function getUserStatus(instance, _user, cb) {
-	instance.getUserStatus(_user, function(err, result){
-		if(err) {
-			console.log("in getA: " + err);
-			return;
-		}
-		else {
-			console.log("User status: " + result[0].toString() + ", please withdraw in " + ((new Date()).getTime()/1000 - result[1].toString()) + " secondes." );
-		}
-		cb();
-	})
-}
-function openP(instance, cb) {
-	instance.openPoll({from: web3.eth.accounts[0], gas: 300000}, function(err, tx_id){
-		if(err) {
-			console.log("in openP: " + err);
-			return;
-		}
-		else {
-			console.log("contract open!");
-		}
-		cb();
-	});
-}
-function shutP(instance, cb) {
-	instance.shutDownPoll({from: web3.eth.accounts[0], gas: 300000}, function(err, tx_id){
-		if(err) {
-			console.log("in shutP: " + err);
-			return;
-		}
-		else {
-			console.log("contract shutted down!");
-		}
-		cb();
-	});
-}

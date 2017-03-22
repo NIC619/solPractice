@@ -60,30 +60,30 @@ contract Index {
     function getUserTotalAccepted(address _user) constant returns(uint) {
         return userRecordMapping[_user].totalAccepted;
     }
-    function getPollAddrByID(bytes32 _id) constant returns(address) {
-        return idToPollRecordMapping[_id].pollContractAddr;
-    }
-    function getPollOwnerByID(bytes32 _id) constant returns(address) {
-        return idToPollRecordMapping[_id].owner;
-    }
-    // function getPollStatusByID(bytes32 _id) constant returns(uint) {
-    //     return idToPollRecordMapping[_id].contractStatus;
+    // function getPollAddrByID(bytes32 _id) constant returns(address) {
+    //     return idToPollRecordMapping[_id].pollContractAddr;
     // }
-    function getPollStartTimeByID(bytes32 _id) constant returns(uint) {
-        return idToPollRecordMapping[_id].startTime;
-    }
-    function getPollExpireTimeByID(bytes32 _id) constant returns(uint) {
-        return idToPollRecordMapping[_id].expireTime;
-    }
-    function getPollPriceByID(bytes32 _id) constant returns(uint64) {
-        return idToPollRecordMapping[_id].price;
-    }
-    function getPollIssuedCountByID(bytes32 _id) constant returns(uint64) {
-        return idToPollRecordMapping[_id].issuedCount;
-    }
-    function getPollTotalNeededByID(bytes32 _id) constant returns(uint64) {
-        return idToPollRecordMapping[_id].totalNeeded;
-    }
+    // function getPollOwnerByID(bytes32 _id) constant returns(address) {
+    //     return idToPollRecordMapping[_id].owner;
+    // }
+    // // function getPollStatusByID(bytes32 _id) constant returns(uint) {
+    // //     return idToPollRecordMapping[_id].contractStatus;
+    // // }
+    // function getPollStartTimeByID(bytes32 _id) constant returns(uint) {
+    //     return idToPollRecordMapping[_id].startTime;
+    // }
+    // function getPollExpireTimeByID(bytes32 _id) constant returns(uint) {
+    //     return idToPollRecordMapping[_id].expireTime;
+    // }
+    // function getPollPriceByID(bytes32 _id) constant returns(uint64) {
+    //     return idToPollRecordMapping[_id].price;
+    // }
+    // function getPollIssuedCountByID(bytes32 _id) constant returns(uint64) {
+    //     return idToPollRecordMapping[_id].issuedCount;
+    // }
+    // function getPollTotalNeededByID(bytes32 _id) constant returns(uint64) {
+    //     return idToPollRecordMapping[_id].totalNeeded;
+    // }
 
     // Add Poll functions
     function newPoll(
