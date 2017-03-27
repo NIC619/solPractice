@@ -1,4 +1,4 @@
-import "./Index.sol";
+import "./AbstractIndex.sol";
 pragma solidity ^0.4.2;
 contract Poll
 {
@@ -213,7 +213,7 @@ contract Poll
     // status change and !inform index contract
     function openPoll() onlyOwner {
         if(contractStatus == ContractStatus.Preparing) {
-            //Index index = Index(indexContractAddr);
+            //AbstractIndex index = AbstractIndex(indexContractAddr);
             //if(!index.updatePollStatus(id, PollContractStatus.Open)) throw;
             contractStatus = ContractStatus.Open;
         }
@@ -221,7 +221,7 @@ contract Poll
     }
     function shutDownPoll() onlyOwner {
         if(contractStatus == ContractStatus.Preparing || contractStatus == ContractStatus.Open) {
-            //Index index = Index(indexContractAddr);
+            //AbstractIndex index = AbstractIndex(indexContractAddr);
             //if(!index.updatePollStatus(id, PollContractStatus.ShutDown)) throw;
             contractStatus = ContractStatus.ShutDown;
             shutDownTime = now + 2 * paymentLockTime;                                                               //need to adjust the lock time
@@ -231,7 +231,7 @@ contract Poll
     /*
     function closePoll() onlyOwner {
         if(contractStatus == ContractStatus.Close) {
-            //Index index = Index(indexContractAddr);
+            //AbstractIndex index = AbstractIndex(indexContractAddr);
             //if(!index.updatePollStatus(id, PollContractStatus.Close)) throw;
         }
         else throw;
@@ -262,7 +262,7 @@ contract Poll
         if(mapRevealedAnswer[_user].revealedAnswersCount == numberOfQuestions) {
             mapRevealedAnswer[_user].ifAllRevealed  = true;
             mapUsers[_user].status                  = UserStatus.Revoked;
-            Index index = Index(indexContractAddr);
+            AbstractIndex index = AbstractIndex(indexContractAddr);
             index.userAnswerRevoke(pollID, _user);
         }
     }
@@ -270,7 +270,7 @@ contract Poll
     function userWithdraw() {
         if(mapUsers[msg.sender].status == UserStatus.Answered && mapUsers[msg.sender].timeToPay <= now) {
             mapUsers[msg.sender].status = UserStatus.Paid;
-            Index index = Index(indexContractAddr);
+            AbstractIndex index = AbstractIndex(indexContractAddr);
             if(!index.userAnswerConfirm(pollID, msg.sender)) throw;
         }
         else throw;

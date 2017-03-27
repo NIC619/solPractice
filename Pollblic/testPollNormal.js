@@ -7,31 +7,31 @@ if(!web3.currentProvider)
 
 // Get contract abi & bytecode
 // Poll
-var Poll = require("./Poll.json");
+// var Poll = require("./Poll.json");
 // console.log(Poll.abi);
-var abiPoll = web3.eth.contract(Poll.abi);
-var binaryPoll = Poll.unlinked_binary;
+var abiPoll = JSON.parse( fs.readFileSync('./Poll.abi', 'utf-8') );
+var binaryPoll = fs.readFileSync('./Poll.bytecode', 'utf-8');
 
 // Contract constructor arguments
 // Poll
 var _id = 0xace;
 var _owner = web3.eth.accounts[0];
-var _expireTime = (new Date()).getTime() + 1000*60*15;
+var _expireTime = Math.floor( (new Date()).getTime()/1000 ) + 60*15;
 var _totalNeeded = 2;
 var _ifEncrypt = false;
 var _encryptionKey = 0x0;
-var _paymentLockTime = 1000*60*5;
+var _paymentLockTime = 60*5;
 var _numberOfQuestions = 2;
 
 console.log("I still have " + web3.fromWei( web3.eth.getBalance(web3.eth.accounts[0]), "ether" ) + " ether");
 
-abiPoll.new(_id, _owner, _expireTime, _totalNeeded, _ifEncrypt, _encryptionKey, _paymentLockTime, _numberOfQuestions, {from: web3.eth.accounts[0], data: binaryPoll, gas: 4700000},function(err, contract){
+web3.eth.contract(abiPoll).new(_id, _owner, _expireTime, _totalNeeded, _ifEncrypt, _encryptionKey, _paymentLockTime, _numberOfQuestions, {from: web3.eth.accounts[0], data: binaryPoll, gas: 4700000},function(err, contract){
 	if(err) console.log(err);
 	else {
 		if (typeof contract.address !== 'undefined') {
          	//console.log('Contract mined! address: ' + contract.address + ' transactionHash: ' + contract.transactionHash);
 			//console.log("contract status: " + contract.contractStatus().toString());
-			console.log( (contract.expireTime() - (new Date()).getTime() )/1000 + " seconds left until contract close...");
+			console.log( (contract.expireTime() - Math.floor( (new Date()).getTime()/1000 ) + " seconds left until contract close...");
 			funcPoll.addQ(contract, web3.eth.accounts[0], 0, 3, "Q1: short answer", 0, [],function(tx_id){
 				funcPoll.addQ(contract, web3.eth.accounts[0], 1, 1, "Q2: single answer", 3, ["A1", "A2", "A3"], function(tx_id){
 					console.log("addQ done!");

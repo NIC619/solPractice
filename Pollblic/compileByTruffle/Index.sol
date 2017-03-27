@@ -60,12 +60,12 @@ contract Index {
     function getUserTotalAccepted(address _user) constant returns(uint) {
         return userRecordMapping[_user].totalAccepted;
     }
-    function getPollAddrByID(bytes32 _id) constant returns(address) {
-         return idToPollRecordMapping[_id].pollContractAddr;
-    }
-    function getPollOwnerByID(bytes32 _id) constant returns(address) {
-        return idToPollRecordMapping[_id].owner;
-    }
+    // function getPollAddrByID(bytes32 _id) constant returns(address) {
+    //     return idToPollRecordMapping[_id].pollContractAddr;
+    // }
+    // function getPollOwnerByID(bytes32 _id) constant returns(address) {
+    //     return idToPollRecordMapping[_id].owner;
+    // }
     // // function getPollStatusByID(bytes32 _id) constant returns(uint) {
     // //     return idToPollRecordMapping[_id].contractStatus;
     // // }
@@ -166,7 +166,7 @@ contract Index {
     // poll confirm user answer function, return true if payment made successfully
                                                                                               // should be made as a withdraw pattern instead of send
     function userAnswerConfirm(bytes32 _id, address _user) onlyThePoll(_id) returns(bool) {
-        if(_user.send(idToPollRecordMapping[_id].price * (10^18) )) {
+        if(_user.send(idToPollRecordMapping[_id].price)) {
             idToPollRecordMapping[_id].issuedCount += 1;
             if(userRecordMapping[_user].totalAnswered == 0) {
                 userRecordMapping[_user] = UserRecord(1, 1);
