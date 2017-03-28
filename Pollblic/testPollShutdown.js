@@ -2,7 +2,7 @@
 var inputShutDownTime;
 if(process.argv.length == 2) inputShutDownTime = Math.random()*3000;
 else inputShutDownTime = process.argv[2];
-console.log("contract shut down in " + inputShutDownTime + " milli seconds...");
+// console.log("contract shut down in " + inputShutDownTime + " milli seconds...");
 
 // Set up
 var fs = require('fs');

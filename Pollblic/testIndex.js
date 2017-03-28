@@ -26,21 +26,28 @@ web3.eth.contract(abiIndex).new( {from: web3.eth.accounts[0], data: binaryIndex,
 	else {
 		if (typeof contract.address !== 'undefined') {
          	// console.log('Contract mined! address: ' + contract.address + ' transactionHash: ' + contract.transactionHash);
-			var _id = 0xace;
-			var _totalNeeded = 2;
-			var _owner = web3.eth.accounts[0];
-			var _price = 3;
-			var _title = "simple two question poll";
-			var _lifeTime = 60*15;
-			var _paymentLockTime = 60*5;
-			var _ifEncrypt = false;
-			var _encryptionKey = 0x0;
-			var _numberOfQuestions = 2;
-			funcIndex.newPoll(contract, web3.eth.accounts[0], _id, _totalNeeded, _price, _title, _lifeTime, _paymentLockTime, _ifEncrypt, _encryptionKey,  _numberOfQuestions, function(){
-				funcIndex.getAddrByID(contract, _id, function(_addr){
-					console.log("deploy Poll complete.");
-					console.log("Poll starts with " + web3.fromWei(web3.eth.getBalance(contract.address), "ether") + " ether");
-					
+			var id = 0xace;
+			var totalNeeded = 2;
+			var owner = web3.eth.accounts[0];
+			var price = 3;
+			var title = "simple two question poll";
+			var lifeTime = 60*15;
+			var paymentLockTime = 60*5;
+			var ifEncrypt = false;
+			var encryptionKey = 0x0;
+			var numberOfQuestions = 2;
+			funcIndex.newPoll(contract, owner, id, totalNeeded, price, title, lifeTime, paymentLockTime, ifEncrypt, encryptionKey,  numberOfQuestions, function(){
+				funcIndex.getAddrByID(contract, id, function(){
+					funcIndex.getOwnerByID(contract, id, function(){
+						// funcIndex.getStatusByID(contract, id, function(){
+							console.log("deploy Poll complete.");
+							console.log("Poll starts with " + web3.fromWei(web3.eth.getBalance(contract.address), "ether") + " ether");
+							var user = web3.eth.accounts[1];
+							funcIndex.getUserAnswered(contract, user, function(){
+
+							});
+						// });
+					});
 				});
 			});
     	}
