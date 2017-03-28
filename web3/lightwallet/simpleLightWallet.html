@@ -1,8 +1,9 @@
 <html>
 
 <body>
-    <script src=".lightwallet.min.js"></script>
+    <script src="./lightwallet.min.js"></script>
     <script type="text/javascript" src="./web3.js"></script>
+    <script type="text/javascript" src="./ethereumjs-tx.js"></script>
     <script>
     var web3 = new Web3();
     var global_keystore;
@@ -46,7 +47,8 @@
 
     function setSeed() {
         var password = prompt('Enter Password to encrypt your seed', 'Password');
-        lightwallet.keystore.createVault({ password: password , seedPhrase: document.getElementById('seed').value, hdPathString: "m/44'/60'/0'/0"} , function(err, keystore){
+        var seed = document.getElementById('seed').value;
+        lightwallet.keystore.createVault({ password: password , seedPhrase: seed, hdPathString: "m/44'/60'/0'/0"} , function(err, keystore){
         	/*  hdPathString here is set to specifically work with testrpc's default accounts  */
         	global_keystore = keystore;
         	document.getElementById('seed').value = ''
@@ -100,7 +102,15 @@
         /*
 			Second one seperates the signing and sending process
 		*/
-	
+		/*
+		fromAddr = '0x1ffbcb203261b1d9a11c8339d7505fabb17fd731'
+		contractAddr = '0xbea015a4ea5b4b3a41881213986b1e286c2fe45f'
+		abi = [{"constant":true,"inputs":[{"name":"key","type":"uint256"}],"name":"getValue","outputs":[{"name":"value","type":"uint256"}],"type":"function"},{"constant":false,"inputs":[{"name":"key","type":"uint256"},{"name":"newOwner","type":"address"}],"name":"transferOwnership","outputs":[],"type":"function"},{"constant":false,"inputs":[{"name":"key","type":"uint256"},{"name":"newValue","type":"uint256"}],"name":"setValue","outputs":[],"type":"function"},{"constant":true,"inputs":[{"name":"key","type":"uint256"}],"name":"getOwner","outputs":[{"name":"owner","type":"address"}],"type":"function"},{"constant":false,"inputs":[{"name":"key","type":"uint256"}],"name":"register","outputs":[],"type":"function"}]
+		contract = web3.eth.contract(abi).at(contractAddr)
+		functionName = 'register'
+		args = [123]
+		value = 0
+		*/
         web3.eth.getTransactionCount(fromAddr, function(err, nonce){
         	var funcTx = lightwallet.txutils.functionTx(abi, functionName, [], {to: contractAddr, gasLimit: 300000, gasPrice: gasPrice , nonce: nonce, value: value });
         	var password = prompt('Enter Password to sign Transaction', 'Password');
@@ -108,8 +118,10 @@
         		var signedTx = lightwallet.signing.signTx(global_keystore, pwDerivedKey, funcTx, global_keystore.getAddresses()[0]);
         		console.log("signedTx: " + signedTx.toString('hex'));
         		web3.eth.sendRawTransaction(signedTx.toString('hex'), function(err, tx_id){
-        			console.log(tx_id);
+        			console.log("tx id: " + tx_id);
         		});
+        		var sender = (new EthJS.Tx(signedTx.toString('hex'))).getSenderAddress().toString('hex');
+        		document.getElementById("from").innerHTML = "verify signature sender: " + sender;
         	});
         		
         });
@@ -145,11 +157,12 @@
         <input type="text" size="40" id="functionArgs"></input>
     </div>
     <div>Value (Ether):
-        <input type="text" id="sendValueAmount">
+        <input type="text" id="sendValueAmount" value='0'>
     </div>
     <div>
         <button onclick="functionCall()">Call Function</button>
     </div>
+    <div><span id="from"></span></div>
 </body>
 
 </html>
