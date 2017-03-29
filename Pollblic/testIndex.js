@@ -1,7 +1,7 @@
 // Set up
 var fs = require('fs');
 var funcPoll = require("./funcPoll.js");
-var funcIndex = require("./funcIndex.js");
+var funcIndex = require("./funcIndexPromise.js");
 var Web3 = require('web3');
 var web3 = new Web3();
 if(!web3.currentProvider)
@@ -21,11 +21,11 @@ var binaryIndex = fs.readFileSync('./Index.bytecode', 'utf-8');
 
 console.log("I still have " + web3.fromWei( web3.eth.getBalance(web3.eth.accounts[0]), "ether" ) + " ether");
 
-web3.eth.contract(abiIndex).new( {from: web3.eth.accounts[0], data: binaryIndex, gas: 4700000},function(err, contract){
+web3.eth.contract(abiIndex).new( {from: web3.eth.accounts[0], data: binaryIndex, gas: 4700000}, function(err, contract){
 	if(err) console.log(err);
 	else {
 		if (typeof contract.address !== 'undefined') {
-         	// console.log('Contract mined! address: ' + contract.address + ' transactionHash: ' + contract.transactionHash);
+			console.log('Contract mined! address: ' + contract.address + ' transactionHash: ' + contract.transactionHash);
 			var id = 0xace;
 			var totalNeeded = 2;
 			var owner = web3.eth.accounts[0];
@@ -35,21 +35,54 @@ web3.eth.contract(abiIndex).new( {from: web3.eth.accounts[0], data: binaryIndex,
 			var paymentLockTime = 60*5;
 			var ifEncrypt = false;
 			var encryptionKey = 0x0;
-			var numberOfQuestions = 2;
-			funcIndex.newPoll(contract, owner, id, totalNeeded, price, title, lifeTime, paymentLockTime, ifEncrypt, encryptionKey,  numberOfQuestions, function(){
-				funcIndex.getAddrByID(contract, id, function(){
-					funcIndex.getOwnerByID(contract, id, function(){
-						// funcIndex.getStatusByID(contract, id, function(){
-							console.log("deploy Poll complete.");
-							console.log("Poll starts with " + web3.fromWei(web3.eth.getBalance(contract.address), "ether") + " ether");
-							var user = web3.eth.accounts[1];
-							funcIndex.getUserAnswered(contract, user, function(){
-
-							});
-						// });
-					});
-				});
+			var numberOfQuestions = 2
+			funcIndex.newPoll(contract, owner, id, totalNeeded, price, title, lifeTime, paymentLockTime, ifEncrypt, encryptionKey,  numberOfQuestions).then(function(){
+				return funcIndex.getAddrByID(contract, id);
+			}).then(function(){
+				return funcIndex.getOwnerByID(contract, id);
+			}).then(function(){
+				console.log("deploy Poll complete.");
+				console.log("Poll starts with " + web3.fromWei(web3.eth.getBalance(contract.address), "ether") + " ether");
+				var user = web3.eth.accounts[1];
+				return funcIndex.getUserAnswered(contract, user);
+			}).then(function(){
+				console.log("test done");
+			}).catch(function(exception){
+				console.log("err catched: " + exception);
 			});
-    	}
+		}
 	}
 });
+
+// web3.eth.contract(abiIndex).new( {from: web3.eth.accounts[0], data: binaryIndex, gas: 4700000},function(err, contract){
+// 	if(err) console.log(err);
+// 	else {
+// 		if (typeof contract.address !== 'undefined') {
+//          	// console.log('Contract mined! address: ' + contract.address + ' transactionHash: ' + contract.transactionHash);
+// 			var id = 0xace;
+// 			var totalNeeded = 2;
+// 			var owner = web3.eth.accounts[0];
+// 			var price = 3;
+// 			var title = "simple two question poll";
+// 			var lifeTime = 60*15;
+// 			var paymentLockTime = 60*5;
+// 			var ifEncrypt = false;
+// 			var encryptionKey = 0x0;
+// 			var numberOfQuestions = 2;
+// 			funcIndex.newPoll(contract, owner, id, totalNeeded, price, title, lifeTime, paymentLockTime, ifEncrypt, encryptionKey,  numberOfQuestions, function(){
+// 				funcIndex.getAddrByID(contract, id, function(){
+// 					funcIndex.getOwnerByID(contract, id, function(){
+// 						// funcIndex.getStatusByID(contract, id, function(){
+// 							console.log("deploy Poll complete.");
+// 							console.log("Poll starts with " + web3.fromWei(web3.eth.getBalance(contract.address), "ether") + " ether");
+// 							var user = web3.eth.accounts[1];
+// 							funcIndex.getUserAnswered(contract, user, function(){
+
+// 							});
+// 						// });
+// 					});
+// 				});
+// 			});
+//     	}
+// 	}
+// });
