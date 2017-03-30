@@ -1,4 +1,5 @@
 // Set up
+var fs = require('fs');
 var funcPoll = require("./funcPoll.js");
 var Web3 = require('web3');
 var web3 = new Web3();
@@ -31,7 +32,7 @@ web3.eth.contract(abiPoll).new(_id, _owner, _expireTime, _totalNeeded, _ifEncryp
 		if (typeof contract.address !== 'undefined') {
          	//console.log('Contract mined! address: ' + contract.address + ' transactionHash: ' + contract.transactionHash);
 			//console.log("contract status: " + contract.contractStatus().toString());
-			console.log( (contract.expireTime() - Math.floor( (new Date()).getTime()/1000 ) + " seconds left until contract close...");
+			console.log( (contract.expireTime() - Math.floor( (new Date()).getTime()/1000 )) + " seconds left until contract close...");
 			funcPoll.addQ(contract, web3.eth.accounts[0], 0, 3, "Q1: short answer", 0, [],function(tx_id){
 				funcPoll.addQ(contract, web3.eth.accounts[0], 1, 1, "Q2: single answer", 3, ["A1", "A2", "A3"], function(tx_id){
 					console.log("addQ done!");
@@ -45,11 +46,11 @@ web3.eth.contract(abiPoll).new(_id, _owner, _expireTime, _totalNeeded, _ifEncryp
 						funcPoll.addA(contract, web3.eth.accounts[1], 0, "blabla",[], function(tx_id){
 							funcPoll.addA(contract, web3.eth.accounts[1], 1, "", [2], function(tx_id){
 								console.log("addA done!");
-								funcPoll.getA(contract, web3.eth.accounts[1], 0, function(){
-									funcPoll.getA(contract, web3.eth.accounts[1], 1, function(){
-										console.log("getA done!");
-									});
-								});
+								// funcPoll.getA(contract, web3.eth.accounts[1], 0, function(){
+								// 	funcPoll.getA(contract, web3.eth.accounts[1], 1, function(){
+								// 		console.log("getA done!");
+								// 	});
+								// });
 								console.log("total answered: " + contract.totalAnswered());
 								funcPoll.revealA(contract, web3.eth.accounts[0], web3.eth.accounts[1], 0, "blabla", [], function(tx_id){
 									funcPoll.revealA(contract, web3.eth.accounts[0], web3.eth.accounts[1],1,"",[1], function(tx_id){
@@ -57,7 +58,7 @@ web3.eth.contract(abiPoll).new(_id, _owner, _expireTime, _totalNeeded, _ifEncryp
 										funcPoll.getRevealA(contract, web3.eth.accounts[1], 0, function(){
 											funcPoll.getRevealA(contract, web3.eth.accounts[1], 1, function(){
 												console.log("getRevealA done!");
-												funcPoll.getUserStatus(web3.eth.accounts[1], function(){
+												funcPoll.getUserStatus(contract, web3.eth.accounts[1], function(){
 
 												});
 											});
@@ -69,7 +70,7 @@ web3.eth.contract(abiPoll).new(_id, _owner, _expireTime, _totalNeeded, _ifEncryp
 										console.log("addA2 done!");
 										console.log("total answered: " + contract.totalAnswered());
 										console.log("contract status: " + contract.contractStatus().toString());
-										funcPoll.getUserStatus(web3.eth.accounts[2], function(){
+										funcPoll.getUserStatus(contract, web3.eth.accounts[2], function(){
 
 										});
 									});

@@ -166,7 +166,7 @@ contract Index {
     // poll confirm user answer function, return true if payment made successfully
                                                                                               // should be made as a withdraw pattern instead of send
     function userAnswerConfirm(bytes32 _id, address _user) onlyThePoll(_id) external returns(bool) {
-        if(_user.send(idToPollRecordMapping[_id].price * (10^18) )) {
+        if(_user.send(idToPollRecordMapping[_id].price * (10**18) )) {
             idToPollRecordMapping[_id].issuedCount += 1;
             if(userRecordMapping[_user].totalAnswered == 0) {
                 userRecordMapping[_user] = UserRecord(1, 1);

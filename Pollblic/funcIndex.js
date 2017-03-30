@@ -74,7 +74,7 @@ module.exports = {
                 console.log("in getUserAccepted: " + err);
                 return;
             } else {
-                console.log(_user + " totally answered: " + count.toString());
+                console.log(_user + " totally accepted: " + count.toString());
             }
             cb();
         });

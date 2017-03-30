@@ -125,7 +125,7 @@ contract Poll
     // }
     function getRevealedAnswer(address user, uint8 answerNumber) constant returns(string, uint8[]) {
         if(answerNumber >= numberOfQuestions) throw;
-        return(mapRevealedAnswer[user].revealedAnswers[answerNumber].shortAnswer, mapUsers[user].answers[answerNumber].choices);
+        return(mapRevealedAnswer[user].revealedAnswers[answerNumber].shortAnswer, mapRevealedAnswer[user].revealedAnswers[answerNumber].choices);
     }
 
     // Add Question function

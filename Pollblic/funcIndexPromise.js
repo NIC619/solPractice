@@ -2,7 +2,7 @@ module.exports = {
     newPoll: function(instance, _owner, _id, _totalNeeded, _price, _title, _lifeTime, _paymentLockTime, _ifEncrypt, _encryptionKey,  _numberOfQuestions) {
         return new Promise(function(resolve, reject){
             instance.newPoll(_id, _totalNeeded, _price, _title, _lifeTime, _paymentLockTime, _ifEncrypt, _encryptionKey,  _numberOfQuestions,
-                {from: _owner, value: _price*Math.pow(10,18), gas: 4700000},
+                {from: _owner, value: _totalNeeded*_price*Math.pow(10,18), gas: 4700000},
                 function(err, tx_id){
                     if (err) {
                         console.log("in newPoll: " + err);
@@ -24,7 +24,7 @@ module.exports = {
                     reject(err);
                 } else {
                     console.log("Poll addr: " + addr.toString());
-                    resolve();
+                    resolve(addr);
                 }
             });
         });
@@ -88,7 +88,7 @@ module.exports = {
                     console.log("in getUserTotalAccepted: " + err);
                     reject(err);
                 } else {
-                    console.log(_user + " totally answered: " + count.toString());
+                    console.log(_user + " totally accepted: " + count.toString());
                     resolve();
                 }
             });
