@@ -42,19 +42,20 @@ module.exports = {
             });
         });
     },
-    getStatusByID: function(instance, _id) {
-        return new Promise(function(resolve, reject){
-            instance.getPollStatusByID(_id, function(err, status){
-                if (err) {
-                    console.log("in getStatusByID: " + err);
-                    reject(err);
-                } else {
-                    console.log("Poll status: " + status.toString());
-                    resolve();
-                }
-            });
-        });
-    },
+    // No need for this, just use public variable 'contractStatus' in Poll
+    // getStatusByID: function(instance, _id) {
+    //     return new Promise(function(resolve, reject){
+    //         instance.getPollStatusByID(_id, function(err, status){
+    //             if (err) {
+    //                 console.log("in getStatusByID: " + err);
+    //                 reject(err);
+    //             } else {
+    //                 console.log("Poll status: " + status.toString());
+    //                 resolve();
+    //             }
+    //         });
+    //     });
+    // },
     getIssuedCountByID: function(instance, _id) {
         return new Promise(function(resolve, reject){
             instance.getPollIssuedCountByID(_id, function(err, count){

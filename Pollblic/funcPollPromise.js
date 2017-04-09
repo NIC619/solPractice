@@ -107,7 +107,10 @@ module.exports = {
                     console.log("in getUserStatus: " + err);
                     reject(err);
                 } else {
-                    console.log("User status: " + result[0].toString() + ", please withdraw in " + ( result[1].toString() - (new Date()).getTime() / 1000) + " secondes.");
+                    if(+result[0].toString() == 2)
+                        console.log("User status: " + result[0].toString() + ", please withdraw in " + ( result[1].toString() - (new Date()).getTime() / 1000) + " secondes.");
+                    else
+                        console.log("User status: " + result[0].toString());
                     resolve();
                 }
             });

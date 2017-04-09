@@ -66,9 +66,9 @@ contract Index {
     function getPollOwnerByID(bytes32 _id) constant returns(address) {
         return idToPollRecordMapping[_id].owner;
     }
-    // // function getPollStatusByID(bytes32 _id) constant returns(uint) {
-    // //     return idToPollRecordMapping[_id].contractStatus;
-    // // }
+    // function getPollStatusByID(bytes32 _id) constant returns(uint) {
+    //     return idToPollRecordMapping[_id].contractStatus;
+    // }
     // function getPollStartTimeByID(bytes32 _id) constant returns(uint) {
     //     return idToPollRecordMapping[_id].startTime;
     // }
