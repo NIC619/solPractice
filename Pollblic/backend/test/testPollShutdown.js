@@ -6,7 +6,7 @@ else inputShutDownTime = process.argv[2];
 
 // Set up
 var fs = require('fs');
-var funcPoll = require("./funcPoll.js");
+var funcPoll = require("../function/funcPoll.js");
 var Web3 = require('web3');
 var web3 = new Web3();
 if(!web3.currentProvider)
@@ -16,8 +16,8 @@ if(!web3.currentProvider)
 // Poll
 //var Poll = require("./Poll.json");
 // console.log(Poll.abi);
-var abiPoll = JSON.parse( fs.readFileSync('./Poll.abi', 'utf-8') );
-var binaryPoll = fs.readFileSync('./Poll.bytecode', 'utf-8');
+var abiPoll = JSON.parse( fs.readFileSync('../compile/Poll.abi', 'utf-8') );
+var binaryPoll = fs.readFileSync('../compile/Poll.bytecode', 'utf-8');
 
 // Contract constructor arguments
 // Poll
