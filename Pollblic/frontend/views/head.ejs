@@ -1,0 +1,474 @@
+<meta charset="UTF-8">
+<title><%= title %></title>
+<link rel='stylesheet' href='/stylesheets/bootstrap.css' />
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+<script src="/javascript/jquery.modal.js" type="text/javascript" charset="utf-8"></script>
+<link rel="stylesheet" href="/stylesheets/jquery.modal.css" type="text/css" media="screen" />
+<style  type="text/css">
+        html, body { position: relative; height: 100%; top:7%; margin: 0; padding: 0;}
+        #map-canvas { position: relative; height:95%; margin: 0; padding: 0;}
+        #report-layout { position: relative; height:100%; margin: 0; padding: 0;}
+        #report-div {position: relative; display: inline-block; width: 15%; height: 20%; margin: 1px;}
+        #report-img {position: relative; width: 100%; background-color: #DCDCDC;}
+        #report-text { position: relative; width: 100%; text-align: center; background-color: #DCDCDC; color: black; font-family: "Times New Roman", Times, serif; font-size: 20px;}
+        /* The actual popup */
+        .pop-up-text {
+            /*visibility: visible;*/
+            display: none;
+            width: 160px;
+            background-color: #555;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 8px 0;
+            position: absolute;
+            z-index: 1;
+            right: 1%;
+            top:20%;
+        }
+        /* Popup arrow */
+        .pop-up-text::after {
+            content: "";
+            position: absolute;
+            left: 100%;
+            top: 30%;
+            /*margin-left: -5px;*/
+            border-width: 7px;
+            border-style: solid;
+            border-color:  transparent transparent  transparent #555;
+        }
+        /* Popup button */
+        .pop-up-btn {
+            -webkit-border-radius: 12;
+            -moz-border-radius: 12;
+            border-radius: 12px;
+            -webkit-box-shadow: 0px 1px 3px #666666;
+            -moz-box-shadow: 0px 1px 3px #666666;
+            box-shadow: 0px 1px 3px #666666;
+            font-family: Arial;
+            color: #544e54;
+            font-size: 20px;
+            background: #afb2b3;
+            padding: 10px 20px 10px 20px;
+            text-decoration: none;
+            display: none;
+            position: absolute;
+            z-index: 1;
+            left: 1%;
+            top:20%;
+        }
+
+        .pop-up-btn:hover {
+            background: #e0e0e0;
+            text-decoration: none;
+        }
+
+        /* nav bar */
+        ul {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            border-bottom: 1px solid #a9a9a9;
+            background-color: #f3f3f3;
+            position: fixed;
+            top: 0;
+            z-index: 1;
+            /*height: 5%;*/
+            width: 100%;
+        }
+
+        li {
+            float: left;
+        }
+
+        li a {
+            display: block;
+            color: #666;
+            text-align: center;
+            padding: 14px 16px;
+            text-decoration: none;
+        }
+
+        li a:hover:not(.active) {
+            background-color: #ddd;
+        }
+
+        .active {
+            background-color: #4CAF50;
+        }
+</style>
+<script type="text/javascript">
+    var map;
+    var ifDisplayLoadedMarker = true;
+    var loadedMarkerList = [];
+    var openedMarkerList = [];
+    var searchResultList = [];
+    var lastMarkerLoadedTime = (new Date()).getTime();
+    
+    function appendAndDisplayMarker(displayMarkerList, listToAppendTo, ifDisplay) {
+        // console.log(displayMarkerList);
+        for(var i = 0 ; i < displayMarkerList.length ; i++) {
+            if(displayMarkerList[i].dir == undefined) displayMarkerList[i].dir = "north";
+            var markerIcon = {
+                url: "/images/" + displayMarkerList[i].dir + ".png",
+                size: new  google.maps.Size(36,36),
+                origin: new google.maps.Point(0,0)
+            }
+            var marker = new google.maps.Marker({
+                position: new google.maps.LatLng(displayMarkerList[i].lat, displayMarkerList[i].lng),
+                draggable: false,
+                icon: markerIcon,
+                title: displayMarkerList[i].title
+            });
+            if(ifDisplay) marker.setMap(map);
+
+            var photoHtml;
+            if(displayMarkerList[i].photoIDs.length > 0 ) {
+                photoHtml = '<div style="height:120px;overflow:auto;">';
+                for (var j in displayMarkerList[i].photoIDs){
+                    photoHtml += "<a href='#" + displayMarkerList[i].photoIDs[j] + "' rel='modal:open'><img src='/gallery/" + displayMarkerList[i].photoIDs[j] + "' \
+                    height='100px' width='100px' alt='Fail loading image...'></a>";
+                    // photoHtml += "<img src='/gallery/" + displayMarkerList[i].photoIDs[j] + "' \
+                    // height='100px' width='100px' alt='Fail loading image...'>";
+                    photoHtml += "<div id=" + displayMarkerList[i].photoIDs[j] + " style='display:none;'>\
+                    <img src='/gallery/" + displayMarkerList[i].photoIDs[j] + "' style='height:100%;width:100%' alt='Fail loading image...'><br>\
+                    <form id='reportPhoto' action='/reportPhoto' method='POST' accept-charset='utf-8' enctype='multipart/form-data'>\
+                    <input type='hidden' name='photoID' value=" + displayMarkerList[i].photoIDs[j] + "><br>\
+                    Report Photo:<br>\
+                    <input type='radio' name='reason' value='duplicated' checked>It's duplicated.<br>\
+                    <input type='radio' name='reason' value='disturbing'>It's disturbing.<br>\
+                    <input type='radio' name='reason' value='irrelevant'>It's irrelevant.<br>\
+                    <input type='button' id='reportbutton' value='Report' onclick='reportPhoto(this.form)' />\
+                    </form>\
+                    <a href='#' rel='modal:close'></a></div>";
+                }
+            }
+            else photoHtml = '<div style="height:10px;overflow:auto;">';
+            
+            /*
+            因為express已經設定static目錄為public，所以要取用gallery裡的照片不需再指定public如src='/public/gallery/xxx'
+            */
+            var hiddenForm = "<form id='hiddenForm' action='/newPhoto' method='POST' accept-charset='utf-8' enctype='multipart/form-data'>\
+                <input type='hidden' name='id' value='" + displayMarkerList[i]._id + "'>\
+                <input type='hidden' name='lat' value='" + marker.get('position').lat() + "'>\
+                <input type='hidden' name='lng' value='" + marker.get('position').lng() + "'>\
+                Name: <input type='text' name='name'>\
+                <input type='file' name='img' accept='image/*' multiple><br>\
+                <input type='button' id='button' value='Upload More Photos' onclick='addMarker(this.form)' /></form>";
+            var contributors = '';
+            for(var j = 0 ; j < displayMarkerList[i].names.length ; j++) {
+                if(j == displayMarkerList[i].names.length - 1) {
+                    contributors += '<b>' + displayMarkerList[i].names[j] + '<b>';
+                    break;
+                }
+                contributors += '<b>' + displayMarkerList[i].names[j] + '<b>,';
+            }
+            
+            var infoWindow = new google.maps.InfoWindow({
+                content:    "<div id='divDisplay'><a href='#' onclick='searchByTitle(&quot;" + displayMarkerList[i].title + "&quot;);'>#" + displayMarkerList[i].title + "</a><br>\
+                            Contributors: " + contributors + "<br>\
+                            <b>Lat</b>: " + marker.get('position').lat() + ", <b>Lng</b>: " + marker.getPosition().lng() + "<br>"
+                            + photoHtml + "</div><br>" + hiddenForm + "</div>",
+                maxWidth:   400
+            });
+
+            var clickFunction = function(_marker, _infoWindow){
+                if(_infoWindow.opened) {
+                    _infoWindow.close();
+                    _infoWindow.opened = false;
+                }
+                else {
+                    _infoWindow.open(_marker.get('map'), _marker);
+                    _infoWindow.opened = true;
+                }
+            };
+            marker.addListener('click', function(localVarMarker, localVarInfoWindow){ return clickFunction(localVarMarker, localVarInfoWindow);}.bind(null, marker, infoWindow));
+            /*
+                如果是一般的event listener，可以用event.currentTarget來取回事件觸發的物件，但google map的event只會回傳marker
+                的location，且除了marker之外我們還需要infoWindow的值。所以改用bind的方式將當下的marker和infoWindo值bind給anonymous function
+                ，避免事件觸發時clickFunction只會reference到最新的_marker、_infoWindow值。
+            */
+            listToAppendTo.push(marker);
+        }
+    }
+
+    function displayMarker(displayMarkerList) {
+        for(var i=0 ; i < displayMarkerList.length; i++) {
+            displayMarkerList[i].setMap(map);
+        }
+    }
+    function undisplayMarker(undisplayMarkerList) {
+        for(var i=0 ; i < undisplayMarkerList.length; i++) {
+            undisplayMarkerList[i].setMap(null);
+        }
+    }
+
+    function searchByTitle(_title) {
+        // console.log(_title);
+        searchResultList = [];
+        $.ajax({
+            type: "GET",
+            url: "/searchByTitle",
+            data: {title: _title},
+            success: function(listLocation) {
+                ifDisplayLoadedMarker = false;
+                map.setZoom(2);
+                undisplayMarker(loadedMarkerList);
+                appendAndDisplayMarker(listLocation, searchResultList, true);
+                
+                var popUpButton = $('#popUpButton');
+                popUpButton.text("Undo Search");
+                popUpButton.fadeIn(1500);
+                popUpButton.click(function(){
+                    ifDisplayLoadedMarker = true;
+                    undisplayMarker(searchResultList);
+                    displayMarker(loadedMarkerList);
+                    $(this).fadeOut(2000);
+                    searchResultList = [];
+                });
+                // for(var i = 0 ; i < listLocation.length ; i++) {
+                //     // console.log("found " + listLocation[i].title + " at " + listLocation[i].lat + "," + listLocation[i].lng);
+                // }
+            }
+        });
+    }
+
+    function cleanOutOfBoundMarkers() {
+        var currentBounds = map.getBounds().toJSON();
+        var tmpList = [];
+        for(var i = 0 ; i < loadedMarkerList.length ; i++) {
+            if( map.getBounds().contains(loadedMarkerList[i].getPosition()) )
+                tmpList.push(loadedMarkerList[i]);
+            else loadedMarkerList[i].setMap(null);
+        }
+        loadedMarkerList = tmpList;
+    }
+
+   	function loadMarkers() {
+        lastMarkerLoadedTime = (new Date()).getTime();
+        console.log("load markers in time " + lastMarkerLoadedTime);
+        var currentBounds = map.getBounds().toJSON();
+        $.ajax({
+            type: "GET",
+            url: "/surroundingLocations",
+            data: {
+                lat: map.getCenter().lat(),
+                lng: map.getCenter().lng(),
+                latDis: Math.abs(currentBounds["north"] - currentBounds["south"])*(7/8),
+                lngDis: Math.abs(currentBounds["west"] - currentBounds["east"])*(3/4)
+            },
+            success: function(listLocation) {
+                // console.log(listLocation);
+                var foundMatch = false;
+                var tmpList = [];
+                for(var i=0 ; i < listLocation.length ; i++) {
+                    //console.log("locations around: " + listLocation[i].title);
+                    foundMatch = false;
+                    for(var j=0 ; j < loadedMarkerList.length ; j++) {
+                        if(loadedMarkerList[j].getPosition().lat() == listLocation[i].lat &&
+                           loadedMarkerList[j].getPosition().lng() == listLocation[i].lng ) {
+                               foundMatch = true;
+                               break;
+                           }
+                    }
+                    if(foundMatch) continue;
+                    else {
+                        tmpList.push(listLocation[i]);
+                    }
+                }
+                appendAndDisplayMarker(tmpList, loadedMarkerList, ifDisplayLoadedMarker);
+                setTimeout(cleanOutOfBoundMarkers, 3000);
+            }
+        });
+	}
+    
+    function clickMap(location) {
+        var markerIcon = {
+            url: "/images/north.png",
+            size: new google.maps.Size(36,36),
+            origin: new google.maps.Point(0,-0)
+            //anchor: new google.maps.Point(0,55)
+        }
+        var marker = new google.maps.Marker({
+            position: location,
+            map: map,
+            draggable: true,
+            icon: markerIcon,
+            title: "stage1"
+        });
+        
+        var infoWindowContent = "<div id='divForm'><form id='formAddMarker' action='/newLocation' method='POST' accept-charset='utf-8' enctype='multipart/form-data'>\
+            <b>Title</b>: <input type='text' name='title' size='10'><br>\
+            <b>Lat</b>: " + marker.get('position').lat() + "<input type='hidden' name='lat' value='" + marker.get('position').lat() + "'  > , \
+            <b>Lng</b>: " + marker.getPosition().lng() + "<input type='hidden' name='lng' value='" + marker.getPosition().lng() + "' ><br>\
+            <b>Name</b>: <input type='text' id='name' name='name'><br>\
+            In which direction should I look?<br>\
+            <input type='radio' name='dir' value='north' checked><img src='/images/north.png' height='60' width='60' alt='North'/>\
+            <input type='radio' name='dir' value='east'><img src='/images/east.png' height='60' width='60' alt='East'/>\
+            <input type='radio' name='dir' value='west'><img src='/images/west.png' height='60' width='60' alt='West'/>\
+            <input type='radio' name='dir' value='south'><img src='/images/south.png' height='60' width='60' alt='South'/><br>\
+            <input type='file' name='img' accept='image/*' multiple><br>\
+            <input type='button' id='button' value='Add' onclick='addMarker(this.form)' /></form></div>";
+    
+        var infoWindow = new google.maps.InfoWindow({
+            content: infoWindowContent,
+            maxWidth:   400
+        });
+        infoWindow.open(map, marker);
+        infoWindow.opened = true;
+        openedMarkerList.push(marker);
+        var clickFunction = function(_marker, _infoWindow){
+            _infoWindow.close();
+            _infoWindow.opened = false;
+            _marker.setMap(null);
+            var index = openedMarkerList.indexOf(_marker);
+            if( index > -1) {
+                openedMarkerList.splice(index, 1);
+            }
+        };
+        marker.addListener('click', function(){ return clickFunction(marker, infoWindow);});
+    }
+
+    function reportPhoto(thisForm) {
+        var formAddMarker = $(thisForm);
+        // console.log(thisForm);
+        // console.log(formAddMarker.find('input[name="photoID"]').val());
+        // console.log(formAddMarker.find('input[name="reason"]').val());
+        /*
+            如果只是單純的form，則form不需要加enctype屬性，ajax也不需設定cache、contentType及processData屬性
+            否則會造成server端無法解析form
+        */
+        $.ajax({
+            type:   formAddMarker.attr('method'),
+            url:    formAddMarker.attr('action'),
+            data:   formAddMarker.serialize(),
+            success: function (res) {
+                var popUpMessege = $('#popUpMessege');
+                popUpMessege.text(res);
+                popUpMessege.fadeIn(1000);
+
+                setTimeout( function(){ $('#popUpMessege').fadeOut(2000);}, 1000);
+                // loadMarkers();
+                //formAddMarker.find('#button').val(res);
+
+                for(var i in openedMarkerList) {
+                    google.maps.event.trigger(openedMarkerList[i], 'click');
+                }
+                openedMarkerList.length = 0;
+            }
+        });
+    }
+
+    function addMarker(thisForm) {
+        var formAddMarker = $(thisForm);
+        var newf = new FormData(thisForm);
+        /*
+            結果是自己搞錯:FormData()是吃HTML element，當初沒發現FormData(thisForm)就可以用
+            也有可能是當時伺服器端的multer沒弄好導致以為FormData(thisForm)不能用
+        */
+        
+        $.ajax({
+            type:   formAddMarker.attr('method'),
+            url:    formAddMarker.attr('action'),
+            cache: false,
+            contentType: false,
+            processData: false,
+            data:   newf,
+            success: function (res) {
+                var popUpMessege = $('#popUpMessege');
+                popUpMessege.text(res);
+                popUpMessege.fadeIn(1000);
+                for(var j=0 ; j < loadedMarkerList.length ; j++) {
+                        if(loadedMarkerList[j].getPosition().lat() == formAddMarker.find('input[name="lat"]').val() &&
+                           loadedMarkerList[j].getPosition().lng() == formAddMarker.find('input[name="lng"]').val() ) {
+                                // console.log("found uploading marker");
+                                // console.log(loadedMarkerList);
+                                loadedMarkerList[j].setMap(null);
+                                loadedMarkerList.splice(j,1);
+                                // console.log(loadedMarkerList);
+                                break;
+                           }
+                }
+                setTimeout( function(){ $('#popUpMessege').fadeOut(2000);}, 1000);
+                loadMarkers();
+                //formAddMarker.find('#button').val(res);
+
+                for(var i in openedMarkerList) {
+                    google.maps.event.trigger(openedMarkerList[i], 'click');
+                }
+                openedMarkerList.length = 0;
+            }
+        });
+    }
+
+    function initialize() {
+        // add property to infowindow prototype to quick check if window is opening
+        google.maps.InfoWindow.prototype.opened = false;
+        // Create a map object, and include the MapTypeId to add
+        // to the map type control.
+        var mapOptions = {
+          center: { lat: 25.0193162, lng: 121.5414898},
+          zoom: 8,
+          mapTypeControlOptions: {
+            mapTypeIds: [google.maps.MapTypeId.ROADMAP, google.maps.MapTypeId.HYBRID]    //, 'map_style']
+          }
+        };
+        map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
+        
+        // Try HTML5 geolocation.
+    		if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    //console.log(position);
+                    var pos = {
+                        lat: position.coords.latitude,
+                        lng: position.coords.longitude
+                    };
+                    map.setCenter(pos);
+                });
+      		//}, function() {
+        	//	handleLocationError(true, infoWindow, map.getCenter());
+      		//});
+    		} else {
+      		// Browser doesn't support Geolocation
+      		console.log('Browser doesn\'t support Geolocation');
+      		//handleLocationError(false, infoWindow, map.getCenter());
+   		  }
+        
+        google.maps.event.addListenerOnce(map, 'idle', function(){
+            loadMarkers();
+        });
+		
+        // This event listener will call clickMap() when the map is clicked.
+        map.addListener('click', function(event) {
+            //console.log(event);
+            clickMap(event.latLng);
+        });
+        // Zoom change listener
+        // map.addListener('zoom_changed', function(){
+        //     console.log("current zoom: " + map.getZoom());
+        // });
+        // Bound change listener
+        map.addListener('bounds_changed', function(){
+            var t = (new Date()).getTime();
+            if( t - lastMarkerLoadedTime > 1000) {
+                loadMarkers();
+            }
+            else setTimeout(function(){
+                                var t = (new Date()).getTime();
+                                if( t - lastMarkerLoadedTime > 1000) {
+                                    loadMarkers();
+                                }
+                            }, 1000);
+            // var currentBounds = map.getBounds().toJSON();
+            // console.log(currentBounds.east);
+            // console.log("current lat distance: " + Math.abs(currentBounds["east"] - currentBounds["west"]) );
+            // console.log("current lng distance: " + Math.abs(currentBounds["north"] - currentBounds["south"]) );
+        });
+    }
+
+      
+</script>
+<script async defer
+	src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBOugomkLdBEVv4wOb23mirFw8cTG_wz4o&callback=initialize">
+</script>

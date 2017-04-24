@@ -1,0 +1,24 @@
+<div class="navbar navbar-fixed-top">
+    <div class="navbar-inner">
+        <div class="container">
+            <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </a>
+            <a class="brand" href="/">Express-Demo</a>
+            <div class="nav-collapse">
+                <ul class="nav">
+                    <li class="active"><a href="/">Home</a></li>
+                    <% if (!logged) { %>
+                        <li><a href="/logins">Log In</a></li>
+                        <li><a href="/logins/register">Register</a></li>
+                    <% } else { %>
+                        <li><a href="/logins/logout">Log Out</a></li>
+                    <% } %>
+                        <li><a href="/contracts">Contracts</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
