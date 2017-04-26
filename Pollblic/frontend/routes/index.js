@@ -1,33 +1,24 @@
+var fs = require('fs');
 var mongoose = require('mongoose');
-var markers = mongoose.model('markerGeo');
-var reportRecords = mongoose.model('reportRecord');
+var pollRecords = mongoose.model('pollRecord');
 var express = require('express');
 var router = express.Router();
-var multer = require('multer');
-var upload = multer({
-	dest: 	'./public/gallery',
-	limits: {	fileSize:	5242880},
-	fileFilter: function(req, file, cb) {
-		var type = file.mimetype;
-		//console.log(type);
-		var typeArray = type.split("/");
-		if (typeArray[0] == "image") {
-			cb(null, true);
-		}else {
-			cb(null, false);
-  }
-	}
-})
+var Web3 = require('Web3');
+var web3 = new Web3();
+
+/* web3 set up */
+if(!web3.currentProvider)
+	web3.setProvider(new web3.providers.HttpProvider('http://localhost:8545'));
+var indexContractAddr = '';
+var indexContractABI = JSON.parse( fs.readFileSync('../../backend/compile/Index.abi', 'utf-8') );
 
 /* GET home page. */
 router.get('/', function(req, res) {
-	res.render('layout_body', {title: 'OverHere'});
+	pollRecords.find(function(err, _pollRecordList) {
+		
+		res.render('layout_body', {title: 'Pollblic', pollRecordList: _pollRecordList});
+	});
 });
-
-router.get('/delete', function(req, res) {
-	markers.find().remove().exec();
-	res.redirect('http://localhost:14741');
-})
 
 router.get('/surroundingLocations', function(req, res){
 	var surroundingList = [];
@@ -50,41 +41,40 @@ router.get('/surroundingLocations', function(req, res){
 	});
 });
 
-router.get('/allLocations', function(req,res) {
-	var location_list = [];
-	markers.find(function(err,marker_list){
-		//console.log(marker_list);
-		console.log(marker_list.length);
-		for (i in marker_list){
-			location_list.push(marker_list[i]);
-		}
-		//console.log(location_list);
-		res.send(location_list);
-	});
-	
-});
-/*
-router.get('/newLocation', function(req,res) {
-	var newMarker = new markers();
-	//console.log('name: ' + req.query.name);
-	newMarker.lat = req.query.lat;
-	newMarker.lng = req.query.lng;
-	newMarker.names = req.query.name;
-	newMarker.title = req.query.title;
-	newMarker.save();
-	res.send("complete");
-});
-*/
-router.get('/searchByTitle', function(req, res) {
-	// console.log(req.query.title);
-	markers.find({ title: req.query.title}, function(err, searchResults){
-		if(doc===undefined) {
-			res.send([]);
-		}
-		else {
-			res.send(searchResults);
-		}
-	});
+router.get('/search', function(req, res) {
+	if( req.query.title && req.query.owner ) {
+		pollRecords.find({ title: req.query.title , owner: req.query.owner }, function( err, searchResults ) {
+			if( searchResults === undefined ) {
+				res.render( 'layout_body', { title: 'Pollblic', pollRecordList: [] });
+			}
+			else {
+				res.render( 'layout_body', { title: 'Pollblic', pollRecordList: _pollRecordList });
+			}
+		});
+	}
+	else if ( req.query.title ) {
+		pollRecords.find({ title: req.query.title }, function( err, searchResults ) {
+			if( searchResults === undefined ) {
+				res.render( 'layout_body', { title: 'Pollblic', pollRecordList: [] });
+			}
+			else {
+				res.render( 'layout_body', { title: 'Pollblic', pollRecordList: _pollRecordList });
+			}
+		});
+	}
+	else if ( req.query.owner ) {
+		pollRecords.find({ owner: req.query.owner }, function( err, searchResults ) {
+			if( searchResults === undefined ) {
+				res.render( 'layout_body', { title: 'Pollblic', pollRecordList: [] });
+			}
+			else {
+				res.render( 'layout_body', { title: 'Pollblic', pollRecordList: _pollRecordList });
+			}
+		});
+	}
+	else{
+		res.render('layout_body', {title: 'Pollblic', pollRecordList: []});
+	}
 });
 
 router.get('/reportRecords', function(req, res) {
@@ -92,16 +82,6 @@ router.get('/reportRecords', function(req, res) {
 		// console.log(_reportRecordList);
 		res.render('layoutReportRecord', {title: 'OverHere', reportRecordList: _reportRecordList});
 	});
-});
-
-router.post('/reportPhoto', function(req, res) {
-	console.log("Photo ID: " + req.body.photoID + " reported.");
-	console.log("with reason: " + req.body.reason);
-	var newReportRecord = new reportRecords();
-	newReportRecord.photoID = req.body.photoID;
-	newReportRecord.reason = req.body.reason;
-	newReportRecord.save();
-	res.send("Successful Report");
 });
 
 router.post('/newLocation', upload.array('img', 3) , function(req, res) {
@@ -134,30 +114,6 @@ router.post('/newLocation', upload.array('img', 3) , function(req, res) {
 	newMarker.photoIDs = _photoIDs;
 	newMarker.save();
 	res.send("Success");
-});
-
-router.post('/newPhoto', upload.array('img', 3) , function(req, res) {
-	if(req.body.id == undefined) {
-		res.send("Please specify a registered location for uploading");
-		return;
-	}
-	markers.findById( req.body.id ,function(err, doc){
-		//console.log(doc);
-		if(req.files.length == 0) {
-			res.send("No Files");
-			return;
-		}
-		var _photoIDs = doc.photoIDs;
-		for (i in req.files) {
-			_photoIDs.push(req.files[i].filename);
-		}
-		if(doc.names.indexOf(req.body.name) == -1) {
-			doc.names.push(req.body.name);
-		}
-		doc.save();
-		res.send("Success");
-	});
-	
 });
 
 

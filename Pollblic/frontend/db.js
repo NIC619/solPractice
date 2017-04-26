@@ -1,19 +1,14 @@
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 
-var markerGeo = new Schema({
-	lat: Number,
-	lng: Number,
-	names: [String],
+var pollRecord = new Schema({
+	id: String,
 	title: String,
-	dir: String,
-	photoIDs: [String]
+	address: String,
+	owner: String,
+	price: Number,
+	totalNeeded: Number
 });
-var reportRecord = new Schema({
-	photoID: String,
-	reason: String
-})
 
-mongoose.model('markerGeo', markerGeo);
-mongoose.model('reportRecord', reportRecord);
-mongoose.connect('mongodb://localhost/OverHereDatabase');
+mongoose.model('pollRecord', pollRecord);
+mongoose.connect('mongodb://localhost/PollblicDatabase');
