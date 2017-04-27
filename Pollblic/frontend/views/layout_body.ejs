@@ -1,22 +1,31 @@
 <% layout('layout_html') -%>
 <ul>
-  <li><a class="active" href="/">OverHere</a></li>
-  <li><a href="/">Gallery</a></li>
+	<li><a class="active" href="/">Pollblic</a></li>
+	<!--<li><a href="/">Gallery</a></li>-->
 </ul>
-<div id="map-canvas"></div>
-<div class="pop-up-text" id="popUpMessege" >
+<div class="poll-layout">
+	<% if( pollRecordList.length > 0 ) { %>
+		<% for( var i = 0 ; i < pollRecordList.length ; i++ ) { %>
+			<div id="<%= pollRecordList[i].id %>" class="poll-div">
+
+			</div>
+		<% } %>
+	<% } else { %>
+		<p>There are currently no on-going polls.</p>
+	<% } %>
 </div>
-<div class="pop-up-btn" id="popUpButton" >
+<div class="pop-up-text" id="popUpMessege">
 </div>
-<div id="photoModal" style='height:80%;width:45%;display:none;' >
-  <img src='/gallery/4bad7a6be5f9fc7d8da87231e54ab248' style='height:100%;width:100%' alt='Fail loading image...'><br>
-  <form id="reportPhoto" action="/reportPhoto" method="POST" accept-charset="utf-8" enctype="multipart/form-data">
-  <input type="hidden" name="photoID" value="4bad7a6be5f9fc7d8da87231e54ab248"><br>
-  Report Image:<br>
-  <input type="radio" name="reason" value="1" checked>1<br>
-  <input type="radio" name="reason" value="2">2<br>
-  <input type="radio" name="reason" value="3">3<br>
-  <input type='button' id='reportbutton' value='Report' onclick='reportPhoto(this.form)' />
-  </form>
-  <a href='#' rel='modal:close'></a>
+<div class="pop-up-btn" id="popUpButton">
+</div>
+<div id="photoModal" style='height:80%;width:45%;display:none;'>
+	<img src='/gallery/4bad7a6be5f9fc7d8da87231e54ab248' style='height:100%;width:100%' alt='Fail loading image...'><br>
+	<form id="reportPhoto" action="/reportPhoto" method="POST" accept-charset="utf-8" enctype="multipart/form-data">
+		<input type="hidden" name="photoID" value="4bad7a6be5f9fc7d8da87231e54ab248"><br> Report Image:<br>
+		<input type="radio" name="reason" value="1" checked>1<br>
+		<input type="radio" name="reason" value="2">2<br>
+		<input type="radio" name="reason" value="3">3<br>
+		<input type='button' id='reportbutton' value='Report' onclick='reportPhoto(this.form)' />
+	</form>
+	<a href='#' rel='modal:close'></a>
 </div>

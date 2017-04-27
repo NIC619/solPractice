@@ -10,12 +10,14 @@ var web3 = new Web3();
 if(!web3.currentProvider)
 	web3.setProvider(new web3.providers.HttpProvider('http://localhost:8545'));
 var indexContractAddr = '';
-var indexContractABI = JSON.parse( fs.readFileSync('../../backend/compile/Index.abi', 'utf-8') );
+var indexContractABI = JSON.parse( fs.readFileSync('../backend/compile/Index.abi', 'utf-8') );
 
 /* GET home page. */
 router.get('/', function(req, res) {
 	pollRecords.find(function(err, _pollRecordList) {
-		
+		// web3.eth.getAccounts(function(err, _accounts){
+		// 	console.log(_accounts);
+		// });
 		res.render('layout_body', {title: 'Pollblic', pollRecordList: _pollRecordList});
 	});
 });
@@ -84,7 +86,7 @@ router.get('/reportRecords', function(req, res) {
 	});
 });
 
-router.post('/newLocation', upload.array('img', 3) , function(req, res) {
+router.post('/newLocation', function(req, res) {
 	var newMarker = new markers();
 	//console.log(req.body.name);
 	if(req.body.lat == undefined || req.body.lng == undefined) {
