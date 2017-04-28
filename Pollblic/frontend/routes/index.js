@@ -12,14 +12,53 @@ if(!web3.currentProvider)
 var indexContractAddr = '';
 var indexContractABI = JSON.parse( fs.readFileSync('../backend/compile/Index.abi', 'utf-8') );
 
+const _title = 'Pollblic';
+
+
 /* GET home page. */
 router.get('/', function(req, res) {
 	pollRecords.find(function(err, _pollRecordList) {
 		// web3.eth.getAccounts(function(err, _accounts){
 		// 	console.log(_accounts);
 		// });
-		res.render('layout_body', {title: 'Pollblic', pollRecordList: _pollRecordList});
+		res.render('index', {title: _title, pollRecordList: _pollRecordList});
 	});
+});
+
+router.get('/newPoll', function(req, res) {
+	res.render('newPoll', {title: _title})
+});
+
+router.post('/newPoll', function(req, res) {
+	var newMarker = new markers();
+	//console.log(req.body.name);
+	if(req.body.lat == undefined || req.body.lng == undefined) {
+		res.send("Please specify a location");
+		return;
+	}
+	markers.find({ lat: req.body.lat, lng: req.body.lng }, function(err, doc){
+		if(doc===undefined) {
+			res.send("Location already registered")
+			return;
+		}
+	});
+	if(req.files.length == 0) {
+			res.send("No Files");
+			return;
+	}
+	var _photoIDs = [];
+	for (i in req.files) {
+		_photoIDs.push(req.files[i].filename);
+	}
+	
+	newMarker.lat = req.body.lat;
+	newMarker.lng = req.body.lng;
+	newMarker.names = [req.body.name];
+	newMarker.title = req.body.title;
+	newMarker.dir = req.body.dir;
+	newMarker.photoIDs = _photoIDs;
+	newMarker.save();
+	res.send("Success");
 });
 
 router.get('/surroundingLocations', function(req, res){
@@ -86,37 +125,7 @@ router.get('/reportRecords', function(req, res) {
 	});
 });
 
-router.post('/newLocation', function(req, res) {
-	var newMarker = new markers();
-	//console.log(req.body.name);
-	if(req.body.lat == undefined || req.body.lng == undefined) {
-		res.send("Please specify a location");
-		return;
-	}
-	markers.find({ lat: req.body.lat, lng: req.body.lng }, function(err, doc){
-		if(doc===undefined) {
-			res.send("Location already registered")
-			return;
-		}
-	});
-	if(req.files.length == 0) {
-			res.send("No Files");
-			return;
-	}
-	var _photoIDs = [];
-	for (i in req.files) {
-		_photoIDs.push(req.files[i].filename);
-	}
-	
-	newMarker.lat = req.body.lat;
-	newMarker.lng = req.body.lng;
-	newMarker.names = [req.body.name];
-	newMarker.title = req.body.title;
-	newMarker.dir = req.body.dir;
-	newMarker.photoIDs = _photoIDs;
-	newMarker.save();
-	res.send("Success");
-});
+
 
 
 module.exports = router;

@@ -12,6 +12,7 @@
         #report-div {position: relative; display: inline-block; width: 15%; height: 20%; margin: 1px;}
         #report-img {position: relative; width: 100%; background-color: #DCDCDC;}
         #report-text { position: relative; width: 100%; text-align: center; background-color: #DCDCDC; color: black; font-family: "Times New Roman", Times, serif; font-size: 20px;}
+        
         /* The actual popup */
         .pop-up-text {
             /*visibility: visible;*/
@@ -99,3 +100,14 @@
             background-color: #4CAF50;
         }
 </style>
+<script>
+    $(document).ready(function(){
+        $('#encryptionKey').toggle();
+        $('input:radio[name="ifEncrypt"]').change(function(){
+            $('#encryptionKey').toggle();
+        });
+        $('#newPoll-button').click(function(){
+            location.href = "/newPoll";
+        });
+    });
+</script>
