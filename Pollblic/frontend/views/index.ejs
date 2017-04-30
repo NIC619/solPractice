@@ -3,7 +3,11 @@
 	<% if( pollRecordList.length > 0 ) { %>
 		<% for( var i = 0 ; i < pollRecordList.length ; i++ ) { %>
 			<div id="<%= pollRecordList[i].id %>" class="poll-div">
-
+				<a href="/getPoll?id=<%= pollRecordList[i].id %>">
+				Title: <%= pollRecordList[i].title %><br>
+				Owner: <%= pollRecordList[i].owner %><br>
+				Price: <%= pollRecordList[i].price %>
+				</a>
 			</div>
 		<% } %>
 	<% } else { %>

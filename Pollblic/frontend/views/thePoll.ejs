@@ -1,0 +1,14 @@
+<% layout('layout_html') -%>
+<div class="poll-layout">
+    <% if( pollRecord != undefined ) { %>
+        Status: <% if( pollRecord.ifOpen ) { %> Open <% } else { %> Closed <% } %><br>
+		Title: <%= pollRecord.title %><br>
+		Id: <%= pollRecord.id %><br>
+		Located at address: <%= pollRecord.address %><br>
+		Owner: <%= pollRecord.owner %><br>
+		Reward: <%= pollRecord.price %> ether<br>
+		<!--<input type="button" value="Create" onclick='newPoll(this.form)'>-->
+    <% } else { %>
+        Poll not found
+    <% } %>
+</div>
