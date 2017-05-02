@@ -13,7 +13,11 @@ var indexContractAddr = '';
 var indexContractABI = JSON.parse( fs.readFileSync('../backend/compile/Index.abi', 'utf-8') );
 
 const _title = 'Pollblic';
-
+var account;
+web3.eth.getAccounts(function(err, accounts) {
+	account = accounts[0];
+	console.log(account);
+});
 
 /* GET home page. */
 router.get('/', function(req, res) {
@@ -25,39 +29,38 @@ router.get('/', function(req, res) {
 	});
 });
 
+router.get('/getPoll', function(req, res) {
+	pollRecords.findOne({ id : req.query.id }, function(err, _pollRecord) {
+		res.render('thePoll', {title: _title, pollRecord: _pollRecord});
+	});
+})
+
 router.get('/newPoll', function(req, res) {
 	res.render('newPoll', {title: _title})
 });
 
 router.post('/newPoll', function(req, res) {
-	var newMarker = new markers();
+	var newPollRecord = new pollRecords();
 	//console.log(req.body.name);
-	if(req.body.lat == undefined || req.body.lng == undefined) {
-		res.send("Please specify a location");
-		return;
-	}
-	markers.find({ lat: req.body.lat, lng: req.body.lng }, function(err, doc){
-		if(doc===undefined) {
-			res.send("Location already registered")
+	var computedID = web3.sha3(req.body.title + account + Math.floor((new Date).getTime()/1000) );
+	console.log("'" + req.body.title + account + Math.floor((new Date).getTime()/1000) + "' is hashed into " + computedID);
+	// var computedID = web3.sha3(req.body.title + req.body.owner + Math.floor((new Date).getTime()/1000) );
+	// console.log("'" + req.body.title + req.body.owner + Math.floor((new Date).getTime()/1000) + "' is hashed into " + computedID);
+
+	pollRecords.find({ id: computedID }, function(err, pollRecordList){
+		if( pollRecordList.length != 0 ) {
+			res.send("Poll already registered")
 			return;
 		}
 	});
-	if(req.files.length == 0) {
-			res.send("No Files");
-			return;
-	}
-	var _photoIDs = [];
-	for (i in req.files) {
-		_photoIDs.push(req.files[i].filename);
-	}
 	
-	newMarker.lat = req.body.lat;
-	newMarker.lng = req.body.lng;
-	newMarker.names = [req.body.name];
-	newMarker.title = req.body.title;
-	newMarker.dir = req.body.dir;
-	newMarker.photoIDs = _photoIDs;
-	newMarker.save();
+	newPollRecord.ifOpen = true;
+	newPollRecord.id = computedID;
+	newPollRecord.title = req.body.title;
+	newPollRecord.address = '0x0000000000000000012300000000000000000456';	// newPollRecord.address = req.body.address;
+	newPollRecord.owner = account;	// newPollRecord.owner = req.body.owner;
+	newPollRecord.price = req.body.price;
+	newPollRecord.save();
 	res.send("Success");
 });
 

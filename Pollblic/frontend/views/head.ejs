@@ -7,7 +7,7 @@
 <style  type="text/css">
         html, body { position: relative; height: 100%; top:7%; margin: 0; padding: 0;}
         .poll-layout { position: relative; height:95%; margin: 0; padding: 0;}
-        .poll-div { position: relative; height:100%; margin: 0; padding: 0;}
+        .poll-div { position: relative; height:20%; margin: 0; padding: 0;}
         #report-layout { position: relative; height:100%; margin: 0; padding: 0;}
         #report-div {position: relative; display: inline-block; width: 15%; height: 20%; margin: 1px;}
         #report-img {position: relative; width: 100%; background-color: #DCDCDC;}
@@ -101,6 +101,27 @@
         }
 </style>
 <script>
+
+    function newPoll(thisForm) {
+        var formNewPoll = $(thisForm);
+        // console.log(thisForm);
+        console.log(formNewPoll.find('input[name="title"]').val());
+        // console.log(formNewPoll.find('input[name="reason"]').val());
+ 
+        $.ajax({
+            type:   formNewPoll.attr('method'),
+            url:    formNewPoll.attr('action'),
+            data:   formNewPoll.serialize(),
+            success: function (res) {
+                var popUpMessege = $('#popUpMessege');
+                popUpMessege.text(res);
+                popUpMessege.fadeIn(1000);
+
+                setTimeout( function(){ $('#popUpMessege').fadeOut(2000);}, 1000);
+            }
+        });
+    }
+
     $(document).ready(function(){
         $('#encryptionKey').toggle();
         $('input:radio[name="ifEncrypt"]').change(function(){
@@ -109,5 +130,6 @@
         $('#newPoll-button').click(function(){
             location.href = "/newPoll";
         });
+
     });
 </script>
