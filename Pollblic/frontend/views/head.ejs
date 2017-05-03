@@ -5,13 +5,15 @@
 <script src="/javascript/jquery.modal.js" type="text/javascript" charset="utf-8"></script>
 <link rel="stylesheet" href="/stylesheets/jquery.modal.css" type="text/css" media="screen" />
 <style  type="text/css">
-        html, body { position: relative; height: 100%; top:7%; margin: 0; padding: 0;}
-        .poll-layout { position: relative; height:95%; margin: 0; padding: 0;}
-        .poll-div { position: relative; height:20%; margin: 0; padding: 0;}
+        html { height: 100%;  }
+        body { position: relative; height: 100%;  margin: 0; padding-top: 4%; }
+        .poll-layout { position: relative; height:85%;  margin: 0; padding: 0; }
+        .poll-div { position: relative; height:15%; width:25%; border: 5px ridge ; border-radius: 10px; margin: 5px; padding: 5px; float:left; overflow: scroll}
+        .poll-div:hover { background-color: #DCDCDC; cursor: pointer; box-shadow: 10px 10px 5px #888888; }
         #report-layout { position: relative; height:100%; margin: 0; padding: 0;}
-        #report-div {position: relative; display: inline-block; width: 15%; height: 20%; margin: 1px;}
-        #report-img {position: relative; width: 100%; background-color: #DCDCDC;}
-        #report-text { position: relative; width: 100%; text-align: center; background-color: #DCDCDC; color: black; font-family: "Times New Roman", Times, serif; font-size: 20px;}
+        #report-div { position: relative; display: inline-block; width: 15%; height: 20%; margin: 1px; }
+        #report-img { position: relative; width: 100%; background-color: #DCDCDC; }
+        #report-text { position: relative; width: 100%; text-align: center; background-color: #DCDCDC; color: black; font-family: "Times New Roman", Times, serif; font-size: 20px; }
         
         /* The actual popup */
         .pop-up-text {
@@ -105,7 +107,7 @@
     function newPoll(thisForm) {
         var formNewPoll = $(thisForm);
         // console.log(thisForm);
-        console.log(formNewPoll.find('input[name="title"]').val());
+        // console.log(formNewPoll.find('input[name="title"]').val());
         // console.log(formNewPoll.find('input[name="reason"]').val());
  
         $.ajax({
@@ -117,7 +119,12 @@
                 popUpMessege.text(res);
                 popUpMessege.fadeIn(1000);
 
-                setTimeout( function(){ $('#popUpMessege').fadeOut(2000);}, 1000);
+                setTimeout( function() {
+                    $('#popUpMessege').fadeOut(2000);
+                }, 1000);
+                setTimeout(function() {
+                    location.href = "/";
+                }, 2000);
             }
         });
     }
@@ -130,6 +137,9 @@
         $('#newPoll-button').click(function(){
             location.href = "/newPoll";
         });
-
+        $('.poll-div').click(function(e) {
+            var modalID = '#modal-' + $(this).attr('id').substr(5);
+            $( modalID ).modal();
+        });
     });
 </script>

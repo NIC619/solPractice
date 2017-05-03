@@ -2,16 +2,30 @@
 <div class="poll-layout">
 	<% if( pollRecordList.length > 0 ) { %>
 		<% for( var i = 0 ; i < pollRecordList.length ; i++ ) { %>
-			<div id="<%= pollRecordList[i].id %>" class="poll-div">
-				<a href="/getPoll?id=<%= pollRecordList[i].id %>">
-				Title: <%= pollRecordList[i].title %><br>
-				Owner: <%= pollRecordList[i].owner %><br>
-				Price: <%= pollRecordList[i].price %>
-				</a>
+			<div id="poll-<%= pollRecordList[i].id %>" class="poll-div">
+				<span style="position:relative; top: 20%; display: inline-block; line-height: 20px">
+					Title: <%= pollRecordList[i].title %><br>
+					Owner: <%= pollRecordList[i].owner %><br>
+					Price: <%= pollRecordList[i].price %>
+				</span>
+			</div>
+			<div id="modal-<%= pollRecordList[i].id %>" style='display: none;'>
+				<span style="display: inline-block; font-size: 20px; line-height: 30px">
+					Status: <% if( pollRecordList[i].ifOpen ) { %> Open <% } else { %> Closed <% } %><br>
+					Title: <%= pollRecordList[i].title %><br>
+					ID: <%= pollRecordList[i].id %><br>
+					Located at address: <%= pollRecordList[i].address %><br>
+					Owner: <%= pollRecordList[i].owner %><br>
+					Reward: <%= pollRecordList[i].price %> ether<br>
+					<a href="/getPoll?id=<%= pollRecordList[i].id %>"><button>View Poll</button></a>
+				</span>
+				<a href='#' rel='modal:close'></a>
 			</div>
 		<% } %>
 	<% } else { %>
 		<p>There are currently no on-going polls.</p>
 	<% } %>
-    <button id="newPoll-button">Create New Poll</button>
+</div>
+<div>
+	<button id="newPoll-button">Create New Poll</button>
 </div>
