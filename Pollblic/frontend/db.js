@@ -7,7 +7,10 @@ var pollRecord = new Schema({
 	title: String,
 	address: String,
 	owner: String,
-	price: Number
+	price: Number,
+	numberOfQuestion: Number,
+	ifEncrypt: Boolean,
+	encryptionKey: String
 });
 
 mongoose.model('pollRecord', pollRecord);

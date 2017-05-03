@@ -16,10 +16,9 @@ const _title = 'Pollblic';
 var account;
 web3.eth.getAccounts(function(err, accounts) {
 	account = accounts[0];
-	console.log(account);
 });
 
-/* GET home page. */
+/* GET home page */
 router.get('/', function(req, res) {
 	pollRecords.find(function(err, _pollRecordList) {
 		// web3.eth.getAccounts(function(err, _accounts){
@@ -29,16 +28,25 @@ router.get('/', function(req, res) {
 	});
 });
 
-router.get('/getPoll', function(req, res) {
+/* Developement functions */
+router.get('/delete', function(req, res) {
+	pollRecords.find().remove().exec();
+	res.render('index', {title: _title, pollRecordList: []});
+});
+/*                       */
+
+/* GET specific poll */
+router.get('/poll', function(req, res) {
 	pollRecords.findOne({ id : req.query.id }, function(err, _pollRecord) {
 		res.render('thePoll', {title: _title, pollRecord: _pollRecord});
 	});
 })
+/*                   */
 
+/* create new poll */
 router.get('/newPoll', function(req, res) {
 	res.render('newPoll', {title: _title})
 });
-
 router.post('/newPoll', function(req, res) {
 	var newPollRecord = new pollRecords();
 	//console.log(req.body.name);
@@ -60,9 +68,30 @@ router.post('/newPoll', function(req, res) {
 	newPollRecord.address = '0x0000000000000000012300000000000000000456';	// newPollRecord.address = req.body.address;
 	newPollRecord.owner = account;	// newPollRecord.owner = req.body.owner;
 	newPollRecord.price = req.body.price;
+	newPollRecord.numberOfQuestion = req.body.numberOfQuestion;
+	// newPollRecord.paymentLocktime = req.body.paymentLocktime;
+	newPollRecord.ifEncrypt = req.body.ifEncrypt;
+	if( req.body.ifEncrypt ) newPollRecord.encryptionKey = req.body.encryptionKey;
 	newPollRecord.save();
 	res.send("Success");
 });
+/*                  */
+
+/* GET specific question */
+router.get('/question', function(req, res) {
+	// console.log(req.query.pollID);
+	// console.log(req.query.pollAddress);
+	// console.log(req.query.questionNumber);
+	if(req.query.questionNumber == 1) res.send({ type: 'single', body: 'abcdefg', numberOfAnswer: 3, answer: [ "a1", "a2", "a3" ]});
+	else res.send({ type: 'short', body: 'abcdefg', numberOfAnswer: 3, answer: [ "a1", "a2", "a3" ]});
+});
+/*                       */
+
+/* submit new answer */
+router.post('/newAnswer', function(req, res) {
+	res.send('Answer submitted');
+})
+/*                 */
 
 router.get('/surroundingLocations', function(req, res){
 	var surroundingList = [];

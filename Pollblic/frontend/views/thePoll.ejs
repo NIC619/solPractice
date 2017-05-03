@@ -1,14 +1,29 @@
 <% layout('layout_html') -%>
 <div class="poll-layout" style="margin-top: 20px; margin-left: 20px">
     <% if( pollRecord != undefined ) { %>
+		<input type="hidden" id="pollIDholder" value="<%= pollRecord.id %>">
+		<input type="hidden" id="pollAddressholder" value="<%= pollRecord.address %>">
         <span style="display: inline-block; font-size: 30px; line-height: 50px">
-		Status: <% if( pollRecord.ifOpen ) { %> Open <% } else { %> Closed <% } %><br>
-		Title: <%= pollRecord.title %><br>
-		ID: <%= pollRecord.id %><br>
-		Located at address: <%= pollRecord.address %><br>
-		Owner: <%= pollRecord.owner %><br>
-		Reward: <%= pollRecord.price %> ether<br>
+			Status: <% if( pollRecord.ifOpen ) { %> Open <% } else { %> Closed <% } %><br>
+			Title: <%= pollRecord.title %><br>
+			ID: <%= pollRecord.id %><br>
+			Located at address: <%= pollRecord.address %><br>
+			Owner: <%= pollRecord.owner %><br>
+			Need to encrypt: <%= pollRecord.ifEncrypt %>
+			<% if( pollRecord.ifEncrypt ) { %>, Encryption Key: <%= pollRecord.encryptionKey %><br><% } else { %><br><% } %>
+			Reward: <%= pollRecord.price %> ether<br>
+			Number of quiestion: <%= pollRecord.numberOfQuestion %>
         </span>
+		<hr>
+		Which question to answer? <select id="questionSelect" name="questionNumber"><% for(var j = 0 ; j < pollRecord.numberOfQuestion ; j++ ) { %>
+			<option value="<%= j+1 %>"><%= j+1 %></option>
+		<% } %></select><br>
+		<div id="question-div" style="display: none;">
+			Question type: <div style="display: inline-block;" id="questionType"></div><br>
+			Question: <div style="display: inline-block;" id="questionBody"></div><br>
+			Your answer: <div style="display: inline-block;" id="answerToQuestion"></div><br>
+			<button onclick="newAnswer()">Answer</button>
+		</div>
 		<!--<input type="button" value="Create" onclick='newPoll(this.form)'>-->
     <% } else { %>
         Poll not found

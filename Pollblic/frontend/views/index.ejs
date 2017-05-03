@@ -17,7 +17,8 @@
 					Located at address: <%= pollRecordList[i].address %><br>
 					Owner: <%= pollRecordList[i].owner %><br>
 					Reward: <%= pollRecordList[i].price %> ether<br>
-					<a href="/getPoll?id=<%= pollRecordList[i].id %>"><button>View Poll</button></a>
+					Number of quiestion: <%= pollRecordList[i].numberOfQuestion %><br>
+					<a href="/poll?id=<%= pollRecordList[i].id %>"><button>View Poll</button></a>
 				</span>
 				<a href='#' rel='modal:close'></a>
 			</div>

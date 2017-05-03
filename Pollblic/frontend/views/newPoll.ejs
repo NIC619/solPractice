@@ -3,10 +3,10 @@
 	<form action="/newPoll" method="POST" accept-charset="utf-8">
 		Title: <input type="text" name="title"><br>
 		Duration: <input type="number" name='duration'> days<br>
-		Number of Questions: <input type="number" name="no."><br>
+		Number of Questions: <input type="number" name="numberOfQuestion"><br>
 		Reward per Answer: <input type="number" name="price"> ether<br>
 		Total Answer Needed: <input type="number" name="totalNeeded"><br>
-		Payment Lock Time: <input type="number" name="locktime"> minutes<br>
+		Payment Lock Time: <input type="number" name="paymentLocktime"> minutes<br>
 		Encrypt or not: <input type="radio" name="ifEncrypt" value="yes">Yes <input type="radio" name="ifEncrypt" value="no" checked>No<br>
 		<div id="encryptionKey">Encryption Key: <input type="text" name="encryptionKey"><br></div>
 		<input type="button" value="Create" onclick='newPoll(this.form)'>
