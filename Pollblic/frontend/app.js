@@ -67,7 +67,7 @@ app.use(function(err, req, res, next) {
 });
 
 app.listen(port_num, function(){
-  console.log('listen on port' + port_num);
+  console.log('listen on port ' + port_num);
 });
 
 module.exports = app;

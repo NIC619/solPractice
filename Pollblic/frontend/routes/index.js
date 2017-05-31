@@ -18,6 +18,16 @@ web3.eth.getAccounts(function(err, accounts) {
 	account = accounts[0];
 });
 
+/* DEVELOPEMENT FUNCTIONS */
+router.get('/delete', function(req, res) {
+	pollRecords.find().remove().exec();
+	res.render('index', {title: _title, pollRecordList: []});
+});
+/*                       */
+
+
+
+
 /* GET home page */
 router.get('/', function(req, res) {
 	pollRecords.find(function(err, _pollRecordList) {
@@ -27,13 +37,6 @@ router.get('/', function(req, res) {
 		res.render('index', {title: _title, pollRecordList: _pollRecordList});
 	});
 });
-
-/* Developement functions */
-router.get('/delete', function(req, res) {
-	pollRecords.find().remove().exec();
-	res.render('index', {title: _title, pollRecordList: []});
-});
-/*                       */
 
 /* GET specific poll */
 router.get('/poll', function(req, res) {
@@ -65,12 +68,14 @@ router.post('/newPoll', function(req, res) {
 	newPollRecord.ifOpen = true;
 	newPollRecord.id = computedID;
 	newPollRecord.title = req.body.title;
+	newPollRecord.duration = req.body.duration * 60 * 60 * 24;
 	newPollRecord.address = '0x0000000000000000012300000000000000000456';	// newPollRecord.address = req.body.address;
 	newPollRecord.owner = account;	// newPollRecord.owner = req.body.owner;
 	newPollRecord.price = req.body.price;
+	newPollRecord.totalNeeded = req.body.totalNeeded;
 	newPollRecord.numberOfQuestion = req.body.numberOfQuestion;
-	// newPollRecord.paymentLocktime = req.body.paymentLocktime;
-	newPollRecord.ifEncrypt = req.body.ifEncrypt;
+	newPollRecord.paymentLockTime = req.body.paymentLockTime * 60;
+	newPollRecord.ifEncrypt = req.body.ifEncrypt == "yes";
 	if( req.body.ifEncrypt ) newPollRecord.encryptionKey = req.body.encryptionKey;
 	newPollRecord.save();
 	res.send("Success");
@@ -89,9 +94,9 @@ router.get('/question', function(req, res) {
 
 /* submit new answer */
 router.post('/newAnswer', function(req, res) {
-	res.send('Answer submitted');
+	res.send("QType: " + req.body.type + ", answer: " + req.body.answer + " received.");
 })
-/*                 */
+/*                   */
 
 router.get('/surroundingLocations', function(req, res){
 	var surroundingList = [];

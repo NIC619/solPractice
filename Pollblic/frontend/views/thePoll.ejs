@@ -12,12 +12,16 @@
 			Need to encrypt: <%= pollRecord.ifEncrypt %>
 			<% if( pollRecord.ifEncrypt ) { %>, Encryption Key: <%= pollRecord.encryptionKey %><br><% } else { %><br><% } %>
 			Reward: <%= pollRecord.price %> ether<br>
+			Payment Lock Time: <%= pollRecord.paymentLockTime %><br>
 			Number of quiestion: <%= pollRecord.numberOfQuestion %>
         </span>
 		<hr>
-		Which question to answer? <select id="questionSelect" name="questionNumber"><% for(var j = 0 ; j < pollRecord.numberOfQuestion ; j++ ) { %>
+		Which question to answer? <select id="questionSelect" name="questionNumber">
+			<option selected disabled></option>
+		<% for(var j = 0 ; j < pollRecord.numberOfQuestion ; j++ ) { %>
 			<option value="<%= j+1 %>"><%= j+1 %></option>
-		<% } %></select><br>
+		<% } %>
+		</select><br>
 		<div id="question-div" style="display: none;">
 			Question type: <div style="display: inline-block;" id="questionType"></div><br>
 			Question: <div style="display: inline-block;" id="questionBody"></div><br>

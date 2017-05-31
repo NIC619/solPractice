@@ -133,7 +133,7 @@
         $.ajax({
             type:   'POST',
             url:    '/newAnswer',
-            data:   { type: $('#questionType').html(), answer: $('#answer').val()},
+            data:   { type: $('#questionType').html(), answer: $('#formAnswer').find('input[name="answer"]:checked').val()},
             success: function (res) {
                 var popUpMessege = $('#popUpMessege');
                 popUpMessege.text(res);
@@ -167,21 +167,23 @@
                     $('#question-div').show();
                     $('#questionType').html(question.type);
                     $('#questionBody').html(question.body);
-                    var answerHTML = '';
+                    var answerHTML = '<form id="formAnswer">';
                     if( question.type == 'single' ) {
                         for( var i = 0 ; i < question.numberOfAnswer ; i++ ) {
-                            answerHTML += '<input type="radio" id="answer" name="answer" value="' + i + '">' + question.answer[i] + '   ';
+                            answerHTML += '<input type="radio" name="answer" value="' + (i + 1) + '">' + question.answer[i] + '   ';
                         }
+                        answerHTML += "</form>";
                         $('#answerToQuestion').html(answerHTML);
                     }
                     else if( question.type == 'multi' ) {
                         for( var i = 0 ; i < question.numberOfAnswer ; i++ ) {
-                            answerHTML += '<input type="checkbox" id="answer" value="' + i + '">' + question.answer[i] + '   ';
+                            answerHTML += '<input type="checkbox" name="answer" value="' + (i + 1) + '">' + question.answer[i] + '   ';
                         }
+                        answerHTML += "</form>";
                         $('#answerToQuestion').html(answerHTML);
                     }
                     else if( question.type == 'short' ) {
-                        answerHTML += '<input type="text" id="answer">';
+                        answerHTML += '<input type="text" name="answer"> </form>';
                         $('#answerToQuestion').html(answerHTML);
                     }
                 }
