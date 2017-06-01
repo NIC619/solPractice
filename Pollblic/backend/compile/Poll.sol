@@ -103,26 +103,26 @@ contract Poll
     }
 
     // GET functions
-    // function getQuestion(uint8 questionNumber) constant returns(QuestionType, string) {
-    //     if(questionNumber >= numberOfQuestions) throw;
-    //     return(listOfQuestions[questionNumber].questionType, listOfQuestions[questionNumber].question);
-    // }
-    // function getQuestionOption(uint8 questionNumber, uint8 optionNumber) constant returns(bytes32) {
-    //     if(questionNumber >= numberOfQuestions) throw;
-    //     if(optionNumber >= numberOfOptions[questionNumber]) throw;
-    //     if(listOfQuestions[questionNumber].questionType == QuestionType.ShortAnswer || listOfQuestions[questionNumber].questionType == QuestionType.NotSet) return 0x0;
-    //     return(listOfQuestions[questionNumber].options[optionNumber]);
-    // }
+    function getQuestion(uint8 questionNumber) constant returns(QuestionType, string) {
+        if(questionNumber >= numberOfQuestions) throw;
+        return(listOfQuestions[questionNumber].questionType, listOfQuestions[questionNumber].question);
+    }
+    function getQuestionOption(uint8 questionNumber, uint8 optionNumber) constant returns(bytes32) {
+        if(questionNumber >= numberOfQuestions) throw;
+        if(optionNumber >= numberOfOptions[questionNumber]) throw;
+        if(listOfQuestions[questionNumber].questionType == QuestionType.ShortAnswer || listOfQuestions[questionNumber].questionType == QuestionType.NotSet) return 0x0;
+        return(listOfQuestions[questionNumber].options[optionNumber]);
+    }
     function getUserStatus(address user) constant returns(UserStatus, uint) {
         return(mapUsers[user].status, mapUsers[user].timeToPay);
     }
-    // function getUserKey(address user) constant returns(bytes32) {
-    //     return(mapUsers[user].encryptedUserKey);
-    // }
-    // function getAnswer(address user, uint8 answerNumber) constant returns(string, uint8[]) {
-    //     if(answerNumber >= numberOfQuestions) throw;
-    //     return(mapUsers[user].answers[answerNumber].shortAnswer, mapUsers[user].answers[answerNumber].choices);
-    // }
+    function getUserKey(address user) constant returns(bytes32) {
+        return(mapUsers[user].encryptedUserKey);
+    }
+    function getAnswer(address user, uint8 answerNumber) constant returns(string, uint8[]) {
+        if(answerNumber >= numberOfQuestions) throw;
+        return(mapUsers[user].answers[answerNumber].shortAnswer, mapUsers[user].answers[answerNumber].choices);
+    }
     function getRevealedAnswer(address user, uint8 answerNumber) constant returns(string, uint8[]) {
         if(answerNumber >= numberOfQuestions) throw;
         return(mapRevealedAnswer[user].revealedAnswers[answerNumber].shortAnswer, mapRevealedAnswer[user].revealedAnswers[answerNumber].choices);

@@ -1,5 +1,5 @@
 <% layout('layout_html') -%>
-<div class="poll-layout" style="margin-top: 20px; margin-left: 20px">
+<div class="poll-layout" style="width: 70%; margin-top: 20px; margin-left: 20px; float: left; overflow: scroll;">
     <% if( pollRecord != undefined ) { %>
 		<input type="hidden" id="pollIDholder" value="<%= pollRecord.id %>">
 		<input type="hidden" id="pollAddressholder" value="<%= pollRecord.address %>">
@@ -32,4 +32,16 @@
     <% } else { %>
         Poll not found
     <% } %>
+</div>
+<div class="poll-layout" style="margin-top: 20px; margin-left: 20px; float: left; border-left: 2px solid grey; padding-left: 10px;">
+	Choose an interaction:<br>
+	<select id="interactionSelect" name="interaction">
+		<option selected disabled></option>
+		<option value="getUserStatus">Get User Status</option>
+		<option value="getUserKey">Get User Encryption Key</option>
+		<option value="getAnswer">Get User Answer</option>
+		<option value="getRevealedAnswer">Get Revealed User Answer</option>
+	</select><br>
+	<div id="interaciton-div">
+	</div>
 </div>

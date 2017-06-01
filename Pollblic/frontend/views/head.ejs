@@ -138,13 +138,34 @@
                 var popUpMessege = $('#popUpMessege');
                 popUpMessege.text(res);
                 popUpMessege.fadeIn(1000);
+                
+                $('#answerToQuestion').html(res.split(" ")[3]);
+                
+                setTimeout( function() {
+                    $('#popUpMessege').fadeOut(2000);
+                }, 1000);
+            }
+        });
+    }
+
+    function newInteraction() {
+        var formNewPoll = $(thisForm);
+ 
+        $.ajax({
+            type:   formNewPoll.attr('method'),
+            url:    formNewPoll.attr('action'),
+            data:   formNewPoll.serialize(),
+            success: function (res) {
+                var popUpMessege = $('#popUpMessege');
+                popUpMessege.text(res);
+                popUpMessege.fadeIn(1000);
 
                 setTimeout( function() {
                     $('#popUpMessege').fadeOut(2000);
                 }, 1000);
             }
         });
-    }    
+    }
 
     $(document).ready(function(){
         $('#encryptionKey').toggle();
@@ -188,6 +209,23 @@
                     }
                 }
             });
+        });
+        $('#interactionSelect').change(function(){
+            var interactionHTML = '<form id="formInteraction" action="/newInteraction" method="POST" accept-charset="utf-8">';
+            switch ($(this).val()) {
+                case 'getUserStatus':
+                case 'getUserKey':
+                    interactionHTML += 'User: <input type="text" name="user">'
+                    break;
+                case 'getAnswer':
+                case 'getRevealedAnswer':
+                    interactionHTML += 'User: <input type="text" name="user"><br>Answer Number: <input type="number" name="numberAnswer">'
+                    break;
+                default:
+                    break;
+            }
+            interactionHTML += '<br><input type="button" value="Send" onclick="newInteraction(this.form)"></form>'
+            $('#interaciton-div').html(interactionHTML);
         });
     });
 </script>
