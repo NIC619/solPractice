@@ -212,6 +212,7 @@
         });
         $('#interactionSelect').change(function(){
             var interactionHTML = '<form id="formInteraction" action="/newInteraction" method="POST" accept-charset="utf-8">';
+            var questionNumber = <%= pollRecord.numberOfQuestion %>;
             switch ($(this).val()) {
                 case 'getUserStatus':
                 case 'getUserKey':
@@ -219,12 +220,35 @@
                     break;
                 case 'getAnswer':
                 case 'getRevealedAnswer':
-                    interactionHTML += 'User: <input type="text" name="user"><br>Answer Number: <input type="number" name="numberAnswer">'
+                    interactionHTML += 'User: <input type="text" name="user"><br>Answer Number: <input type="number" name="numberAnswer" min="1" max="' + questionNumber + '">'
+                    break;
+                case 'addEncryptedUserKey':
+                    interactionHTML += 'Encryption Key: <input type="text" name="encryptedUserKey">'
+                    break;
+                case 'withdraw':
+                    break;
+                case 'addQuestion':
+                    interactionHTML += 'Question Number: ' + (questionNumber+1) + '<input type="hidden" name="questionNumber" value="'+ (questionNumber+1) + '"><br>' + 
+                                        'Question Type: <input type="radio" name="questionType" value="single">Single    ' +
+                                        '<input type="radio" name="questionType" value="multi">Multi    ' +
+                                        '<input type="radio" name="questionType" value="short">Short<br>' +
+                                        'Question: <input type="text" name="question"><br>' +
+                                        'Number of Options: <input type="number" name="numberOfOptions" min="1"><br>' +
+                                        'Options(seperated by comma): <input type="text" name="options">';
+                    break;
+                case 'revealAnswer':
+                    interactionHTML += 'User: <input type="text" name="user"><br>' +
+                                        'Question Number: <input type="number" name="questionNumber" min="1" max="' + questionNumber + '"><br>' +
+                                        'Short Answer: <input type="text" name="shortAnswer"><br>' +
+                                        'Single/Multi Answer(seperated by comma): <input type="text" name="choices">';
+                    break;
+                case 'openPoll':
+                case 'shutDownPoll':
                     break;
                 default:
                     break;
             }
-            interactionHTML += '<br><input type="button" value="Send" onclick="newInteraction(this.form)"></form>'
+            interactionHTML += '<br><input type="button" value="Submit" onclick="newInteraction(this.form)"></form>'
             $('#interaciton-div').html(interactionHTML);
         });
     });

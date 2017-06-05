@@ -33,7 +33,7 @@
         Poll not found
     <% } %>
 </div>
-<div class="poll-layout" style="margin-top: 20px; margin-left: 20px; float: left; border-left: 2px solid grey; padding-left: 10px;">
+<div class="poll-layout" style="width: 25%; margin-top: 20px; margin-left: 20px; float: left; overflow: scroll; border-left: 2px solid grey; padding-left: 10px;">
 	Choose an interaction:<br>
 	<select id="interactionSelect" name="interaction">
 		<option selected disabled></option>
@@ -41,7 +41,15 @@
 		<option value="getUserKey">Get User Encryption Key</option>
 		<option value="getAnswer">Get User Answer</option>
 		<option value="getRevealedAnswer">Get Revealed User Answer</option>
-	</select><br>
+		<option disabled>-------------------------</option>
+		<option value="addEncryptedUserKey">User Add Encryption Key</option>
+		<option value="withdraw">User Withdraw</option>
+		<option disabled>-------------------------</option>
+		<option value="addQuestion">Owner Add Question</option>
+		<option value="revealAnswer">Owner Reveal Answer</option>
+		<option value="openPoll">Owner Open Poll</option>
+		<option value="shutDownPoll">Owner Shut Down Poll</option>
+	</select><hr>
 	<div id="interaciton-div">
 	</div>
 </div>
