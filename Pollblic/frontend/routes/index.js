@@ -34,7 +34,7 @@ router.get('/', function(req, res) {
 		// web3.eth.getAccounts(function(err, _accounts){
 		// 	console.log(_accounts);
 		// });
-		res.render('index', {title: _title, pollRecordList: _pollRecordList});
+		res.render('index', {title: _title, pollRecordList: _pollRecordList, pollRecord: undefined});
 	});
 });
 
@@ -97,6 +97,12 @@ router.post('/newAnswer', function(req, res) {
 	res.send("QType: " + req.body.type + ", answer: " + req.body.answer + " received.");
 })
 /*                   */
+
+/* Interaction with poll */
+router.post('/newInteraction', function (req, res) {
+	res.send('Poll address: ' + req.body.address + ', actionType: ' + req.body.action);
+});
+/*                       */
 
 router.get('/surroundingLocations', function(req, res){
 	var surroundingList = [];

@@ -1,3 +1,10 @@
+<% var questionNumber; var address; if( pollRecord != undefined ) { %>
+    <% questionNumber = pollRecord.numberOfQuestion; %>
+    <% address = pollRecord.address; %>
+<% } else { %>
+    <% questionNumber = 0; %>
+    <% pollAddress = '0x0'; %>
+<% } %>
 <meta charset="UTF-8">
 <title><%= title %></title>
 <link rel='stylesheet' href='/stylesheets/bootstrap.css' />
@@ -148,7 +155,7 @@
         });
     }
 
-    function newInteraction() {
+    function newInteraction(thisForm) {
         var formNewPoll = $(thisForm);
  
         $.ajax({
@@ -211,8 +218,10 @@
             });
         });
         $('#interactionSelect').change(function(){
-            var interactionHTML = '<form id="formInteraction" action="/newInteraction" method="POST" accept-charset="utf-8">';
-            var questionNumber = <%= pollRecord.numberOfQuestion %>;
+            var questionNumber = <%= questionNumber %>;
+            var interactionHTML = '<form id="formInteraction" action="/newInteraction" method="POST" accept-charset="utf-8">' +
+                                    '<input type="hidden" name="address" value="<%= pollRecord.address %>">' +
+                                    '<input type="hidden" name="action" value="' + $(this).val() + '">';
             switch ($(this).val()) {
                 case 'getUserStatus':
                 case 'getUserKey':
