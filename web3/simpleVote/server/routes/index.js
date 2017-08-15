@@ -1,24 +1,49 @@
 var fs = require('fs');
-var mongoose = require('mongoose');
-var pollRecords = mongoose.model('pollRecord');
 var express = require('express');
 var router = express.Router();
 var Web3 = require('Web3');
 var web3 = new Web3();
 
+var _title = "Simple Vote";
+
 /* web3 set up */
 if(!web3.currentProvider)
 	web3.setProvider(new web3.providers.HttpProvider('http://localhost:8545'));
-var indexContractAddr = '';
-var indexContractABI = JSON.parse( fs.readFileSync('../backend/compile/Index.abi', 'utf-8') );
 
-const _title = 'Pollblic';
-var account;
-web3.eth.getAccounts(function(err, accounts) {
-	account = accounts[0];
-});
+var simpleVoteAddr = '';
+var simpleVoteABI = JSON.parse( fs.readFileSync('../compile/simpleVote.abi', 'utf-8') );
+var simpleVoteContract;
+var user = web3.eth.accounts[0];
+var candidates = [web3.eth.accounts[1], web3.eth.accounts[2], web3.eth.accounts[3]];
+var _candidateNameList = ["Alice", "Bob", "Carol"];
 
 /* DEVELOPEMENT FUNCTIONS */
+router.get('/deploy', function(req, res) {
+	//deploy contract
+	var deployContract = require("../../functions/deploySimpleVote.js");
+	var simpleVoteBytecode = fs.readFileSync('../compile/simpleVote.bytecode', 'utf-8');
+	
+	deployContract.deploy(web3, simpleVoteABI, simpleVoteBytecode, candidates, user, function(addr){
+		simpleVoteAddr = addr;
+		simpleVoteContract = web3.eth.contract(simpleVoteABI).at(simpleVoteAddr);
+		var _voteCountList = [];
+		for(var i = 0; i < candidates.length; i++) {
+			// simpleVoteContract.votesReceived(candidates[i], function(err, voteCount) {
+			// 	if(err) {
+			// 		console.log("Error getting vote count!");
+			// 	}
+			// 	else {
+			// 		console.log(voteCount);
+			// 		_voteCountList.push(voteCount);					
+			// 	}
+			// });
+			_voteCountList.push(simpleVoteContract.votesReceived(candidates[i]));
+		}
+		// console.log(_voteCountList);
+		res.render('index', {title: _title, voteCountList: _voteCountList, candidateNameList: _candidateNameList, debugMsg: ""});
+	});
+});
+
 router.get('/delete', function(req, res) {
 	pollRecords.find().remove().exec();
 	res.render('index', {title: _title, pollRecordList: []});
@@ -30,55 +55,46 @@ router.get('/delete', function(req, res) {
 
 /* GET home page */
 router.get('/', function(req, res) {
-	pollRecords.find(function(err, _pollRecordList) {
-		// web3.eth.getAccounts(function(err, _accounts){
-		// 	console.log(_accounts);
-		// });
-		res.render('index', {title: _title, pollRecordList: _pollRecordList});
-	});
+	var _voteCountList = [];
+	var _debugMsg = "";
+	if(simpleVoteAddr != '') {
+		for(var i = 0; i < candidates.length; i++) {
+			// simpleVoteContract.votesReceived(candidates[i], function(err, voteCount) {
+			// 	if(err) {
+			// 		console.log("Error getting vote count!");
+			// 	}
+			// 	else {
+			// 		console.log(voteCount);
+			// 		_voteCountList.push(voteCount);					
+			// 	}
+			// });
+			_voteCountList.push(simpleVoteContract.votesReceived(candidates[i]));
+		}
+	}
+	else {
+		_debugMsg = "Contract not yet deployed!";
+	}
+	// console.log(_voteCountList);
+	res.render('index', {title: _title, voteCountList: _voteCountList, candidateNameList: _candidateNameList, debugMsg: _debugMsg});
 });
 
-/* GET specific poll */
-router.get('/poll', function(req, res) {
-	pollRecords.findOne({ id : req.query.id }, function(err, _pollRecord) {
-		res.render('thePoll', {title: _title, pollRecord: _pollRecord});
-	});
-})
-/*                   */
 
-/* create new poll */
-router.get('/newPoll', function(req, res) {
-	res.render('newPoll', {title: _title})
-});
-router.post('/newPoll', function(req, res) {
-	var newPollRecord = new pollRecords();
-	//console.log(req.body.name);
-	var computedID = web3.sha3(req.body.title + account + Math.floor((new Date).getTime()/1000) );
-	console.log("'" + req.body.title + account + Math.floor((new Date).getTime()/1000) + "' is hashed into " + computedID);
-	// var computedID = web3.sha3(req.body.title + req.body.owner + Math.floor((new Date).getTime()/1000) );
-	// console.log("'" + req.body.title + req.body.owner + Math.floor((new Date).getTime()/1000) + "' is hashed into " + computedID);
-
-	pollRecords.find({ id: computedID }, function(err, pollRecordList){
-		if( pollRecordList.length != 0 ) {
-			res.send("Poll already registered")
-			return;
+/* POST vote */
+router.post('/vote', function(req, res) {
+	console.log("vote for " + candidates[req.body.candidateNumber]);
+	simpleVoteContract.vote(candidates[req.body.candidateNumber], {from: user, gas: 300000}, function(err, txid){
+		if(err) {
+			console.log("Error in vote()");
+			res.send("Error voting!");
+		}
+		else {
+			console.log("Vote success");
+			simpleVoteContract.votesReceived(candidates[req.body.candidateNumber], function(err, voteCount){
+				res.send(voteCount);
+			});
 		}
 	});
 	
-	newPollRecord.ifOpen = true;
-	newPollRecord.id = computedID;
-	newPollRecord.title = req.body.title;
-	newPollRecord.duration = req.body.duration * 60 * 60 * 24;
-	newPollRecord.address = '0x0000000000000000012300000000000000000456';	// newPollRecord.address = req.body.address;
-	newPollRecord.owner = account;	// newPollRecord.owner = req.body.owner;
-	newPollRecord.price = req.body.price;
-	newPollRecord.totalNeeded = req.body.totalNeeded;
-	newPollRecord.numberOfQuestion = req.body.numberOfQuestion;
-	newPollRecord.paymentLockTime = req.body.paymentLockTime * 60;
-	newPollRecord.ifEncrypt = req.body.ifEncrypt == "yes";
-	if( req.body.ifEncrypt ) newPollRecord.encryptionKey = req.body.encryptionKey;
-	newPollRecord.save();
-	res.send("Success");
 });
 /*                  */
 

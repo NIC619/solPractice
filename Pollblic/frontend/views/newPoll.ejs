@@ -12,3 +12,156 @@
 		<input type="button" value="Create" onclick='newPoll(this.form)'>
 	</form>
 </div>
+<script>
+
+    function newPoll(thisForm) {
+        var formNewPoll = $(thisForm);
+        // console.log(thisForm);
+        // console.log(formNewPoll.find('input[name="title"]').val());
+        // console.log(formNewPoll.find('input[name="reason"]').val());
+ 
+        $.ajax({
+            type:   formNewPoll.attr('method'),
+            url:    formNewPoll.attr('action'),
+            data:   formNewPoll.serialize(),
+            success: function (res) {
+                var popUpMessege = $('#popUpMessege');
+                popUpMessege.text(res);
+                popUpMessege.fadeIn(1000);
+
+                setTimeout( function() {
+                    $('#popUpMessege').fadeOut(2000);
+                }, 1000);
+                setTimeout(function() {
+                    location.href = "/";
+                }, 2000);
+            }
+        });
+    }
+
+    function newAnswer() {
+        $.ajax({
+            type:   'POST',
+            url:    '/newAnswer',
+            data:   { type: $('#questionType').html(), answer: $('#formAnswer').find('input[name="answer"]:checked').val()},
+            success: function (res) {
+                var popUpMessege = $('#popUpMessege');
+                popUpMessege.text(res);
+                popUpMessege.fadeIn(1000);
+                
+                $('#answerToQuestion').html(res.split(" ")[3]);
+                
+                setTimeout( function() {
+                    $('#popUpMessege').fadeOut(2000);
+                }, 1000);
+            }
+        });
+    }
+
+    function newInteraction(thisForm) {
+        var formNewPoll = $(thisForm);
+ 
+        $.ajax({
+            type:   formNewPoll.attr('method'),
+            url:    formNewPoll.attr('action'),
+            data:   formNewPoll.serialize(),
+            success: function (res) {
+                var popUpMessege = $('#popUpMessege');
+                popUpMessege.text(res);
+                popUpMessege.fadeIn(1000);
+
+                setTimeout( function() {
+                    $('#popUpMessege').fadeOut(2000);
+                }, 1000);
+            }
+        });
+    }
+
+    $(document).ready(function(){
+        $('#encryptionKey').toggle();
+        $('input:radio[name="ifEncrypt"]').change(function(){
+            $('#encryptionKey').toggle();
+        });
+        $('#newPoll-button').click(function(){
+            location.href = "/newPoll";
+        });
+        $('.poll-div').click(function(e) {
+            var modalID = '#modal-' + $(this).attr('id').substr(5);
+            $( modalID ).modal();
+        });
+        $('#questionSelect').change(function(){
+            $.ajax({
+                type:   'GET',
+                url:    '/question',
+                data:   { pollID: $('#pollIDholder').val(), pollAddress: $('#pollAddressholder').val(), questionNumber: $(this).val() },
+                success: function (question) {
+                    $('#question-div').show();
+                    $('#questionType').html(question.type);
+                    $('#questionBody').html(question.body);
+                    var answerHTML = '<form id="formAnswer">';
+                    if( question.type == 'single' ) {
+                        for( var i = 0 ; i < question.numberOfAnswer ; i++ ) {
+                            answerHTML += '<input type="radio" name="answer" value="' + (i + 1) + '">' + question.answer[i] + '   ';
+                        }
+                        answerHTML += "</form>";
+                        $('#answerToQuestion').html(answerHTML);
+                    }
+                    else if( question.type == 'multi' ) {
+                        for( var i = 0 ; i < question.numberOfAnswer ; i++ ) {
+                            answerHTML += '<input type="checkbox" name="answer" value="' + (i + 1) + '">' + question.answer[i] + '   ';
+                        }
+                        answerHTML += "</form>";
+                        $('#answerToQuestion').html(answerHTML);
+                    }
+                    else if( question.type == 'short' ) {
+                        answerHTML += '<input type="text" name="answer"> </form>';
+                        $('#answerToQuestion').html(answerHTML);
+                    }
+                }
+            });
+        });
+        $('#interactionSelect').change(function(){
+            var questionNumber = <%= questionNumber %>;
+            var interactionHTML = '<form id="formInteraction" action="/newInteraction" method="POST" accept-charset="utf-8">' +
+                                    '<input type="hidden" name="address" value="<%= pollRecord.address %>">' +
+                                    '<input type="hidden" name="action" value="' + $(this).val() + '">';
+            switch ($(this).val()) {
+                case 'getUserStatus':
+                case 'getUserKey':
+                    interactionHTML += 'User: <input type="text" name="user">'
+                    break;
+                case 'getAnswer':
+                case 'getRevealedAnswer':
+                    interactionHTML += 'User: <input type="text" name="user"><br>Answer Number: <input type="number" name="numberAnswer" min="1" max="' + questionNumber + '">'
+                    break;
+                case 'addEncryptedUserKey':
+                    interactionHTML += 'Encryption Key: <input type="text" name="encryptedUserKey">'
+                    break;
+                case 'withdraw':
+                    break;
+                case 'addQuestion':
+                    interactionHTML += 'Question Number: ' + (questionNumber+1) + '<input type="hidden" name="questionNumber" value="'+ (questionNumber+1) + '"><br>' + 
+                                        'Question Type: <input type="radio" name="questionType" value="single">Single    ' +
+                                        '<input type="radio" name="questionType" value="multi">Multi    ' +
+                                        '<input type="radio" name="questionType" value="short">Short<br>' +
+                                        'Question: <input type="text" name="question"><br>' +
+                                        'Number of Options: <input type="number" name="numberOfOptions" min="1"><br>' +
+                                        'Options(seperated by comma): <input type="text" name="options">';
+                    break;
+                case 'revealAnswer':
+                    interactionHTML += 'User: <input type="text" name="user"><br>' +
+                                        'Question Number: <input type="number" name="questionNumber" min="1" max="' + questionNumber + '"><br>' +
+                                        'Short Answer: <input type="text" name="shortAnswer"><br>' +
+                                        'Single/Multi Answer(seperated by comma): <input type="text" name="choices">';
+                    break;
+                case 'openPoll':
+                case 'shutDownPoll':
+                    break;
+                default:
+                    break;
+            }
+            interactionHTML += '<br><input type="button" value="Submit" onclick="newInteraction(this.form)"></form>'
+            $('#interaciton-div').html(interactionHTML);
+        });
+    });
+</script>
