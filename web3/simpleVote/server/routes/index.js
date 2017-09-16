@@ -44,13 +44,6 @@ router.get('/deploy', function(req, res) {
 	});
 });
 
-router.get('/delete', function(req, res) {
-	pollRecords.find().remove().exec();
-	res.render('index', {title: _title, pollRecordList: []});
-});
-/*                       */
-
-
 
 
 /* GET home page */
@@ -78,7 +71,6 @@ router.get('/', function(req, res) {
 	res.render('index', {title: _title, voteCountList: _voteCountList, candidateNameList: _candidateNameList, debugMsg: _debugMsg});
 });
 
-
 /* POST vote */
 router.post('/vote', function(req, res) {
 	console.log("vote for " + candidates[req.body.candidateNumber]);
@@ -96,93 +88,12 @@ router.post('/vote', function(req, res) {
 	});
 	
 });
-/*                  */
 
-/* GET specific question */
-router.get('/question', function(req, res) {
-	// console.log(req.query.pollID);
-	// console.log(req.query.pollAddress);
-	// console.log(req.query.questionNumber);
-	if(req.query.questionNumber == 1) res.send({ type: 'single', body: 'abcdefg', numberOfAnswer: 3, answer: [ "a1", "a2", "a3" ]});
-	else res.send({ type: 'short', body: 'abcdefg', numberOfAnswer: 3, answer: [ "a1", "a2", "a3" ]});
-});
-/*                       */
-
-/* submit new answer */
-router.post('/newAnswer', function(req, res) {
-	res.send("QType: " + req.body.type + ", answer: " + req.body.answer + " received.");
-})
-/*                   */
-
-/* Interaction with poll */
-router.post('/newInteraction', function (req, res) {
-	res.send('Poll address: ' + req.body.address + ', actionType: ' + req.body.action);
-});
-/*                       */
-
-router.get('/surroundingLocations', function(req, res){
-	var surroundingList = [];
-	//console.log("lat: " + req.query.lat + ", lng: " + req.query.lng);
-	//console.log("" + (req.query.lng -1.5) + "," + (req.query.lng+1.5));
+/* GET  */
+router.get('/', function(req, res) {
 	
-	markers.find(
-			{ 
-				lat : { 
-					$gt : (req.query.lat - req.query.latDis/2),
-					$lt : (+req.query.lat + req.query.latDis/2)
-				}, 
-				lng : { 
-					$gt : (req.query.lng - req.query.lngDis/2),
-					$lt : (+req.query.lng + req.query.lngDis/2)
-				} 
-			}, function(err, list){
-				//console.log(list);
-				res.send(list);
-	});
 });
 
-router.get('/search', function(req, res) {
-	if( req.query.title && req.query.owner ) {
-		pollRecords.find({ title: req.query.title , owner: req.query.owner }, function( err, searchResults ) {
-			if( searchResults === undefined ) {
-				res.render( 'layout_body', { title: 'Pollblic', pollRecordList: [] });
-			}
-			else {
-				res.render( 'layout_body', { title: 'Pollblic', pollRecordList: _pollRecordList });
-			}
-		});
-	}
-	else if ( req.query.title ) {
-		pollRecords.find({ title: req.query.title }, function( err, searchResults ) {
-			if( searchResults === undefined ) {
-				res.render( 'layout_body', { title: 'Pollblic', pollRecordList: [] });
-			}
-			else {
-				res.render( 'layout_body', { title: 'Pollblic', pollRecordList: _pollRecordList });
-			}
-		});
-	}
-	else if ( req.query.owner ) {
-		pollRecords.find({ owner: req.query.owner }, function( err, searchResults ) {
-			if( searchResults === undefined ) {
-				res.render( 'layout_body', { title: 'Pollblic', pollRecordList: [] });
-			}
-			else {
-				res.render( 'layout_body', { title: 'Pollblic', pollRecordList: _pollRecordList });
-			}
-		});
-	}
-	else{
-		res.render('layout_body', {title: 'Pollblic', pollRecordList: []});
-	}
-});
-
-router.get('/reportRecords', function(req, res) {
-	reportRecords.find(function(err, _reportRecordList){
-		// console.log(_reportRecordList);
-		res.render('layoutReportRecord', {title: 'OverHere', reportRecordList: _reportRecordList});
-	});
-});
 
 
 
