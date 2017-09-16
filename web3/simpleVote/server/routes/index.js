@@ -26,21 +26,7 @@ router.get('/deploy', function(req, res) {
 	deployContract.deploy(web3, simpleVoteABI, simpleVoteBytecode, candidates, user, function(addr){
 		simpleVoteAddr = addr;
 		simpleVoteContract = web3.eth.contract(simpleVoteABI).at(simpleVoteAddr);
-		var _voteCountList = [];
-		for(var i = 0; i < candidates.length; i++) {
-			// simpleVoteContract.votesReceived(candidates[i], function(err, voteCount) {
-			// 	if(err) {
-			// 		console.log("Error getting vote count!");
-			// 	}
-			// 	else {
-			// 		console.log(voteCount);
-			// 		_voteCountList.push(voteCount);					
-			// 	}
-			// });
-			_voteCountList.push(simpleVoteContract.votesReceived(candidates[i]));
-		}
-		// console.log(_voteCountList);
-		res.render('index', {title: _title, voteCountList: _voteCountList, candidateNameList: _candidateNameList, debugMsg: ""});
+		res.redirect('/');
 	});
 });
 
