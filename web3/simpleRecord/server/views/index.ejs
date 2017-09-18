@@ -1,5 +1,5 @@
 <% layout('layout_html') -%>
-<h1>Simple Record Application</h1>
+<h1><a href="/">Simple Record Application</a></h1>
 <div class="table-responsive">
   <table class="table table-bordered">
     <thead>
@@ -31,17 +31,42 @@
         <td><%= patientDataList[i].status %></td>
         <td><%= patientDataList[i].content %></td>
         <td>
-            <a href="http://localhost:8500/modify?addr=<%= patientDataList[i].addr %>" class="btn btn-primary">Modify</a>
+            <a href="http://localhost:8500/getPatientDataByAddr?addr=<%= patientDataList[i].addr %>" class="btn btn-primary">Modify</a>
         </td>
       </tr>
     <% } %>
     </tbody>
   </table>
 </div>
-<% if(debugMsg.length > 0) { %>
+<% if(debugMsg == "Contract not yet deployed!") { %>
     <a href="/deploy" class="btn btn-primary">Deploy</a>
 <% } else { %>
-  <a href="/newRecord" class="btn btn-primary">New Record</a>
+  <div>
+  <!-- This one is a general search form -->
+  <!-- <form action="/query" method="GET">
+    <select name="type" onchange="isNumber(this.selectedIndex);" onfocus="this.selectedIndex = -1;">
+      <option value="addr">Address</option>
+      <option value="name">Name</option>
+      <option value="sex">Sex</option>
+      <option value="age">Age</option>
+      <option value="bdate">Birthdate</option>
+      <option value="mednumber">Medical Number</option>
+      <option value="id">ID</option>
+      <option value="record">Record</option>
+      <option value="status">Status</option>
+      <option value="content">Content</option>
+    </select>
+    <input id="queryInput" type="text" name="input">
+    <input type="submit" value="Search" class="btn btn-primary">
+  </form> -->
+  <!-- This one is to search by address -->
+  <form action="/getPatientDataByAddr" method="GET">
+    Address: <input type="text" name="addr">
+    <input type="submit" value="Search" class="btn btn-primary">
+  </form>
+  </div><div>
+    <a href="/newRecord" class="btn btn-primary">New Record</a>
+  </div>
 <% } %>
 <br><h3><font color="red"><%= debugMsg %></font></h3>
 <script src="https://cdn.rawgit.com/ethereum/web3.js/develop/dist/web3.js"></script>
@@ -54,18 +79,29 @@
     // contractInstance = VotingContract.at('0x2a9c1d265d06d47e8f7b00ffa987c9185aecf672');
     // candidates = {"Rama": "candidate-1", "Nick": "candidate-2", "Jose": "candidate-3"}
 
-    function vote(candidateNumber) {
-        $.ajax({
-            type:   'POST',
-            url:    '/vote',
-            data:   {"candidateNumber": candidateNumber},
-            success: function (res) {
-                console.log(res);
-                $("#candidate-" + candidateNumber).html(res);
-            }
-        });
-    }
+    // function vote(candidateNumber) {
+    //     $.ajax({
+    //         type:   'POST',
+    //         url:    '/vote',
+    //         data:   {"candidateNumber": candidateNumber},
+    //         success: function (res) {
+    //             console.log(res);
+    //             $("#candidate-" + candidateNumber).html(res);
+    //         }
+    //     });
+    // }
 
+    function isNumber(index) {
+      if(index == 4) {
+        $("#queryInput").attr("type", "date");
+      }
+      else if(index == 3 || index == 7) {
+        $("#queryInput").attr("type", "number");
+      }
+      else {
+        $("#queryInput").attr("type", "text");
+      }
+    }
     // $(document).ready(function() {
     // candidateNames = Object.keys(candidates);
     // for (var i = 0; i < candidateNames.length; i++) {

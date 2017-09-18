@@ -98,7 +98,7 @@ contract simpleRecord {
         require(patientMapping[patientAddr].age != 0);
         patientMapping[patientAddr].mednumber = _mednumber;
     }
-    function modifIid(address patientAddr, string _id) {
+    function modifyId(address patientAddr, string _id) {
         require(isAuthorities[msg.sender] == true);
         require(patientMapping[patientAddr].age != 0);
         patientMapping[patientAddr].id = _id;

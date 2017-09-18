@@ -91,7 +91,151 @@ router.post('/newRecord', function(req, res) {
 });
 
 /* GET modify patient data*/
-router.get('/modify', function(req, res) {
+// router.get('/modify', function(req, res) {
+// 	var _debugMsg = ""
+// 	if(simpleRecordContract === undefined) {
+// 		_debugMsg = "Contract not yet deployed!";
+// 		res.render('index', {title: _title, patientDataList: [], debugMsg: _debugMsg});
+// 		return;
+// 	}
+// 	var patientData = {};
+// 	patientData["addr"] = req.query.addr;
+// 	patientData["name"] = simpleRecordContract.getName(req.query.addr);
+// 	patientData["sex"] = simpleRecordContract.getSex(req.query.addr);
+// 	patientData["age"] = simpleRecordContract.getAge(req.query.addr).toString();
+// 	patientData["bdate"] = simpleRecordContract.getBirthdate(req.query.addr);
+// 	patientData["mednumber"] = simpleRecordContract.getMednumber(req.query.addr);
+// 	patientData["id"] = simpleRecordContract.getId(req.query.addr);
+// 	patientData["record"] = simpleRecordContract.getRecord(req.query.addr).toString();
+// 	patientData["status"] = simpleRecordContract.getStatus(req.query.addr);
+// 	simpleRecordContract.getContent(req.query.addr, function(err, content){
+// 		if(err) {
+// 			_debugMsg = "Error in reading patient data";
+// 			console.log(_debugMsg);
+// 			res.render('modify', {title: _title, patientDataList: [], debugMsg: _debugMsg});
+// 		}
+// 		else {
+// 			if(content) {
+// 				patientData["content"] = content
+// 				console.log("complete reading patient data: " + JSON.stringify(patientData, null, 4));
+// 				res.render('modify', {title: _title, patientDataList: [patientData], debugMsg: ""});
+// 			}
+// 		}
+// 	});
+// });
+
+/* POST modify patient data*/
+router.post('/modify', function(req, res) {
+	console.log("modify Record for " + req.body.addr);
+	var _debugMsg = "";
+	var newPatientData = {};
+	newPatientData["addr"] = req.body.addr;
+	newPatientData["name"] = req.body.name;
+	newPatientData["sex"] = req.body.sex;
+	newPatientData["age"] = req.body.age;
+	newPatientData["bdate"] = req.body.bdate;
+	newPatientData["mednumber"] = req.body.mednumber;
+	newPatientData["id"] = req.body.id;
+	newPatientData["record"] = req.body.record;
+	newPatientData["status"] = req.body.status;
+	newPatientData["content"] = req.body.content;
+
+	var oldPatientData = {};
+	oldPatientData["addr"] = req.body.addr;
+	oldPatientData["name"] = req.body.oldname;
+	oldPatientData["sex"] = req.body.oldsex;
+	oldPatientData["age"] = req.body.oldage;
+	oldPatientData["bdate"] = req.body.oldbdate;
+	oldPatientData["mednumber"] = req.body.oldmednumber;
+	oldPatientData["id"] = req.body.oldid;
+	oldPatientData["record"] = req.body.oldrecord;
+	oldPatientData["status"] = req.body.oldstatus;
+	oldPatientData["content"] = req.body.oldcontent;
+	var patientData = {};
+
+	Promise.resolve().then(function(){
+		if(oldPatientData.name != newPatientData.name) {
+			return funcSimpleRecord.modifyName(simpleRecordContract, authority, req.body.addr, newPatientData.name);
+		}
+		else {
+			return Promise.resolve();
+		}
+	}).then(function(){
+		oldPatientData.name = newPatientData.name;
+		if(oldPatientData.sex != newPatientData.sex) {
+			return funcSimpleRecord.modifySex(simpleRecordContract, authority, req.body.addr, newPatientData.sex);
+		}
+		else {
+			return Promise.resolve();
+		}
+	}).then(function(){
+		oldPatientData.sex = newPatientData.sex;
+		if(oldPatientData.age != newPatientData.age) {
+			return funcSimpleRecord.modifyAge(simpleRecordContract, authority, req.body.addr, newPatientData.age);
+		}
+		else {
+			return Promise.resolve();
+		}
+	}).then(function(){
+		oldPatientData.age = newPatientData.age;
+		if(oldPatientData.bdate != newPatientData.bdate) {
+			return funcSimpleRecord.modifyBirthdate(simpleRecordContract, authority, req.body.addr, newPatientData.bdate);
+		}
+		else {
+			return Promise.resolve();
+		}
+	}).then(function(){
+		oldPatientData.bdate = newPatientData.bdate;
+		if(oldPatientData.mednumber != newPatientData.mednumber) {
+			return funcSimpleRecord.modifyMednumber(simpleRecordContract, authority, req.body.addr, newPatientData.mednumber);
+		}
+		else {
+			return Promise.resolve();
+		}
+	}).then(function(){
+		oldPatientData.mednumber = newPatientData.mednumber;
+		if(oldPatientData.id != newPatientData.id) {
+			return funcSimpleRecord.modifyId(simpleRecordContract, authority, req.body.addr, newPatientData.id);
+		}
+		else {
+			return Promise.resolve();
+		}
+	}).then(function(){
+		oldPatientData.id = newPatientData.id;
+		if(oldPatientData.record != newPatientData.record) {
+			return funcSimpleRecord.modifyRecord(simpleRecordContract, authority, req.body.addr, newPatientData.record);
+		}
+		else {
+			return Promise.resolve();
+		}
+	}).then(function(){
+		oldPatientData.record = newPatientData.record;
+		if(oldPatientData.status != newPatientData.status) {
+			return funcSimpleRecord.modifyStatus(simpleRecordContract, authority, req.body.addr, newPatientData.status);
+		}
+		else {
+			return Promise.resolve();
+		}
+	}).then(function(){
+		oldPatientData.status = newPatientData.status;
+		if(oldPatientData.content != newPatientData.content) {
+			return funcSimpleRecord.modifyContent(simpleRecordContract, authority, req.body.addr, newPatientData.content);
+		}
+		else {
+			return Promise.resolve();
+		}
+	}).then(function(){
+		oldPatientData.content = newPatientData.content;
+		res.render('modify', {title: _title, patientDataList: [oldPatientData], debugMsg: _debugMsg});
+	}).catch(function(exception){
+		console.log(exception);
+		_debugMsg = "Error modifying patient data";
+		res.render('modify', {title: _title, patientDataList: [oldPatientData], debugMsg: _debugMsg});
+	})
+});
+
+/* GET patient data by address */
+router.get('/getPatientDataByAddr', function(req, res) {
 	var _debugMsg = ""
 	if(simpleRecordContract === undefined) {
 		_debugMsg = "Contract not yet deployed!";
@@ -100,94 +244,79 @@ router.get('/modify', function(req, res) {
 	}
 	var patientData = {};
 	patientData["addr"] = req.query.addr;
-	patientData["name"] = simpleRecordContract.getName(req.query.addr);
-	patientData["sex"] = simpleRecordContract.getSex(req.query.addr);
-	patientData["age"] = simpleRecordContract.getAge(req.query.addr).toString();
-	patientData["bdate"] = simpleRecordContract.getBirthdate(req.query.addr);
-	patientData["mednumber"] = simpleRecordContract.getMednumber(req.query.addr);
-	patientData["id"] = simpleRecordContract.getId(req.query.addr);
-	patientData["record"] = simpleRecordContract.getRecord(req.query.addr).toString();
-	patientData["status"] = simpleRecordContract.getStatus(req.query.addr);
-	simpleRecordContract.getContent(req.query.addr, function(err, content){
-		if(err) {
-			_debugMsg = "Error in reading patient data";
-			console.log(_debugMsg);
-			res.render('modify', {title: _title, patientDataList: [], debugMsg: _debugMsg});
-		}
-		else {
-			if(content) {
-				patientData["content"] = content
-				console.log("complete reading patient data: " + JSON.stringify(patientData, null, 4));
-				res.render('modify', {title: _title, patientDataList: [patientData], debugMsg: ""});
-			}
-		}
-	});
-});
-
-/* POST modify patient data*/
-router.post('/modify', function(req, res) {
-	console.log("modify Record for " + req.body.addr);
-	var _debugMsg = "";
-	funcSimpleRecord.getName(simpleRecordContract, authority, req.body.addr).then(function(name){
-		if(name !== req.body.name) {
-			console.log("change patient name from " + name + " to " + req.body.name);
-			funcSimpleRecord.modifyName(simpleRecordContract, authority, req.body.addr, req.body.name).catch(function(){});
-		}
-		return funcSimpleRecord.getSex(simpleRecordContract, authority, req.body.addr);
+	funcSimpleRecord.getAge(simpleRecordContract, authority, req.query.addr).then(function(age){
+		patientData["age"] = age.toString();
+		return funcSimpleRecord.getSex(simpleRecordContract, authority, req.query.addr);
 	}).then(function(sex){
-		if(sex !== req.body.sex) {
-			console.log("change patient sex from " + sex + " to " + req.body.sex);
-			funcSimpleRecord.modifySex(simpleRecordContract, authority, req.body.addr, req.body.sex).catch(function(){});
-		}
-	// 	return funcSimpleRecord.getAge(simpleRecordContract, authority, req.body.addr);
-	// }).then(function(age){
-		res.redirect('/');
+		patientData["sex"] = sex;
+		return funcSimpleRecord.getName(simpleRecordContract, authority, req.query.addr);
+	}).then(function(name){
+		patientData["name"] = name;
+		return funcSimpleRecord.getBirthdate(simpleRecordContract, authority, req.query.addr);
+	}).then(function(bdate){
+		patientData["bdate"] = bdate;
+		return funcSimpleRecord.getMednumber(simpleRecordContract, authority, req.query.addr);
+	}).then(function(mednumber){
+		patientData["mednumber"] = mednumber;
+		return funcSimpleRecord.getId(simpleRecordContract, authority, req.query.addr);
+	}).then(function(id){
+		patientData["id"] = id;
+		return funcSimpleRecord.getRecord(simpleRecordContract, authority, req.query.addr);
+	}).then(function(record){
+		patientData["record"] = record.toString();
+		return funcSimpleRecord.getStatus(simpleRecordContract, authority, req.query.addr);
+	}).then(function(status){
+		patientData["status"] = status;
+		return funcSimpleRecord.getContent(simpleRecordContract, authority, req.query.addr);
+	}).then(function(content){
+		patientData["content"] = content;
+		res.render('modify', {title: _title, patientDataList: [patientData], debugMsg: _debugMsg});
 	}).catch(function(exception){
 		console.log(exception);
-		_debugMsg = "Error modifying patient data";
-		res.render('modify', {title: _title, patientDataList: [], debugMsg: _debugMsg});
+		_debugMsg = "Error fetching patient data or data not exist";
+		res.render('index', {title: _title, patientDataList: [], debugMsg: _debugMsg});
 	})
-});
+})
 
-/* GET patient data*/
-router.get('/query', function(req, res) {
-	if(req.query.type == "name") {
-		simpleRecordContract.getName(req.query.addr, function(err, name){
-			if(err) {
-				res.send("ERROR");
-			}
-			else {
-				if(name) {
-					res.send(name)
-				}
-			}
-		});
-	}
-	else if(req.query.sex == "sex") {
-		simpleRecordContract.getSex(req.query.addr, function(err, sex){
-			if(err) {
-				res.send("ERROR");
-			}
-			else {
-				if(sex) {
-					res.send(sex)
-				}
-			}
-		});
-	}
-	else if(req.query.age == "age") {
-		simpleRecordContract.getAge(req.query.addr, function(err, age){
-			if(err) {
-				res.send("ERROR");
-			}
-			else {
-				if(age) {
-					res.send(age)
-				}
-			}
-		});
-	}
-});
+/* GET patient data by attributes*/
+// router.get('/query', function(req, res) {
+// 	if(req.query.type == "name") {
+// 		simpleRecordContract.getName(req.query.addr, function(err, name){
+// 			if(err) {
+// 				res.send("ERROR");
+// 			}
+// 			else {
+// 				if(name) {
+// 					res.send(name)
+// 				}
+// 			}
+// 		});
+// 	}
+// 	else if(req.query.sex == "sex") {
+// 		simpleRecordContract.getSex(req.query.addr, function(err, sex){
+// 			if(err) {
+// 				res.send("ERROR");
+// 			}
+// 			else {
+// 				if(sex) {
+// 					res.send(sex)
+// 				}
+// 			}
+// 		});
+// 	}
+// 	else if(req.query.age == "age") {
+// 		simpleRecordContract.getAge(req.query.addr, function(err, age){
+// 			if(err) {
+// 				res.send("ERROR");
+// 			}
+// 			else {
+// 				if(age) {
+// 					res.send(age)
+// 				}
+// 			}
+// 		});
+// 	}
+// });
 
 
 
