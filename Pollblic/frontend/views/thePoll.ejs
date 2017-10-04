@@ -1,4 +1,11 @@
 <% layout('layout_html') -%>
+<% var questionNumber; var address; if( pollRecord !== undefined ) { %>
+    <% questionNumber = pollRecord.numberOfQuestion; %>
+    <% address = pollRecord.address; %>
+<% } else { %>
+    <% questionNumber = 0; %>
+    <% pollAddress = '0x0'; %>
+<% } %>
 <div class="poll-layout" style="width: 70%; margin-top: 20px; margin-left: 20px; float: left; overflow: scroll;">
     <% if( pollRecord != undefined ) { %>
 		<input type="hidden" id="pollIDholder" value="<%= pollRecord.id %>">
@@ -55,36 +62,27 @@
 </div>
 <script>
 
-    function newPoll(thisForm) {
-        var formNewPoll = $(thisForm);
-        // console.log(thisForm);
-        // console.log(formNewPoll.find('input[name="title"]').val());
-        // console.log(formNewPoll.find('input[name="reason"]').val());
- 
-        $.ajax({
-            type:   formNewPoll.attr('method'),
-            url:    formNewPoll.attr('action'),
-            data:   formNewPoll.serialize(),
-            success: function (res) {
-                var popUpMessege = $('#popUpMessege');
-                popUpMessege.text(res);
-                popUpMessege.fadeIn(1000);
-
-                setTimeout( function() {
-                    $('#popUpMessege').fadeOut(2000);
-                }, 1000);
-                setTimeout(function() {
-                    location.href = "/";
-                }, 2000);
-            }
-        });
-    }
-
     function newAnswer() {
+        var ans;
+        if($('#questionType').html() == 'single') {
+            ans = $('#formAnswer').find('input[name="answer"]:checked').val();
+        }
+        else if($('#questionType').html() == 'multi') {
+            ans = [];
+            var multi_ans = $('#formAnswer').find('input[name="answer"]:checked');
+            for(var i=0; i < multi_ans.length ; i++) {
+                console.log(multi_ans[i]);
+                ans.push("fuck");
+            }
+        }
+        else if($('#questionType').html() == 'short') {
+            ans = $('#formAnswer').find('input[name="answer"]').val();
+        }
+
         $.ajax({
             type:   'POST',
             url:    '/newAnswer',
-            data:   { type: $('#questionType').html(), answer: $('#formAnswer').find('input[name="answer"]:checked').val()},
+            data:   { type: $('#questionType').html(), answer: ans},
             success: function (res) {
                 var popUpMessege = $('#popUpMessege');
                 popUpMessege.text(res);
@@ -119,17 +117,6 @@
     }
 
     $(document).ready(function(){
-        $('#encryptionKey').toggle();
-        $('input:radio[name="ifEncrypt"]').change(function(){
-            $('#encryptionKey').toggle();
-        });
-        $('#newPoll-button').click(function(){
-            location.href = "/newPoll";
-        });
-        $('.poll-div').click(function(e) {
-            var modalID = '#modal-' + $(this).attr('id').substr(5);
-            $( modalID ).modal();
-        });
         $('#questionSelect').change(function(){
             $.ajax({
                 type:   'GET',
