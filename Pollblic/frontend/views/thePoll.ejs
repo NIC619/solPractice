@@ -71,9 +71,9 @@
             ans = [];
             var multi_ans = $('#formAnswer').find('input[name="answer"]:checked');
             for(var i=0; i < multi_ans.length ; i++) {
-                console.log(multi_ans[i]);
-                ans.push("fuck");
+                ans.push(multi_ans[i].value);
             }
+            ans = JSON.stringify(ans);
         }
         else if($('#questionType').html() == 'short') {
             ans = $('#formAnswer').find('input[name="answer"]').val();
