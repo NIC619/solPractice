@@ -1,104 +1,141 @@
 <meta charset="UTF-8">
-<title><%= title %></title>
-<link rel='stylesheet' href='/stylesheets/bootstrap.css' />
+<title>
+    <%= title %>
+</title>
+<!-- <link rel='stylesheet' href='/stylesheets/bootstrap.css' /> -->
+<link href='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css' rel='stylesheet' type='text/css'>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
 <script src="/javascript/jquery.modal.js" type="text/javascript" charset="utf-8"></script>
 <link rel="stylesheet" href="/stylesheets/jquery.modal.css" type="text/css" media="screen" />
-<style  type="text/css">
-        html { height: 100%;  }
-        body { position: relative; height: 100%;  margin: 0; padding-top: 4%; }
-        .poll-layout { position: relative; height:85%;  margin: 0; padding: 0; }
-        .poll-div { position: relative; height:15%; width:25%; border: 5px ridge ; border-radius: 10px; margin: 5px; padding: 5px; float:left; overflow: scroll}
-        .poll-div:hover { background-color: #DCDCDC; cursor: pointer; box-shadow: 10px 10px 5px #888888; }
-        #report-layout { position: relative; height:100%; margin: 0; padding: 0;}
-        #report-div { position: relative; display: inline-block; width: 15%; height: 20%; margin: 1px; }
-        #report-img { position: relative; width: 100%; background-color: #DCDCDC; }
-        #report-text { position: relative; width: 100%; text-align: center; background-color: #DCDCDC; color: black; font-family: "Times New Roman", Times, serif; font-size: 20px; }
-        
-        /* The actual popup */
-        .pop-up-text {
-            /*visibility: visible;*/
-            display: none;
-            width: 160px;
-            background-color: #555;
-            color: #fff;
-            text-align: center;
-            border-radius: 6px;
-            padding: 8px 0;
-            position: absolute;
-            z-index: 1;
-            right: 1%;
-            top:20%;
-        }
-        /* Popup arrow */
-        .pop-up-text::after {
-            content: "";
-            position: absolute;
-            left: 100%;
-            top: 30%;
-            /*margin-left: -5px;*/
-            border-width: 7px;
-            border-style: solid;
-            border-color:  transparent transparent  transparent #555;
-        }
-        /* Popup button */
-        .pop-up-btn {
-            -webkit-border-radius: 12;
-            -moz-border-radius: 12;
-            border-radius: 12px;
-            -webkit-box-shadow: 0px 1px 3px #666666;
-            -moz-box-shadow: 0px 1px 3px #666666;
-            box-shadow: 0px 1px 3px #666666;
-            font-family: Arial;
-            color: #544e54;
-            font-size: 20px;
-            background: #afb2b3;
-            padding: 10px 20px 10px 20px;
-            text-decoration: none;
-            display: none;
-            position: absolute;
-            z-index: 1;
-            left: 1%;
-            top:20%;
-        }
+<style type="text/css">
+    html {
+        height: 100%;
+    }
 
-        .pop-up-btn:hover {
-            background: #e0e0e0;
-            text-decoration: none;
-        }
+    body {
+        position: relative;
+        height: 100%;
+        margin: 0;
+        padding-top: 4%;
+        overflow: scroll;
+    }
 
-        /* nav bar */
-        ul {
-            list-style-type: none;
-            margin: 0;
-            padding: 0;
-            overflow: hidden;
-            border-bottom: 1px solid #a9a9a9;
-            background-color: #f3f3f3;
-            position: fixed;
-            top: 0;
-            z-index: 1;
-            /*height: 5%;*/
-            width: 100%;
-        }
+    .poll-layout {
+        position: relative;
+        height: 85%;
+        margin: 0;
+        padding: 0;
+    }
 
-        li {
-            float: left;
-        }
+    .poll-div {
+        position: relative;
+        height: 15%;
+        width: 25%;
+        border: 1px lightgray solid;
+        border-radius: 10px;
+        margin: 5px;
+        padding: 5px;
+        float: left;
+        overflow: scroll
+    }
 
-        li a {
-            display: block;
-            color: #666;
-            text-align: center;
-            padding: 14px 16px;
-            text-decoration: none;
-        }
+    .poll-div:hover {
+        background-color: #DCDCDC;
+        cursor: pointer;
+        box-shadow: 10px 10px 5px #888888;
+    }
+</style>
+<style type="text/css">
+    /* Pop-up */
 
-        li a:hover:not(.active) {
-            background-color: #ddd;
-        }
+    .pop-up-text {
+        /*visibility: visible;*/
+        display: none;
+        width: 160px;
+        background-color: #555;
+        color: #fff;
+        text-align: center;
+        border-radius: 6px;
+        padding: 8px 0;
+        position: absolute;
+        z-index: 1;
+        right: 1%;
+        top: 20%;
+    }
+    /* Popup arrow */
 
-        .active {
-            background-color: #4CAF50;
-        }
+    .pop-up-text::after {
+        content: "";
+        position: absolute;
+        left: 100%;
+        top: 30%;
+        /*margin-left: -5px;*/
+        border-width: 7px;
+        border-style: solid;
+        border-color: transparent transparent transparent #555;
+    }
+    /* Popup button */
+
+    .pop-up-btn {
+        -webkit-border-radius: 12;
+        -moz-border-radius: 12;
+        border-radius: 12px;
+        -webkit-box-shadow: 0px 1px 3px #666666;
+        -moz-box-shadow: 0px 1px 3px #666666;
+        box-shadow: 0px 1px 3px #666666;
+        font-family: Arial;
+        color: #544e54;
+        font-size: 20px;
+        background: #afb2b3;
+        padding: 10px 20px 10px 20px;
+        text-decoration: none;
+        display: none;
+        position: absolute;
+        z-index: 1;
+        left: 1%;
+        top: 20%;
+    }
+
+    .pop-up-btn:hover {
+        background: #e0e0e0;
+        text-decoration: none;
+    }
+</style>
+<style type="text/css">
+    /* nav bar */
+    .topnav {
+        overflow: hidden;
+        border-bottom: 2px solid #cfcfcf;
+        background-color: #fcfcfc;
+        position: fixed;
+        /* margin: 0;
+        padding: 0; */
+        top: 0;
+        z-index: 1;
+        width: 100%;
+    }
+
+    .topnav a {
+        float: left;
+        display: block;
+        color: #337ab7;
+        text-align: center;
+        padding: 14px 16px;
+        text-decoration: none;
+        font-size: large;
+        /* width: 100px; */
+    }
+
+    .topnav a:hover {
+        background-color: #ddd;
+        color: #23527c;
+    }
+
+    .topnav a:hover:not(.active) {
+        background-color: #ddd;
+    }
+
+    .topnav a.active {
+        background-color: #cfcfcf;
+    }
 </style>
