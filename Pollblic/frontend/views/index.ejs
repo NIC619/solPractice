@@ -1,45 +1,102 @@
 <% layout('layout_html') -%>
-<div class="poll-layout">
-	<% if( pollRecordList.length > 0 ) { %>
-		<% for( var i = 0 ; i < pollRecordList.length ; i++ ) { %>
-			<div id="poll-<%= pollRecordList[i].id %>" class="poll-div">
-				<span style="position:relative; top: 20%; display: inline-block; line-height: 20px">
-					Title: <%= pollRecordList[i].title %><br>
-					Owner: <%= pollRecordList[i].owner %><br>
-					Price: <%= pollRecordList[i].price %>
-				</span>
-			</div>
-			<div id="modal-<%= pollRecordList[i].id %>" style='display: none;'>
-				<span style="display: inline-block; font-size: 20px; line-height: 30px">
-					Status: <% if( pollRecordList[i].ifOpen ) { %> Open <% } else { %> Closed <% } %><br>
-					Title: <%= pollRecordList[i].title %><br>
-					ID: <%= pollRecordList[i].id %><br>
-					Located at address: <%= pollRecordList[i].address %><br>
-					Owner: <%= pollRecordList[i].owner %><br>
-					Reward: <%= pollRecordList[i].price %> ether<br>
-					Number of quiestion: <%= pollRecordList[i].numberOfQuestion %><br>
-					<a href="/poll?id=<%= pollRecordList[i].id %>"><button>View Poll</button></a>
-				</span>
-				<a href='#' rel='modal:close'></a>
-			</div>
-		<% } %>
-	<% } else { %>
-		<p>There are currently no on-going polls.</p>
-	<% } %>
-</div>
-<div>
-	<button id="newPoll-button">Create New Poll</button>
-</div>
-<script>
+	<div class="all-poll-display">
+		<% if( pollRecordList.length > 0 ) { %>
+			<% for( var i = 0 ; i < pollRecordList.length ; i++ ) { %>
+				<div id="poll-<%= pollRecordList[i].id %>" class="single-poll-preview table-responsive">
+					<table class="table table-bordered">
+						<tbody>
+							<tr>
+								<td><b>Title</b></td>
+								<td>
+									<%= pollRecordList[i].title %>
+								</td>
+							</tr>
+							<tr>
+								<td><b>Owner</b></td>
+								<td>
+									<%= pollRecordList[i].owner %>
+								</td>
+							</tr>
+							<tr>
+								<td><b>Price</b></td>
+								<td>
+									<%= pollRecordList[i].price %>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+				<div id="modal-<%= pollRecordList[i].id %>" class="table-responsive" style='display: none;'>
+					<table class="table table-bordered">
+						<tbody>
+							<tr>
+								<td><b>Status</b></td>
+								<td>
+									<% if( pollRecordList[i].ifOpen ) { %> Open
+										<% } else { %> Closed
+											<% } %>
+								</td>
+							</tr>
+							<tr>
+								<td><b>Title</b></td>
+								<td>
+									<%= pollRecordList[i].title %>
+								</td>
+							</tr>
+							<tr>
+								<td><b>ID</b></td>
+								<td>
+									<%= pollRecordList[i].id %>
+								</td>
+							</tr>
+							<tr>
+								<td><b>Located at address</b></td>
+								<td>
+									<%= pollRecordList[i].address %>
+								</td>
+							</tr>
+							<tr>
+								<td><b>Owner</b></td>
+								<td>
+									<%= pollRecordList[i].owner %>
+								</td>
+							</tr>
+							<tr>
+								<td><b>Reward</b></td>
+								<td>
+									<%= pollRecordList[i].price %> ether
+								</td>
+							</tr>
+							<tr>
+								<td><b>Number of quiestion</b></td>
+								<td>
+									<%= pollRecordList[i].numberOfQuestion %>
+								</td>
+							</tr>
+							<tr>
+								<td colspan="2"><a href="/poll?id=<%= pollRecordList[i].id %>"><button>View Poll</button></a></td>
+							</tr>
+						</tbody>
+					</table>
+					<a href='#' rel='modal:close'></a>
+				</div>
+				<% } %>
+					<% } else { %>
+						<p>There are currently no on-going polls.</p>
+						<% } %>
+	</div>
+	<div>
+		<button id="newPoll-button">Create New Poll</button>
+	</div>
+	<script>
+		$(document).ready(function () {
+			$('#newPoll-button').click(function () {
+				location.href = "/newPoll";
+			});
+			$('.single-poll-preview').click(function (e) {
+				var modalID = '#modal-' + $(this).attr('id').substr(5);
+				$(modalID).modal();
+			});
 
-    $(document).ready(function(){
-        $('#newPoll-button').click(function(){
-            location.href = "/newPoll";
-        });
-        $('.poll-div').click(function(e) {
-            var modalID = '#modal-' + $(this).attr('id').substr(5);
-            $( modalID ).modal();
-        });
-
-    });
-</script>
+		});
+	</script>

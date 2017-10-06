@@ -6,41 +6,98 @@
     <% questionNumber = 0; %>
     <% pollAddress = '0x0'; %>
 <% } %>
-<div class="poll-layout" style="width: 70%; margin-top: 20px; margin-left: 20px; float: left; overflow: scroll;">
+<div class="single-poll-display">
     <% if( pollRecord != undefined ) { %>
 		<input type="hidden" id="pollIDholder" value="<%= pollRecord.id %>">
 		<input type="hidden" id="pollAddressholder" value="<%= pollRecord.address %>">
-        <span style="display: inline-block; font-size: 30px; line-height: 50px">
-			Status: <% if( pollRecord.ifOpen ) { %> Open <% } else { %> Closed <% } %><br>
-			Title: <%= pollRecord.title %><br>
-			ID: <%= pollRecord.id %><br>
-			Located at address: <%= pollRecord.address %><br>
-			Owner: <%= pollRecord.owner %><br>
-			Need to encrypt: <%= pollRecord.ifEncrypt %>
-			<% if( pollRecord.ifEncrypt ) { %>, Encryption Key: <%= pollRecord.encryptionKey %><br><% } else { %><br><% } %>
-			Reward: <%= pollRecord.price %> ether<br>
-			Payment Lock Time: <%= pollRecord.paymentLockTime %><br>
-			Number of quiestion: <%= pollRecord.numberOfQuestion %>
-        </span>
+        <table class="table table-bordered">
+            <tbody>
+                <tr>
+                    <td><b>Status</b></td>
+                    <td>
+                        <% if( pollRecord.ifOpen ) { %> Open
+                            <% } else { %> Closed
+                                <% } %>
+                    </td>
+                </tr>
+                <tr>
+                    <td><b>Title</b></td>
+                    <td>
+                        <%= pollRecord.title %>
+                    </td>
+                </tr>
+                <tr>
+                    <td><b>ID</b></td>
+                    <td>
+                        <%= pollRecord.id %>
+                    </td>
+                </tr>
+                <tr>
+                    <td><b>Located at address</b></td>
+                    <td>
+                        <%= pollRecord.address %>
+                    </td>
+                </tr>
+                <tr>
+                    <td><b>Owner</b></td>
+                    <td>
+                        <%= pollRecord.owner %>
+                    </td>
+                </tr>
+                <tr>
+                    <td><b>Need to encrypt</b></td>
+                    <td>
+                        <%= pollRecord.ifEncrypt %>
+                    </td>
+                </tr>
+                <tr>
+                    <td><b>Reward</b></td>
+                    <td>
+                        <%= pollRecord.price %> ether
+                    </td>
+                </tr>
+                <% if( pollRecord.ifEncrypt ) { %>
+                    <tr>
+                        <td><b>Encryption Key</b></td>
+                        <td><%= pollRecord.encryptionKey %>
+                        </td>
+                    </tr>
+                <% } %>
+                <tr>
+                    <td><b>Payment Lock Time</b></td>
+                    <td>
+                            <%= pollRecord.paymentLockTime %>
+                    </td>
+                </tr>
+                <tr>
+                    <td><b>Number of quiestion</b></td>
+                    <td>
+                        <%= pollRecord.numberOfQuestion %>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
 		<hr>
-		Which question to answer? <select id="questionSelect" name="questionNumber">
-			<option selected disabled></option>
-		<% for(var j = 0 ; j < pollRecord.numberOfQuestion ; j++ ) { %>
-			<option value="<%= j+1 %>"><%= j+1 %></option>
-		<% } %>
-		</select><br>
-		<div id="question-div" style="display: none;">
-			Question type: <div style="display: inline-block;" id="questionType"></div><br>
-			Question: <div style="display: inline-block;" id="questionBody"></div><br>
-			Your answer: <div style="display: inline-block;" id="answerToQuestion"></div><br>
-			<button onclick="newAnswer()">Answer</button>
-		</div>
-		<!--<input type="button" value="Create" onclick='newPoll(this.form)'>-->
+		<div>
+            Which question to answer?
+            <select id="questionSelect" name="questionNumber">
+                <option selected disabled></option>
+                <% for(var j = 0 ; j < pollRecord.numberOfQuestion ; j++ ) { %>
+                    <option value="<%= j+1 %>"><%= j+1 %></option>
+                <% } %>
+            </select><br>
+            <div id="question-div" style="display: none;">
+                <span style="display: inline-block; height: 20px; width: 100px">type:</span> <div style="display: inline-block;" id="questionType"></div><br>
+                <span style="display: inline-block; height: 20px; width: 100px">Question:</span> <div style="display: inline-block;" id="questionBody"></div><br>
+                <span style="display: inline-block; height: 20px; width: 100px">Your answer:</span> <div style="display: inline-block;" id="answerToQuestion"></div><br>
+                <br><button onclick="newAnswer()">Answer</button>
+            </div>
+        </div>
     <% } else { %>
         Poll not found
     <% } %>
 </div>
-<div class="poll-layout" style="width: 25%; margin-top: 20px; margin-left: 20px; float: left; overflow: scroll; border-left: 2px solid grey; padding-left: 10px;">
+<div class="interaction-menu">
 	Choose an interaction:<br>
 	<select id="interactionSelect" name="interaction">
 		<option selected disabled></option>
@@ -57,7 +114,7 @@
 		<option value="openPoll">Owner Open Poll</option>
 		<option value="shutDownPoll">Owner Shut Down Poll</option>
 	</select><hr>
-	<div id="interaciton-div">
+	<div id="interaction-display">
 	</div>
 </div>
 <script>
@@ -129,14 +186,14 @@
                     var answerHTML = '<form id="formAnswer">';
                     if( question.type == 'single' ) {
                         for( var i = 0 ; i < question.numberOfAnswer ; i++ ) {
-                            answerHTML += '<input type="radio" name="answer" value="' + (i + 1) + '">' + question.answer[i] + '   ';
+                            answerHTML += '<span><input type="radio" name="answer" value="' + (i + 1) + '">&nbsp;&nbsp;' + question.answer[i] + '</span>&nbsp;&nbsp;';
                         }
                         answerHTML += "</form>";
                         $('#answerToQuestion').html(answerHTML);
                     }
                     else if( question.type == 'multi' ) {
                         for( var i = 0 ; i < question.numberOfAnswer ; i++ ) {
-                            answerHTML += '<input type="checkbox" name="answer" value="' + (i + 1) + '">' + question.answer[i] + '   ';
+                            answerHTML += '<span><input type="checkbox" name="answer" value="' + (i + 1) + '">&nbsp;&nbsp;' + question.answer[i] + '</span>&nbsp;&nbsp;';
                         }
                         answerHTML += "</form>";
                         $('#answerToQuestion').html(answerHTML);
@@ -156,31 +213,32 @@
             switch ($(this).val()) {
                 case 'getUserStatus':
                 case 'getUserKey':
-                    interactionHTML += 'User: <input type="text" name="user">'
+                    interactionHTML += '<span style="display: inline-block; height: 30px;">User: <input type="text" name="user"></span>'
                     break;
                 case 'getAnswer':
                 case 'getRevealedAnswer':
-                    interactionHTML += 'User: <input type="text" name="user"><br>Answer Number: <input type="number" name="numberAnswer" min="1" max="' + questionNumber + '">'
+                    interactionHTML += '<span style="display: inline-block; height: 30px;">User: <input type="text" name="user"></span><br>'
+                                        + '<span style="display: inline-block; height: 20px;">Answer Number: <input type="number" name="numberAnswer" min="1" max="' + questionNumber + '"></sapn>'
                     break;
                 case 'addEncryptedUserKey':
-                    interactionHTML += 'Encryption Key: <input type="text" name="encryptedUserKey">'
+                    interactionHTML += '<span style="display: inline-block; height: 30px;">Encryption Key: <input type="text" name="encryptedUserKey"></span>'
                     break;
                 case 'withdraw':
                     break;
                 case 'addQuestion':
-                    interactionHTML += 'Question Number: ' + (questionNumber+1) + '<input type="hidden" name="questionNumber" value="'+ (questionNumber+1) + '"><br>' + 
-                                        'Question Type: <input type="radio" name="questionType" value="single">Single    ' +
-                                        '<input type="radio" name="questionType" value="multi">Multi    ' +
-                                        '<input type="radio" name="questionType" value="short">Short<br>' +
-                                        'Question: <input type="text" name="question"><br>' +
-                                        'Number of Options: <input type="number" name="numberOfOptions" min="1"><br>' +
-                                        'Options(seperated by comma): <input type="text" name="options">';
+                    interactionHTML += '<span style="display: inline-block; height: 30px;">Question Number: ' + (questionNumber+1) + '<input type="hidden" name="questionNumber" value="'+ (questionNumber+1) + '"></span><br>' 
+                                        + '<span style="display: inline-block; height: 30px;">Question Type:&nbsp;&nbsp;<input type="radio" name="questionType" value="single">&nbsp;Single&nbsp;&nbsp;'
+                                        + '<input type="radio" name="questionType" value="multi">&nbsp;Multi&nbsp;&nbsp;'
+                                        + '<input type="radio" name="questionType" value="short">&nbsp;Short</span><br>'
+                                        + '<span style="display: inline-block; height: 30px;">Question: <input type="text" name="question"></span><br>'
+                                        + '<span style="display: inline-block; height: 30px;">Number of Options: <input type="number" name="numberOfOptions" min="1"></span><br>'
+                                        + '<span style="display: inline-block; height: 60px;">Options(seperated by comma): <input type="text" name="options"></span>';
                     break;
                 case 'revealAnswer':
-                    interactionHTML += 'User: <input type="text" name="user"><br>' +
-                                        'Question Number: <input type="number" name="questionNumber" min="1" max="' + questionNumber + '"><br>' +
-                                        'Short Answer: <input type="text" name="shortAnswer"><br>' +
-                                        'Single/Multi Answer(seperated by comma): <input type="text" name="choices">';
+                    interactionHTML += '<span style="display: inline-block; height: 30px;">User: <input type="text" name="user"></span><br>'
+                                        + '<span style="display: inline-block; height: 30px;">Question Number: <input type="number" name="questionNumber" min="1" max="' + questionNumber + '"></span><br>'
+                                        + '<span style="display: inline-block; height: 30px;">Short Answer: <input type="text" name="shortAnswer"></span><br>'
+                                        + '<span style="display: inline-block; height: 60px;">Single/Multi Answer(seperated by comma): <input type="text" name="choices"></span>';
                     break;
                 case 'openPoll':
                 case 'shutDownPoll':
@@ -189,7 +247,7 @@
                     break;
             }
             interactionHTML += '<br><input type="button" value="Submit" onclick="newInteraction(this.form)"></form>'
-            $('#interaciton-div').html(interactionHTML);
+            $('#interaction-display').html(interactionHTML);
         });
     });
 </script>
