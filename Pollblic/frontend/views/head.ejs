@@ -2,7 +2,6 @@
 <title>
     <%= title %>
 </title>
-<!-- <link rel='stylesheet' href='/stylesheets/bootstrap.css' /> -->
 <link href='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css' rel='stylesheet' type='text/css'>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
 <script src="/javascript/jquery.modal.js" type="text/javascript" charset="utf-8"></script>
@@ -20,34 +19,73 @@
         overflow: scroll;
     }
 
-    .poll-layout {
+    .all-poll-display {
         position: relative;
-        height: 85%;
-        margin: 0;
-        padding: 0;
+        height: 90%;
+        /* margin: 0;
+        padding: 0; */
     }
 
-    .poll-div {
+    .single-poll-preview {
         position: relative;
-        height: 15%;
-        width: 25%;
+        /* height: 20%; */
+        /* width: 20%; */
         border: 1px lightgray solid;
         border-radius: 10px;
+        top: 20px;
+        left: 40px;
         margin: 5px;
         padding: 5px;
         float: left;
         overflow: scroll
     }
 
-    .poll-div:hover {
+    .single-poll-preview table {
+        /* position:relative;
+        height: 100%; */
+    }
+
+    .single-poll-preview:hover {
         background-color: #DCDCDC;
         cursor: pointer;
         box-shadow: 10px 10px 5px #888888;
     }
-</style>
-<style type="text/css">
-    /* Pop-up */
 
+    .single-poll-preview:hover table,
+    .single-poll-preview:hover td{
+        border: 1px solid #666666;
+    }
+
+    .single-poll-display {
+        position: relative;
+        height: 90%;
+        width: 70%;
+        margin-top: 20px;
+        margin-left: 20px;
+        float: left;
+        overflow: scroll;
+    }
+
+    .interaction-menu {
+        position: relative;
+        height: 90%;
+        width: 27%;
+        margin-top: 20px;
+        margin-left: 20px;
+        float: left;
+        overflow: scroll;
+        border-left: 2px solid grey;
+        padding-left: 10px;
+    }
+
+    .new-poll-display {
+        position: relative;
+        height: 90%;
+        margin: 20px;
+    }
+</style>
+<!-- Pop-up -->
+<style type="text/css">
     .pop-up-text {
         /*visibility: visible;*/
         display: none;
@@ -101,8 +139,8 @@
         text-decoration: none;
     }
 </style>
+<!-- nav bar -->
 <style type="text/css">
-    /* nav bar */
     .topnav {
         overflow: hidden;
         border-bottom: 2px solid #cfcfcf;
