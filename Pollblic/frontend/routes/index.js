@@ -54,12 +54,10 @@ router.post('/newPoll', function(req, res) {
 	var newPollRecord = new pollRecords();
 	//console.log(req.body.name);
 	var computedID = web3.sha3(req.body.title + account + Math.floor((new Date).getTime()/1000) );
-	console.log("'" + req.body.title + account + Math.floor((new Date).getTime()/1000) + "' is hashed into " + computedID);
-	// var computedID = web3.sha3(req.body.title + req.body.owner + Math.floor((new Date).getTime()/1000) );
-	// console.log("'" + req.body.title + req.body.owner + Math.floor((new Date).getTime()/1000) + "' is hashed into " + computedID);
-
+	// console.log("'" + req.body.title + account + Math.floor((new Date).getTime()/1000) + "' is hashed into " + computedID);
+	
 	pollRecords.find({ id: computedID }, function(err, pollRecordList){
-		if( pollRecordList.length != 0 ) {
+		if( pollRecordList !== undefined ) {
 			res.send("Poll already registered")
 			return;
 		}
@@ -87,8 +85,9 @@ router.get('/question', function(req, res) {
 	// console.log(req.query.pollID);
 	// console.log(req.query.pollAddress);
 	// console.log(req.query.questionNumber);
-	if(req.query.questionNumber == 1) res.send({ type: 'single', body: 'abcdefg', numberOfAnswer: 3, answer: [ "a1", "a2", "a3" ]});
-	else res.send({ type: 'short', body: 'abcdefg', numberOfAnswer: 3, answer: [ "a1", "a2", "a3" ]});
+	if(req.query.questionNumber == 1) res.send({ type: 'single', body: 'choose', numberOfAnswer: 3, answer: [ "a1", "a2", "a3" ]});
+	else if(req.query.questionNumber == 2) res.send({ type: 'multi', body: 'choose', numberOfAnswer: 3, answer: [ "b1", "b2", "b3" ]});
+	else res.send({ type: 'short', body: 'how are you', numberOfAnswer: 0, answer: []});
 });
 /*                       */
 
@@ -104,60 +103,39 @@ router.post('/newInteraction', function (req, res) {
 });
 /*                       */
 
-router.get('/surroundingLocations', function(req, res){
-	var surroundingList = [];
-	//console.log("lat: " + req.query.lat + ", lng: " + req.query.lng);
-	//console.log("" + (req.query.lng -1.5) + "," + (req.query.lng+1.5));
-	
-	markers.find(
-			{ 
-				lat : { 
-					$gt : (req.query.lat - req.query.latDis/2),
-					$lt : (+req.query.lat + req.query.latDis/2)
-				}, 
-				lng : { 
-					$gt : (req.query.lng - req.query.lngDis/2),
-					$lt : (+req.query.lng + req.query.lngDis/2)
-				} 
-			}, function(err, list){
-				//console.log(list);
-				res.send(list);
-	});
-});
-
 router.get('/search', function(req, res) {
 	if( req.query.title && req.query.owner ) {
 		pollRecords.find({ title: req.query.title , owner: req.query.owner }, function( err, searchResults ) {
 			if( searchResults === undefined ) {
-				res.render( 'layout_body', { title: 'Pollblic', pollRecordList: [] });
+				res.render( 'search', { title: 'Pollblic', pollRecordList: [] });
 			}
 			else {
-				res.render( 'layout_body', { title: 'Pollblic', pollRecordList: _pollRecordList });
+				res.render( 'search', { title: 'Pollblic', pollRecordList: searchResults });
 			}
 		});
 	}
 	else if ( req.query.title ) {
 		pollRecords.find({ title: req.query.title }, function( err, searchResults ) {
 			if( searchResults === undefined ) {
-				res.render( 'layout_body', { title: 'Pollblic', pollRecordList: [] });
+				res.render( 'search', { title: 'Pollblic', pollRecordList: [] });
 			}
 			else {
-				res.render( 'layout_body', { title: 'Pollblic', pollRecordList: _pollRecordList });
+				res.render( 'search', { title: 'Pollblic', pollRecordList: searchResults });
 			}
 		});
 	}
 	else if ( req.query.owner ) {
 		pollRecords.find({ owner: req.query.owner }, function( err, searchResults ) {
 			if( searchResults === undefined ) {
-				res.render( 'layout_body', { title: 'Pollblic', pollRecordList: [] });
+				res.render( 'search', { title: 'Pollblic', pollRecordList: [] });
 			}
 			else {
-				res.render( 'layout_body', { title: 'Pollblic', pollRecordList: _pollRecordList });
+				res.render( 'search', { title: 'Pollblic', pollRecordList: searchResults });
 			}
 		});
 	}
 	else{
-		res.render('layout_body', {title: 'Pollblic', pollRecordList: []});
+		res.render('search', {title: 'Pollblic', pollRecordList: []});
 	}
 });
 
