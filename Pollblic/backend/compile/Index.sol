@@ -1,5 +1,5 @@
 import "./Poll.sol";
-pragma solidity ^0.4.2;
+pragma solidity ^0.4.10;
 contract Index {
 
 
@@ -93,15 +93,24 @@ contract Index {
                 string _title,
                 uint _lifeTime,
                 uint _paymentLockTime,
-                bool _ifEncrypt,
-                address _encryptionKey,
+                // bool _ifEncrypt,
+                // address _encryptionKey,
                 uint8 _numberOfQuestions
             ) payable {
         // throw if id already exist
         if(idToPollRecordMapping[_id].startTime != 0) throw;
 
         // initiate the poll
-        var newPollAddr = new Poll(_id, msg.sender, now + _lifeTime, _totalNeeded, _ifEncrypt, _encryptionKey, _paymentLockTime, _numberOfQuestions);
+        var newPollAddr = new Poll(
+                                _id,
+                                msg.sender,
+                                now + _lifeTime,
+                                _totalNeeded,
+                                // _ifEncrypt,
+                                // _encryptionKey,
+                                _paymentLockTime,
+                                _numberOfQuestions
+                              );
         //initialize poll struct
         PollRecord memory newPollRecord = PollRecord(
                                         newPollAddr,
