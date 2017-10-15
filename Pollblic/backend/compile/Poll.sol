@@ -15,16 +15,16 @@ contract Poll
 
     // Poll meta-data
     bytes32 public                      pollID;
-    PollStatus public               contractStatus;
-    uint public                         expireTime;
-    uint64 public                       totalNeeded;
-    uint64 public                       totalAnswered;
+    PollStatus public                   contractStatus;
+    uint public                         timePollEnd;
+    uint public                       totalNeeded;
+    uint public                       totalAnswered;
     // Remove answer encryption for now until feasible cryptography
     // can be used to protect privacy effactively
     // bool public                         ifEncrypt;
     // address public                      encryptionKey;
     // Time to wait until user can withdraw
-    uint public                         paymentLockTime;
+    uint public                         periodForAnswerReview;
     mapping(address => User) public     users;
     // Questions
     uint8 public                        numberOfQuestions;              
@@ -80,23 +80,23 @@ contract Poll
     function Poll(
         bytes32 _pollID ,
         address _owner,
-        uint _expireTime,
-        uint64 _totalNeeded,
+        uint _timePollLast,
+        uint _totalNeeded,
         // bool _ifEncrypt,
         // address _encryptionKey,
-        uint _paymentLockTime,
+        uint _periodForAnswerReview,
         uint8 _numberOfQuestions
     ) {
         pollID                  =   _pollID;
         indexContractAddr       =   msg.sender;
         owner                   =   _owner;
-        expireTime              =   _expireTime;
+        timePollEnd              =   now + _timePollLast;
         totalNeeded             =   _totalNeeded;
         contractStatus          =   PollStatus.Preparing;
         // if(_ifEncrypt)
             // encryptionKey       =   _encryptionKey;
         numberOfQuestions       =   _numberOfQuestions;
-        paymentLockTime         =   _paymentLockTime;
+        periodForAnswerReview         =   _periodForAnswerReview;
     }
 
     // only owner can call
@@ -175,7 +175,7 @@ contract Poll
     //     if(users[msg.sender].encryptedUserKey == 0x0) {
     //         users[msg.sender].encryptedUserKey = _encryptedUserKey;
     //         if(users[msg.sender].numberOfAnswered == numberOfQuestions && users[msg.sender].status == UserStatus.Answering) {
-    //             users[msg.sender].timeToClaimReward      = now + paymentLockTime;
+    //             users[msg.sender].timeToClaimReward      = now + periodForAnswerReview;
     //             users[msg.sender].status         = UserStatus.Answered;
     //         }
     //     }
@@ -185,7 +185,7 @@ contract Poll
     // Add Answer function
     function addAnswer(uint8 _questionNumber, string _shortAnswer, uint8[] _choices) {
         // Contract status check:
-        require((now <= expireTime && contractStatus != PollStatus.Preparing)
+        require((now <= timePollEnd && contractStatus != PollStatus.Preparing)
             || (contractStatus == PollStatus.ShutDown && users[msg.sender].numberOfAnswered == 0));
 
         // Answer format check
@@ -218,9 +218,9 @@ contract Poll
         users[msg.sender].answers[_questionNumber].answered = true;
         users[msg.sender].numberOfAnswered += 1;
         if(users[msg.sender].numberOfAnswered == numberOfQuestions) {
-            users[msg.sender].timeToClaimReward      = now + paymentLockTime;
+            users[msg.sender].timeToClaimReward      = now + periodForAnswerReview;
             // if((ifEncrypt && users[msg.sender].encryptedUserKey!=0) || (!ifEncrypt)) {
-            //     users[msg.sender].timeToClaimReward      = now + paymentLockTime;
+            //     users[msg.sender].timeToClaimReward      = now + periodForAnswerReview;
             // } 
         }
     }
@@ -233,7 +233,7 @@ contract Poll
     function shutDownPoll() onlyOwner {
         require(contractStatus != PollStatus.ShutDown);
         contractStatus = PollStatus.ShutDown;
-        expireTime = now + 2 * paymentLockTime;
+        timePollEnd = now + 2 * periodForAnswerReview;
     }
     
     // Deprecate reveal user answer, leave the abusement problem to doorkeeping mechanism
