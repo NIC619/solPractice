@@ -17,8 +17,10 @@ contract Poll
     bytes32 public                      pollID;
     PollStatus public                   contractStatus;
     uint public                         timePollEnd;
-    uint public                       totalNeeded;
-    uint public                       totalAnswered;
+    uint public                         rewardPerUser;
+    uint public                         totalNeeded;
+    uint public                         totalAnswered;
+    uint public                         totalPaid;
     // Remove answer encryption for now until feasible cryptography
     // can be used to protect privacy effactively
     // bool public                         ifEncrypt;
@@ -82,21 +84,23 @@ contract Poll
         address _owner,
         uint _timePollLast,
         uint _totalNeeded,
+        uint _rewardPerUser,
         // bool _ifEncrypt,
         // address _encryptionKey,
         uint _periodForAnswerReview,
         uint8 _numberOfQuestions
-    ) {
+    ) payable {
         pollID                  =   _pollID;
         indexContractAddr       =   msg.sender;
         owner                   =   _owner;
-        timePollEnd              =   now + _timePollLast;
+        timePollEnd             =   block.number + _timePollLast;
         totalNeeded             =   _totalNeeded;
-        contractStatus          =   PollStatus.Preparing;
+        rewardPerUser           =   _rewardPerUser;
         // if(_ifEncrypt)
             // encryptionKey       =   _encryptionKey;
         numberOfQuestions       =   _numberOfQuestions;
-        periodForAnswerReview         =   _periodForAnswerReview;
+        periodForAnswerReview   =   _periodForAnswerReview;
+        contractStatus          =   PollStatus.Preparing;
     }
 
     // only owner can call
@@ -113,38 +117,38 @@ contract Poll
     // }
 
     // GET functions
-    function getQuestion(uint8 questionNumber) constant returns(QuestionType, string) {
-        require(0 <= questionNumber && questionNumber < numberOfQuestions);
-        return(questions[questionNumber].questionType, questions[questionNumber].question);
+    function getQuestion(uint8 _questionNumber) constant returns(QuestionType, string) {
+        require(0 <= _questionNumber && _questionNumber < numberOfQuestions);
+        return(questions[_questionNumber].questionType, questions[_questionNumber].question);
     }
-    function getQuestionChoice(uint8 questionNumber, uint8 choiceNumber) constant returns(bytes32) {
-        require(0 <= questionNumber && questionNumber < numberOfQuestions);
-        require(0 <= choiceNumber && choiceNumber < numberOfChoices[questionNumber]);
-        return(questions[questionNumber].choices[choiceNumber]);
+    function getQuestionChoice(uint8 _questionNumber, uint8 _choiceNumber) constant returns(bytes32) {
+        require(0 <= _questionNumber && _questionNumber < numberOfQuestions);
+        require(0 <= _choiceNumber && _choiceNumber < numberOfChoices[_questionNumber]);
+        return(questions[_questionNumber].choices[_choiceNumber]);
     }
-    function getUserStatus(address user) constant returns(string, uint) {
-        if(users[user].isPaid) return("Paid", 0);
-        else if(users[user].timeToClaimReward == MAX_WAIT_TIME_TO_CLAIM_REWARD)
+    function getUserStatus(address _user) constant returns(string, uint) {
+        if(users[_user].isPaid) return("Paid", 0);
+        else if(users[_user].timeToClaimReward == MAX_WAIT_TIME_TO_CLAIM_REWARD)
             return("Revoked", MAX_WAIT_TIME_TO_CLAIM_REWARD);
-        else if(users[user].numberOfAnswered == numberOfQuestions)
-            return("Answered", users[user].timeToClaimReward);
-        else if(users[user].numberOfAnswered > numberOfQuestions)
+        else if(users[_user].numberOfAnswered == numberOfQuestions)
+            return("Answered", users[_user].timeToClaimReward);
+        else if(users[_user].numberOfAnswered > numberOfQuestions)
             return("Answering", 0);
         else return("No answer yet", 0);
     }
-    // function getUserKey(address user) constant returns(bytes32) {
-    //     return(users[user].encryptedUserKey);
+    // function getUserKey(address _user) constant returns(bytes32) {
+    //     return(users[_user].encryptedUserKey);
     // }
-    function getAnswer(address user, uint8 questionNumber) constant returns(string, uint8[]) {
-        require(0 <= questionNumber && questionNumber < numberOfQuestions);
+    function getAnswer(address _user, uint8 _questionNumber) constant returns(string, uint8[]) {
+        require(0 <= _questionNumber && _questionNumber < numberOfQuestions);
         uint8[] choices;
-        for(var i=0 ; i<numberOfChoices[questionNumber] ; i++)
-            choices.push(users[user].answers[questionNumber].choices[i]);
-        return(users[user].answers[questionNumber].shortAnswer, choices);
+        for(var i=0 ; i<numberOfChoices[_questionNumber] ; i++)
+            choices.push(users[_user].answers[_questionNumber].choices[i]);
+        return(users[_user].answers[_questionNumber].shortAnswer, choices);
     }
-    // function getRevealedAnswer(address user, uint8 answerNumber) constant returns(string, uint8[]) {
+    // function getRevealedAnswer(address _user, uint8 answerNumber) constant returns(string, uint8[]) {
     //     if(answerNumber >= numberOfQuestions) throw;
-    //     return(revealedAnswers[user].revealedAnswers[answerNumber].shortAnswer, revealedAnswers[user].revealedAnswers[answerNumber].choices);
+    //     return(revealedAnswers[_user].revealedAnswers[answerNumber].shortAnswer, revealedAnswers[_user].revealedAnswers[answerNumber].choices);
     // }
 
     // Add Question function
@@ -175,7 +179,7 @@ contract Poll
     //     if(users[msg.sender].encryptedUserKey == 0x0) {
     //         users[msg.sender].encryptedUserKey = _encryptedUserKey;
     //         if(users[msg.sender].numberOfAnswered == numberOfQuestions && users[msg.sender].status == UserStatus.Answering) {
-    //             users[msg.sender].timeToClaimReward      = now + periodForAnswerReview;
+    //             users[msg.sender].timeToClaimReward      = block.number + periodForAnswerReview;
     //             users[msg.sender].status         = UserStatus.Answered;
     //         }
     //     }
@@ -185,7 +189,7 @@ contract Poll
     // Add Answer function
     function addAnswer(uint8 _questionNumber, string _shortAnswer, uint8[] _choices) {
         // Contract status check:
-        require((now <= timePollEnd && contractStatus != PollStatus.Preparing)
+        require((block.number <= timePollEnd && contractStatus != PollStatus.Preparing)
             || (contractStatus == PollStatus.ShutDown && users[msg.sender].numberOfAnswered == 0));
 
         // Answer format check
@@ -218,9 +222,9 @@ contract Poll
         users[msg.sender].answers[_questionNumber].answered = true;
         users[msg.sender].numberOfAnswered += 1;
         if(users[msg.sender].numberOfAnswered == numberOfQuestions) {
-            users[msg.sender].timeToClaimReward      = now + periodForAnswerReview;
+            users[msg.sender].timeToClaimReward      = block.number + periodForAnswerReview;
             // if((ifEncrypt && users[msg.sender].encryptedUserKey!=0) || (!ifEncrypt)) {
-            //     users[msg.sender].timeToClaimReward      = now + periodForAnswerReview;
+            //     users[msg.sender].timeToClaimReward      = block.number + periodForAnswerReview;
             // } 
         }
     }
@@ -233,7 +237,7 @@ contract Poll
     function shutDownPoll() onlyOwner {
         require(contractStatus != PollStatus.ShutDown);
         contractStatus = PollStatus.ShutDown;
-        timePollEnd = now + 2 * periodForAnswerReview;
+        timePollEnd = block.number + 2 * periodForAnswerReview;
     }
     
     // Deprecate reveal user answer, leave the abusement problem to doorkeeping mechanism
@@ -267,19 +271,29 @@ contract Poll
     function revokeUser(address _user) onlyOwner {
         // Can only revoke user if he/she is answering
         // or answered but still in owner verification period
-        require(users[_user].numberOfAnswered > 0 && users[_user].timeToClaimReward > now);
+        require(
+            users[_user].timeToClaimReward < MAX_WAIT_TIME_TO_CLAIM_REWARD
+            && users[_user].numberOfAnswered > 0
+            && users[_user].timeToClaimReward > block.number
+        );
 
         users[_user].timeToClaimReward = MAX_WAIT_TIME_TO_CLAIM_REWARD;
         Index index = Index(indexContractAddr);
-        index.userAnswerRevoke(pollID, _user);
+        require(index.userAnswerRevoke(pollID, _user));
     }
 
     function userWithdraw() {
         // User withdrawal eligibility check
-        require(users[msg.sender].numberOfAnswered == numberOfQuestions && users[msg.sender].timeToClaimReward <= now);
+        require(
+            users[msg.sender].isPaid = false
+            && users[msg.sender].numberOfAnswered == numberOfQuestions
+            && users[msg.sender].timeToClaimReward <= block.number
+        );
         Index index = Index(indexContractAddr);
         require(index.userAnswerConfirm(pollID, msg.sender)) ;
         users[msg.sender].isPaid = true;
+        totalPaid += 1;
+        msg.sender.transfer(rewardPerUser * (10**18));
     }
 
 }

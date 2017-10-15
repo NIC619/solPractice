@@ -4,7 +4,6 @@ contract Index {
 
 
     // Overall
-    // address[] public                        allOwnerList;                       // list of all owners of polls
     uint public                                 numberOfOwner = 1;
     mapping(uint => address) public             listOfOwner;             
     mapping(address => uint) public             ownerIndex;                 // index of owner in the above list
@@ -22,13 +21,6 @@ contract Index {
     // function Index() {
     // }
 
-    // Poll contract status
-    // enum PollContractStatus {
-    //     Preparing,
-    //     Open,
-    //     ShutDown,
-    //     Close
-    // }
     // Poll record
     struct PollRecord {
         address                 contractAddr;
@@ -38,8 +30,8 @@ contract Index {
         // uint                    startTime;
         // uint                    expireTime;
         // uint                  totalNeeded;
-        uint                    price;
-        uint                    issuedCount;
+        // uint                    price;
+        // uint                    issuedCount;
     }
     // Poll owner record
     struct PollOwner {
@@ -66,21 +58,12 @@ contract Index {
     function getPollOwnerByID(bytes32 _id) constant returns(address) {
         return pollRecord[_id].owner;
     }
-    // function getPollStatusByID(bytes32 _id) constant returns(uint) {
-    //     return pollRecord[_id].contractStatus;
+    // function getPollPriceByID(bytes32 _id) constant returns(uint) {
+    //     return pollRecord[_id].price;
     // }
-    // function getPollStartTimeByID(bytes32 _id) constant returns(uint) {
-    //     return pollRecord[_id].startTime;
+    // function getPollIssuedCountByID(bytes32 _id) constant returns(uint) {
+    //     return pollRecord[_id].issuedCount;
     // }
-    // function getPollExpireTimeByID(bytes32 _id) constant returns(uint) {
-    //     return pollRecord[_id].expireTime;
-    // }
-    function getPollPriceByID(bytes32 _id) constant returns(uint) {
-        return pollRecord[_id].price;
-    }
-    function getPollIssuedCountByID(bytes32 _id) constant returns(uint) {
-        return pollRecord[_id].issuedCount;
-    }
     // function getPollTotalNeededByID(bytes32 _id) constant returns(uint) {
     //     return pollRecord[_id].totalNeeded;
     // }
@@ -102,11 +85,12 @@ contract Index {
         require(pollRecord[_id].contractAddr == 0x0);
         
         // initiate the poll
-        var newPollAddr = new Poll(
+        var newPollAddr = (new Poll).value(msg.value)(
                                 _id,
                                 msg.sender,
                                 _timePollLast,
                                 _totalNeeded,
+                                _price,
                                 // _ifEncrypt,
                                 // _encryptionKey,
                                 _periodForAnswerReview,
@@ -116,13 +100,12 @@ contract Index {
         PollRecord memory newPollRecord = PollRecord(
                                         newPollAddr,
                                         msg.sender,
-                                        _title,
-                                        //PollContractStatus.Preparing,
-                                        // now,
-                                        // now + _timePollLast,
+                                        _title
+                                        // block.number,
+                                        // block.number + _timePollLast,
                                         // _totalNeeded,
-                                        _price,
-                                        0
+                                        // _price,
+                                        // 0
                                    );
         pollRecord[_id] = newPollRecord;
         
@@ -140,56 +123,18 @@ contract Index {
         }
     }
 
-    // update poll status, may be called by the poll only
-    /*
-    function updatePollStatus(bytes32 _id, uint8 _contractStatus) onlyThePoll(_id) return(bool) {
-        // open the poll
-        if(PollContractStatus(_contractStatus) == PollContractStatus.Open) {
-            if(pollRecord[_id].contractStatus == PollContractStatus.Preparing){
-                pollRecord[_id].contractStatus = PollContractStatus.Open;
-                return true;
-            }
-            else
-                return false;
-        }
-        // shut down the poll
-        else if(PollContractStatus(_contractStatus) == PollContractStatus.ShutDown) {
-            if(pollRecord[_id].contractStatus == PollContractStatus.Preparing || pollRecord[_id].contractStatus == PollContractStatus.Open){
-                pollRecord[_id].contractStatus = PollContractStatus.ShutDown;
-                return true;
-            }
-            else
-                return false;
-        }
-        // close the poll, optional by owner because there has not yet been a function to enforce
-        else {
-            if(pollRecord[_id].contractStatus == PollContractStatus.Open){
-                pollRecord[_id].contractStatus = PollContractStatus.Close;
-                return true;
-            }
-            else
-                return false;
-        }
-        
-    }
-    */
-
-    // poll confirm user answer function, return true if payment made successfully
+    // poll confirm user answer
     function userAnswerConfirm(bytes32 _id, address _user) onlyThePoll(_id) external returns(bool) {
-        if(_user.send(pollRecord[_id].price * (10**18) )) {
-            pollRecord[_id].issuedCount += 1;
-            if(userRecord[_user].totalAnswered == 0) {
-                userRecord[_user] = UserRecord(1, 1);
-            }
-            else {
-                userRecord[_user].totalAnswered += 1;
-                userRecord[_user].totalAccepted += 1;
-            }
-            return true;
+        if(userRecord[_user].totalAnswered == 0) {
+            userRecord[_user] = UserRecord(1, 1);
         }
-        else return false;
+        else {
+            userRecord[_user].totalAnswered += 1;
+            userRecord[_user].totalAccepted += 1;
+        }
+        return true;
     }
-    // poll revoke user answer function
+    // poll revoke user answer
     function userAnswerRevoke(bytes32 _id, address _user) onlyThePoll(_id) external returns(bool){
         if(userRecord[_user].totalAnswered == 0) {
             userRecord[_user] = UserRecord(1, 0);
