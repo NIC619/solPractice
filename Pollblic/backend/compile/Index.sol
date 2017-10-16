@@ -45,15 +45,29 @@ contract Index {
         uint                    totalAccepted;
     }
     
+    // Events
+    event NewPoll(
+        address owner,
+        bytes32 pollID
+    );
+
+    event NewUserActivity(
+        address user,
+        bool ifRevoke
+    );
+    
     // GET functions
-    function getUserTotalAnswered(address _user) constant returns(uint) {
-        return userRecord[_user].totalAnswered;
-    }
-    function getUserTotalAccepted(address _user) constant returns(uint) {
-        return userRecord[_user].totalAccepted;
+    // function getUserTotalAnswered(address _user) constant returns(uint) {
+    //     return userRecord[_user].totalAnswered;
+    // }
+    // function getUserTotalAccepted(address _user) constant returns(uint) {
+    //     return userRecord[_user].totalAccepted;
+    // }
+    function getPollOwnedByOwner(address _owner) constant returns(bytes32[]) {
+        return ownerRecord[_owner].pollIDList;
     }
     function getPollAddrByID(bytes32 _id) constant returns(address) {
-         return pollRecord[_id].contractAddr;
+        return pollRecord[_id].contractAddr;
     }
     function getPollOwnerByID(bytes32 _id) constant returns(address) {
         return pollRecord[_id].owner;
@@ -121,6 +135,7 @@ contract Index {
             ownerRecord[msg.sender].numberOfPollOwned += 1;
             ownerRecord[msg.sender].pollIDList.push(_id);
         }
+        NewPoll(msg.sender, _id);
     }
 
     // poll confirm user answer
@@ -132,6 +147,7 @@ contract Index {
             userRecord[_user].totalAnswered += 1;
             userRecord[_user].totalAccepted += 1;
         }
+        NewUserActivity(_user, true);
         return true;
     }
     // poll revoke user answer
@@ -142,6 +158,7 @@ contract Index {
         else {
             userRecord[_user].totalAnswered += 1;
         }
+        NewUserActivity(_user, false);
         return true;
     }
 }

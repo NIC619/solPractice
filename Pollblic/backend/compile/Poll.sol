@@ -116,6 +116,19 @@ contract Poll
     //     }
     // }
 
+    // Events
+    event NewChoiceAnswer(
+        address user,
+        uint questionNumber,
+        uint choice
+    );
+
+    event NewShortAnswer(
+        address user,
+        uint questionNumber,
+        bytes32 answer
+    );
+
     // GET functions
     function getQuestion(uint8 _questionNumber) constant returns(QuestionType, string) {
         require(0 <= _questionNumber && _questionNumber < numberOfQuestions);
@@ -205,16 +218,19 @@ contract Poll
             require(_choices.length == 1);
             require(_choices[0] < numberOfChoices[_questionNumber]);
             users[msg.sender].answers[_questionNumber].choices[0] = _choices[0];
+            NewChoiceAnswer(msg.sender, _choices[0]);
         }
         else if(questions[_questionNumber].questionType == QuestionType.MultipleChoice) {
             require(0 < _choices.length && _choices.length <= numberOfChoices[_questionNumber]);
             for(var i=0 ; i<=_choices.length ; i++) {
                 require(_choices[i] < numberOfChoices[_questionNumber]);
                 users[msg.sender].answers[_questionNumber].choices[i] = _choices[i];
+                NewChoiceAnswer(msg.sender, _choices[i]);
             }
         }
         else {
             users[msg.sender].answers[_questionNumber].shortAnswer = _shortAnswer;
+            NewShortAnswer(msg.sender, _shortAnswer);
         }
 
         // If it's first time the user answer, increment totalAnswered by 1
