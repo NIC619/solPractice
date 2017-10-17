@@ -170,7 +170,7 @@ contract Poll
         require(contractStatus == PollStatus.Preparing);
         
         // Question format check
-        require(0 <= _questionNumber && _questionNumber >= numberOfQuestions);
+        require(0 <= _questionNumber && _questionNumber < numberOfQuestions);
         require(0 < _questionType && _questionType <= NUMBER_OF_QUESTION_TYPE);
         require(questions[_questionNumber].questionType == QuestionType.NotSet);
         // Choice format check
@@ -202,8 +202,8 @@ contract Poll
     // Add Answer function
     function addAnswer(uint8 _questionNumber, string _shortAnswer, uint8[] _choices) {
         // Contract status check:
-        require((block.number <= timePollEnd && contractStatus != PollStatus.Preparing)
-            || (contractStatus == PollStatus.ShutDown && users[msg.sender].numberOfAnswered == 0));
+        require(block.number <= timePollEnd && contractStatus != PollStatus.Preparing);
+        require(!(contractStatus == PollStatus.ShutDown && users[msg.sender].numberOfAnswered == 0));
 
         // Answer format check
         require(0 <= _questionNumber && _questionNumber < numberOfQuestions);
@@ -301,7 +301,7 @@ contract Poll
     function userWithdraw() {
         // User withdrawal eligibility check
         require(
-            users[msg.sender].isPaid = false
+            users[msg.sender].isPaid == false
             && users[msg.sender].numberOfAnswered == numberOfQuestions
             && users[msg.sender].timeToClaimReward <= block.number
         );

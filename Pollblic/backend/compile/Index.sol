@@ -90,9 +90,9 @@ contract Index {
                 string _title,
                 uint _timePollLast,
                 uint _periodForAnswerReview,
+                uint8 _numberOfQuestions
                 // bool _ifEncrypt,
                 // address _encryptionKey,
-                uint8 _numberOfQuestions
             ) payable {
         // throw if id already exist
         // if(pollRecord[_id].startTime != 0) throw;
