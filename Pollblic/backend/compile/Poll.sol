@@ -126,7 +126,7 @@ contract Poll
     event NewShortAnswer(
         address user,
         uint questionNumber,
-        bytes32 answer
+        string answer
     );
 
     // GET functions
@@ -218,19 +218,19 @@ contract Poll
             require(_choices.length == 1);
             require(_choices[0] < numberOfChoices[_questionNumber]);
             users[msg.sender].answers[_questionNumber].choices[0] = _choices[0];
-            NewChoiceAnswer(msg.sender, _choices[0]);
+            NewChoiceAnswer(msg.sender, _questionNumber, _choices[0]);
         }
         else if(questions[_questionNumber].questionType == QuestionType.MultipleChoice) {
             require(0 < _choices.length && _choices.length <= numberOfChoices[_questionNumber]);
             for(var i=0 ; i<=_choices.length ; i++) {
                 require(_choices[i] < numberOfChoices[_questionNumber]);
                 users[msg.sender].answers[_questionNumber].choices[i] = _choices[i];
-                NewChoiceAnswer(msg.sender, _choices[i]);
+                NewChoiceAnswer(msg.sender, _questionNumber, _choices[i]);
             }
         }
         else {
             users[msg.sender].answers[_questionNumber].shortAnswer = _shortAnswer;
-            NewShortAnswer(msg.sender, _shortAnswer);
+            NewShortAnswer(msg.sender, _questionNumber, _shortAnswer);
         }
 
         // If it's first time the user answer, increment totalAnswered by 1
