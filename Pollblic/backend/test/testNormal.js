@@ -18,7 +18,8 @@ var binaryIndex = fs.readFileSync('../compile/Index.bytecode', 'utf-8');
 
 // Contract constructor arguments
 //
-var contractStatus = ["Preparing", "Open", "Shutdown"]
+var contractStatus = ["Preparing", "Open", "Shutdown"];
+var questionType = ["NotSet", "SingleChoice", "MultipleChoice", "ShortAnswer"];
 
 console.log("Still have " + web3.fromWei( web3.eth.getBalance(web3.eth.accounts[0]), "ether" ) + " ether");
 
@@ -55,7 +56,6 @@ web3.eth.contract(abiIndex).new( {from: web3.eth.accounts[0], data: binaryIndex,
 				console.log("contractPoll status: " + contractStatus[contractPoll.contractStatus().toString()]);
 				console.log("Poll starts with " + web3.fromWei(web3.eth.getBalance(contractPoll.address), "ether") + " ether");
 				console.log("--------------------------------------------");
-				console.log(contractIndex.numberOfOwner.call().toString())
 			// 	return;
 			// }).catch(function(exception){
 				//console.log(exception);
@@ -64,10 +64,16 @@ web3.eth.contract(abiIndex).new( {from: web3.eth.accounts[0], data: binaryIndex,
 				console.log("-----------start working on Poll-----------");
 				return funcPoll.addQuestion(contractPoll, owner, 0, 3, "Q1: short answer", 0, []);
 			}).then(function(){
-				return funcPoll.addQuestion(contractPoll, owner, 1, 1, "Q2: single answer", 3, ["A1", "A2", "A3"]);
+				return funcPoll.addQuestion(contractPoll, owner, 1, 2, "Q2: multiple answer", 5, ["A1", "A2", "A3", "A4", "A5"]);
 			}).then(function(){
 				console.log("addQuestion done");
 				console.log("--------------------------------------------");
+				return funcPoll.getQuestion(contractPoll, 1);
+			}).then(function([_questionType, _question]){
+				console.log("Question 2: " + questionType[_questionType] + ", " + _question);
+				return funcPoll.getQuestionChoice(contractPoll, 1, 4);
+			}).then(function(_choice){
+				console.log("Choice 5: " + _choice);
 				return funcPoll.openPoll(contractPoll, owner);
 			}).catch(function(exception){
 				// console.log(exception);
@@ -77,7 +83,7 @@ web3.eth.contract(abiIndex).new( {from: web3.eth.accounts[0], data: binaryIndex,
 				console.log("contractPoll status: " + contractStatus[contractPoll.contractStatus().toString()]);
 				return funcPoll.addAnswer(contractPoll, web3.eth.accounts[1], 0, "blabla",[]);
 			}).then(function(){
-				return funcPoll.addAnswer(contractPoll, web3.eth.accounts[1], 1, "", [2]);
+				return funcPoll.addAnswer(contractPoll, web3.eth.accounts[1], 1, "ok", [2,3,4]);
 			}).then(function(){
 				console.log("addAnswer done!");
 				console.log("total answered in poll: " + contractPoll.totalAnswered());

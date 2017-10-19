@@ -222,7 +222,7 @@ contract Poll
         }
         else if(questions[_questionNumber].questionType == QuestionType.MultipleChoice) {
             require(0 < _choices.length && _choices.length <= numberOfChoices[_questionNumber]);
-            for(var i=0 ; i<=_choices.length ; i++) {
+            for(var i=0 ; i<_choices.length ; i++) {
                 require(_choices[i] < numberOfChoices[_questionNumber]);
                 users[msg.sender].answers[_questionNumber].choices[i] = _choices[i];
                 NewChoiceAnswer(msg.sender, _questionNumber, _choices[i]);

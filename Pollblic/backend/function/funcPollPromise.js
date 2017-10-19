@@ -24,7 +24,8 @@ module.exports = {
                     reject(err);
                 } else {
                     console.log(result[0].toString());
-                    resolve(result[0].toString(), result[1]);
+                    console.log(result[1]);
+                    resolve([result[0].toString(), result[1]]);
                 }
             });
         });
@@ -37,7 +38,7 @@ module.exports = {
                     console.log("in getQuestionChoice: " + err);
                     reject(err);
                 } else {
-                    console.log(result);
+                    // console.log(result);
                     resolve(result);
                 }
             });
