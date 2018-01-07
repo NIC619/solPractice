@@ -31,30 +31,48 @@ contract DrugSupplyChainRecord {
     
     mapping(string=>DrugDetail) drugs;
 
-    function getDrugOwner(string _drugName) returns (address _owner) {
+    // Constructor
+    function DrugSupplyChainRecord() {
+        addNewParticipant(msg.sender);
+    }
+
+    // Helper functions
+    function getDrugOwner(string _drugName) constant returns (address _owner) {
         _owner = drugs[_drugName].owner;
     }
 
-    function getUpstreamDrugInfo(string _curDrugName, string upstreamDrugName) returns(uint _amount, bool _ifOwnerAckUpstreamDrug, bool _ifUpstreamOwnerAck) {
-        uint index = drugs[_curDrugName].upstreamDrugIndex[upstreamDrugName];
+    function getUpstreamDrugInfo(string _curDrugName, string _upstreamDrugName) constant returns(uint _amount, bool _ifOwnerAckUpstreamDrug, bool _ifUpstreamOwnerAck) {
+        uint index = drugs[_curDrugName].upstreamDrugIndex[_upstreamDrugName];
         _amount = drugs[_curDrugName].upstreamDrugAmount[index];
         _ifOwnerAckUpstreamDrug = drugs[_curDrugName].ifOwnerAckUpstreamDrug[index];
         _ifUpstreamOwnerAck = drugs[_curDrugName].ifUpstreamOwnerAck[index];
     }
 
-    function getDownStreamInfo(string _curDrugName, string downstreamDrugName) returns(uint _amount, bool _ifOwnerAckDownstreamDrug, bool _ifDownstreamOwnerAck) {
-        uint index = drugs[_curDrugName].downstreamDrugIndex[downstreamDrugName];
+    function getDownStreamInfo(string _curDrugName, string _downstreamDrugName) constant returns(uint _amount, bool _ifOwnerAckDownstreamDrug, bool _ifDownstreamOwnerAck) {
+        uint index = drugs[_curDrugName].downstreamDrugIndex[_downstreamDrugName];
         _amount = drugs[_curDrugName].downstreamDrugAmount[index];
         _ifOwnerAckDownstreamDrug = drugs[_curDrugName].ifOwnerAckDownstreamDrug[index];
         _ifDownstreamOwnerAck = drugs[_curDrugName].ifDownstreamOwnerAck[index];
     }
 
+    // Verify drug
+    function isDrugDistributeValid(string _curDrugName) returns(bool isValid) {
+        uint downStreamDistributeAmount = 0;
+        for(var i = 1 ; i <= drugs[_curDrugName].downstreamDrugCount ; i++) {
+            if(drugs[_curDrugName].ifOwnerAckDownstreamDrug[i] && drugs[_curDrugName].ifDownstreamOwnerAck[i]) {
+                downStreamDistributeAmount += drugs[_curDrugName].downstreamDrugAmount[i];
+            }
+        }
+        isValid = downStreamDistributeAmount < drugs[_curDrugName].amount;
+    }
 
+    // Add participant
     function addNewParticipant(address _participant){
-        participants[participantCount] = _participant;
+        participants[participantCount + 1] = _participant;
         participantCount += 1;
     }
 
+    // Add drug and detatil
     function addNewDrug(string _drugName, string _manudate, string _expdate, uint _drugAmount) {
         require(drugs[_drugName].owner == 0x0);
         drugs[_drugName].owner = msg.sender;
@@ -65,13 +83,11 @@ contract DrugSupplyChainRecord {
         drugs[_drugName].expDate = _expdate;
     }
 
-    
     function addDrugStream(string _upstreamDrugName, string _downstreamDrugName, uint _amount) {
-        require(msg.sender == this.getDrugOwner(_upstreamDrugName) || msg.sender == this.getDrugOwner(_downstreamDrugName));
-        this.addUpstreamDrug(_downstreamDrugName, _upstreamDrugName, _amount);
-        this.addDownstreamDrug(_upstreamDrugName, _downstreamDrugName, _amount);
+        require(msg.sender == getDrugOwner(_upstreamDrugName) || msg.sender == getDrugOwner(_downstreamDrugName));
+        addUpstreamDrug(_downstreamDrugName, _upstreamDrugName, _amount);
+        addDownstreamDrug(_upstreamDrugName, _downstreamDrugName, _amount);
     }
-
     function addUpstreamDrug(string _curDrugName, string _upstreamDrugName, uint _amount) internal {
         uint index = drugs[_curDrugName].upstreamDrugIndex[_upstreamDrugName];
         if(drugs[_curDrugName].ifOwnerAckUpstreamDrug[index] == false && drugs[_curDrugName].ifUpstreamOwnerAck[index] == false) {
@@ -81,7 +97,7 @@ contract DrugSupplyChainRecord {
             drugs[_curDrugName].upstreamDrugAmount[index] = _amount;
             drugs[_curDrugName].upstreamDrugCount += 1;
         }
-        if(msg.sender == this.getDrugOwner(_curDrugName)) {
+        if(msg.sender == getDrugOwner(_curDrugName)) {
             drugs[_curDrugName].ifOwnerAckUpstreamDrug[index] = true;
         }
         else {
@@ -97,7 +113,7 @@ contract DrugSupplyChainRecord {
             drugs[_curDrugName].downstreamDrugAmount[index] = _amount;
             drugs[_curDrugName].downstreamDrugCount += 1;
         }
-        if(msg.sender == this.getDrugOwner(_curDrugName)) {
+        if(msg.sender == getDrugOwner(_curDrugName)) {
             drugs[_curDrugName].ifOwnerAckDownstreamDrug[index] = true;
         }
         else {
