@@ -105,7 +105,7 @@ contract DrugSupplyChainRecord {
         }
     }
     function addDownstreamDrug(string _curDrugName, string _downstreamDrugName, uint _amount) internal {
-        uint index = drugs[_curDrugName].upstreamDrugIndex[_downstreamDrugName];
+        uint index = drugs[_curDrugName].downstreamDrugIndex[_downstreamDrugName];
         if(drugs[_curDrugName].ifOwnerAckDownstreamDrug[index] == false && drugs[_curDrugName].ifDownstreamOwnerAck[index] == false) {
             index = drugs[_curDrugName].downstreamDrugCount + 1;
             drugs[_curDrugName].downstreamDrugName[index] = _downstreamDrugName;
