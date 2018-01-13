@@ -56,7 +56,7 @@ contract DrugSupplyChainRecord {
     }
 
     // Verify drug
-    function isDrugDistributeValid(string _curDrugName) returns(bool isValid) {
+    function isDrugDistributeValid(string _curDrugName) constant returns(bool isValid) {
         uint downStreamDistributeAmount = 0;
         for(var i = 1 ; i <= drugs[_curDrugName].downstreamDrugCount ; i++) {
             if(drugs[_curDrugName].ifOwnerAckDownstreamDrug[i] && drugs[_curDrugName].ifDownstreamOwnerAck[i]) {
@@ -85,6 +85,7 @@ contract DrugSupplyChainRecord {
 
     function addDrugStream(string _upstreamDrugName, string _downstreamDrugName, uint _amount) {
         require(msg.sender == getDrugOwner(_upstreamDrugName) || msg.sender == getDrugOwner(_downstreamDrugName));
+        assert(sha3(_upstreamDrugName) != sha3(_downstreamDrugName));
         addUpstreamDrug(_downstreamDrugName, _upstreamDrugName, _amount);
         addDownstreamDrug(_upstreamDrugName, _downstreamDrugName, _amount);
     }
