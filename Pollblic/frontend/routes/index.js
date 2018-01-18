@@ -114,7 +114,7 @@ router.get('/search', function(req, res) {
 			}
 		});
 	}
-	else if ( req.query.title ) {
+	else if( req.query.title ) {
 		pollRecords.find({ title: req.query.title }, function( err, searchResults ) {
 			if( searchResults === undefined ) {
 				res.render( 'search', { title: 'Pollblic', pollRecordList: [] });
@@ -124,7 +124,7 @@ router.get('/search', function(req, res) {
 			}
 		});
 	}
-	else if ( req.query.owner ) {
+	else if( req.query.owner ) {
 		pollRecords.find({ owner: req.query.owner }, function( err, searchResults ) {
 			if( searchResults === undefined ) {
 				res.render( 'search', { title: 'Pollblic', pollRecordList: [] });
@@ -134,8 +134,12 @@ router.get('/search', function(req, res) {
 			}
 		});
 	}
-	else{
-		res.render('search', {title: 'Pollblic', pollRecordList: []});
+	else {
+		if( req.query.user ) {
+			res.render('search', {title: 'Pollblic', pollRecordList: []});
+		}
+		else
+			res.render( 'search', { title: 'Pollblic', pollRecordList: [] });
 	}
 });
 
