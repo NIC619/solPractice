@@ -59,14 +59,31 @@ router.get('/', function(req, res) {
 });
 
 /* GET new patient data */
-router.get('/newRecord', function(req, res) {
+router.get('/getDrugByName', function(req, res) {
 	var _debugMsg = "";
 	if(contractDrugSupplyChainRecord == undefined) {
 		_debugMsg = "Contract not yet deployed!";
-		res.render('index', {title: _title, patientDataList: [], debugMsg: _debugMsg});
+		res.render('index', {title: _title, isAuthorized: true, drugManufacturerList: drugManufacturers, debugMsg: _debugMsg});
 	}
 	else {
-		res.render('newRecord', {title: _title, patientDataList: [], debugMsg: _debugMsg});
+		console.log("Drug detail inquery received, drug name: " + req.query.name);
+		var drugDetail = {"name": req.query.name};
+		funcDrugSupplyChainRecord.getDrugOwner(contractDrugSupplyChainRecord, authority, req.query.name).then(function(owner){
+			drugDetail["owner"] = owner;
+			if(owner == "0x0000000000000000000000000000000000000000") {
+				_debugMsg = "Drug '" + req.query.name + "' not found.";
+				console.log(_debugMsg);
+				res.render('drug', {title: _title, isAuthorized: true, drugManufacturerList: drugManufacturers, drug: drugDetail, debugMsg: _debugMsg});
+				return Promise.reject();
+			}
+			// else {
+			// 	return funcDrugSupplyChainRecord.getDrugAmount(;
+			// }
+		}).then(function(){
+			res.render('drug', {title: _title, isAuthorized: true, drugManufacturerList: drugManufacturers, drug: drugDetail, debugMsg: _debugMsg});
+		}).catch(function(exception) {
+			console.log("Get drug detail terminated.");
+		});
 	}
 });
 
