@@ -8,7 +8,7 @@ module.exports = {
                 }
                 else {
                     if (typeof instance.address !== 'undefined') {
-                        console.log("contract deployed at " + instance.address)
+                        console.log("contract deployed at " + instance.address);
                         resolve(instance);
                     }
                 }

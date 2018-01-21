@@ -14,8 +14,8 @@ if(!web3.currentProvider)
 var abiDrugSupplyChainRecord = JSON.parse( fs.readFileSync('../compile/DrugSupplyChainRecord.abi', 'utf-8') );
 var bytecodeDrugSupplyChainRecord = fs.readFileSync('../compile/DrugSupplyChainRecord.bytecode', 'utf-8');
 
-var deployDrugSupplyChainRecord = require("../functions/deployDrugSupplyChainRecord.js");
-var funcDrugSupplyChainRecord = require("../functions/funcDrugSupplyChainRecord.js");
+var deployDrugSupplyChainRecord = require("../../functions/deployDrugSupplyChainRecord.js");
+var funcDrugSupplyChainRecord = require("../../functions/funcDrugSupplyChainRecord.js");
 var contractDrugSupplyChainRecord;
 var authority = web3.eth.accounts[0];
 var drugManufacturers = [web3.eth.accounts[1], web3.eth.accounts[2], web3.eth.accounts[3]];
@@ -24,7 +24,9 @@ var drugManufacturers = [web3.eth.accounts[1], web3.eth.accounts[2], web3.eth.ac
 /* DEVELOPEMENT FUNCTIONS */
 router.get('/deploy', function(req, res) {
 	//deploy contract
-	deployDrugSupplyChainRecord.deploy(web3, abiDrugSupplyChainRecord, bytecodeDrugSupplyChainRecord, authority, function(instance){
+	var _debugMsg = "";
+
+	deployDrugSupplyChainRecord.deploy(web3, abiDrugSupplyChainRecord, bytecodeDrugSupplyChainRecord, authority).then(function(instance){
 		contractDrugSupplyChainRecord = instance;
 		console.log("Add drug manufacturer 1:", drugManufacturers[0]);
 		return funcDrugSupplyChainRecord.addNewParticipant(contractDrugSupplyChainRecord, drugManufacturers[0]);
@@ -34,7 +36,13 @@ router.get('/deploy', function(req, res) {
 	}).then(function() {
 		console.log("Add drug manufacturer 3:", drugManufacturers[2]);
 		return funcDrugSupplyChainRecord.addNewParticipant(contractDrugSupplyChainRecord, drugManufacturers[2]);
-		res.redirect('/');
+	}).then(function() {
+		res.render('index', {title: _title, isAuthorized: true, drugManufacturerList: drugManufacturers, debugMsg: _debugMsg});
+		// res.redirect('/');
+	}).catch(function(exception) {
+		console.log("Error while deploying contract and adding initial participants");
+		_debugMsg = "Contract initiation failed";
+		res.render('index', {title: _title, isAuthorized: true, drugManufacturerList: drugManufacturers, debugMsg: _debugMsg});
 	});
 });
 
@@ -43,6 +51,7 @@ router.get('/deploy', function(req, res) {
 /* GET home page */
 router.get('/', function(req, res) {
 	var _debugMsg = "";
+
 	if(contractDrugSupplyChainRecord == undefined) {
 		_debugMsg = "Contract not yet deployed!";
 	}
