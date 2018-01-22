@@ -65,7 +65,7 @@ deployDrugSupplyChainRecord.deploy(web3, abiDrugSupplyChainRecord, bytecodeDrugS
 }).then(function(upstreamInfo){
 	console.log("Updated info of Drug_B's upstream Drug_A");
 	console.log("Amount:", upstreamInfo[0].toString(), ", Owner ack:", upstreamInfo[1], ", Upstream owner ack:", upstreamInfo[2]);
-	return funcDrugSupplyChainRecord.getDownStreamInfo(contractDrugSupplyChainRecord, authority, "Drug_A", "Drug_B");
+	return funcDrugSupplyChainRecord.getDownStreamDrugInfo(contractDrugSupplyChainRecord, authority, "Drug_A", "Drug_B");
 }).then(function(downstreamInfo){
 	console.log("Info of Drug_A's downstream Drug_B");
 	console.log("Amount:", downstreamInfo[0].toString(), ", Owner ack:", downstreamInfo[1], ", Downstream owner ack:", downstreamInfo[2]);
