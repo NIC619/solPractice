@@ -41,6 +41,29 @@ contract DrugSupplyChainRecord {
         _owner = drugs[_drugName].owner;
     }
 
+    function getDrugDetail(string _drugName) constant returns (address _owner, uint _amount, string _manuDate, string _expDate, uint _upstreamDrugCount, uint _downstreamDrugCount) {
+         _owner = drugs[_drugName].owner;
+         _amount = drugs[_drugName].amount;
+         _manuDate = drugs[_drugName].manuDate;
+         _expDate = drugs[_drugName].expDate;
+         _upstreamDrugCount = drugs[_drugName].upstreamDrugCount;
+         _downstreamDrugCount = drugs[_drugName].downstreamDrugCount;
+    }
+
+    function getUpstreamDrugInfoByIndex(string _curDrugName, uint index) constant returns(string _name, uint _amount, bool _ifOwnerAckUpstreamDrug, bool _ifUpstreamOwnerAck) {
+        _name = drugs[_curDrugName].upstreamDrugName[index];
+        _amount = drugs[_curDrugName].upstreamDrugAmount[index];
+        _ifOwnerAckUpstreamDrug = drugs[_curDrugName].ifOwnerAckUpstreamDrug[index];
+        _ifUpstreamOwnerAck = drugs[_curDrugName].ifUpstreamOwnerAck[index];
+    }
+
+    function getDownstreamDrugInfoByIndex(string _curDrugName, uint index) constant returns(string _name, uint _amount, bool _ifOwnerAckDownstreamDrug, bool _ifDownstreamOwnerAck) {
+        _name = drugs[_curDrugName].downstreamDrugName[index];
+        _amount = drugs[_curDrugName].downstreamDrugAmount[index];
+        _ifOwnerAckDownstreamDrug = drugs[_curDrugName].ifOwnerAckDownstreamDrug[index];
+        _ifDownstreamOwnerAck = drugs[_curDrugName].ifDownstreamOwnerAck[index];
+    }
+
     function getUpstreamDrugInfo(string _curDrugName, string _upstreamDrugName) constant returns(uint _amount, bool _ifOwnerAckUpstreamDrug, bool _ifUpstreamOwnerAck) {
         uint index = drugs[_curDrugName].upstreamDrugIndex[_upstreamDrugName];
         _amount = drugs[_curDrugName].upstreamDrugAmount[index];
@@ -48,7 +71,7 @@ contract DrugSupplyChainRecord {
         _ifUpstreamOwnerAck = drugs[_curDrugName].ifUpstreamOwnerAck[index];
     }
 
-    function getDownStreamInfo(string _curDrugName, string _downstreamDrugName) constant returns(uint _amount, bool _ifOwnerAckDownstreamDrug, bool _ifDownstreamOwnerAck) {
+    function getDownStreamDrugInfo(string _curDrugName, string _downstreamDrugName) constant returns(uint _amount, bool _ifOwnerAckDownstreamDrug, bool _ifDownstreamOwnerAck) {
         uint index = drugs[_curDrugName].downstreamDrugIndex[_downstreamDrugName];
         _amount = drugs[_curDrugName].downstreamDrugAmount[index];
         _ifOwnerAckDownstreamDrug = drugs[_curDrugName].ifOwnerAckDownstreamDrug[index];

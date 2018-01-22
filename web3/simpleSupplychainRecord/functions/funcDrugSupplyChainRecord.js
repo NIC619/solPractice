@@ -13,6 +13,48 @@ module.exports = {
             );
         });   
     },
+    getDrugDetail: function(instance, user, _drugName) {
+        return new Promise(function(resolve, reject) {
+            instance.getDrugDetail(_drugName, {from: user},
+                function(err, drugDetail) {
+                    if (err) {
+                        console.log("Error in getDrugDetail: " + err);
+                        reject(err);
+                    } else {
+                        resolve(drugDetail);
+                    }
+                }
+            );
+        });   
+    },
+    getUpstreamDrugInfoByIndex: function(instance, user, _drugName, index) {
+        return new Promise(function(resolve, reject) {
+            instance.getUpstreamDrugInfoByIndex(_drugName, index, {from: user},
+                function(err, info) {
+                    if (err) {
+                        console.log("Error in getUpstreamDrugInfoByIndex: " + err);
+                        reject(err);
+                    } else {
+                        resolve(info);
+                    }
+                }
+            );
+        });   
+    },
+    getDownstreamDrugInfoByIndex: function(instance, user, _drugName, index) {
+        return new Promise(function(resolve, reject) {
+            instance.getDownstreamDrugInfoByIndex(_drugName, index,{from: user},
+                function(err, info) {
+                    if (err) {
+                        console.log("Error in getDownstreamDrugInfoByIndex: " + err);
+                        reject(err);
+                    } else {
+                        resolve(info);
+                    }
+                }
+            );
+        });   
+    },
     getUpstreamDrugInfo: function(instance, user, _drugName, _upstreamDrugName) {
         return new Promise(function(resolve, reject) {
             instance.getUpstreamDrugInfo(_drugName, _upstreamDrugName, {from: user},
@@ -27,12 +69,12 @@ module.exports = {
             );
         });   
     },
-    getDownStreamInfo: function(instance, user, _drugName, _downstreamDrugName) {
+    getDownStreamDrugInfo: function(instance, user, _drugName, _downstreamDrugName) {
         return new Promise(function(resolve, reject) {
-            instance.getDownStreamInfo(_drugName, _downstreamDrugName,{from: user},
+            instance.getDownStreamDrugInfo(_drugName, _downstreamDrugName,{from: user},
                 function(err, info) {
                     if (err) {
-                        console.log("Error in getDownStreamInfo: " + err);
+                        console.log("Error in getDownStreamDrugInfo: " + err);
                         reject(err);
                     } else {
                         resolve(info);
