@@ -13,6 +13,34 @@ module.exports = {
             );
         });   
     },
+    getDrugsAmountByOwner: function(instance, user, _owner) {
+        return new Promise(function(resolve, reject) {
+            instance.getDrugsAmountByOwner(_owner, {from: user},
+                function(err, amount) {
+                    if (err) {
+                        console.log("Error in getDrugsAmountByOwner: " + err);
+                        reject(err);
+                    } else {
+                        resolve(amount);
+                    }
+                }
+            );
+        });   
+    },
+    getDrugsOwnedByOwner: function(instance, user, _drugName, _index) {
+        return new Promise(function(resolve, reject) {
+            instance.getDrugsOwnedByOwner(_drugName, _index, {from: user},
+                function(err, drugName) {
+                    if (err) {
+                        console.log("Error in getDrugsOwnedByOwner: " + err);
+                        reject(err);
+                    } else {
+                        resolve(drugName);
+                    }
+                }
+            );
+        });   
+    },
     getDrugDetail: function(instance, user, _drugName) {
         return new Promise(function(resolve, reject) {
             instance.getDrugDetail(_drugName, {from: user},

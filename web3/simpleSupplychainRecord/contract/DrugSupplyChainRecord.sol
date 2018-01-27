@@ -7,6 +7,13 @@ contract DrugSupplyChainRecord {
     uint drugAmount;
     mapping(uint=>string) drugName;
     
+    struct ManufacturerDetail {
+        uint amount;
+        mapping(uint=>string) drugName;
+    }
+
+    mapping(address=>ManufacturerDetail) manufacturers;
+
     struct DrugDetail {
         address owner;
         
@@ -39,6 +46,14 @@ contract DrugSupplyChainRecord {
     // Helper functions
     function getDrugOwner(string _drugName) constant returns (address _owner) {
         _owner = drugs[_drugName].owner;
+    }
+
+    function getDrugsAmountByOwner(address _owner) constant returns (uint _amount) {
+        _amount = manufacturers[_owner].amount;
+    }
+
+    function getDrugsOwnedByOwner(address _owner, uint _index) constant returns (string _drugName) {
+        _drugName = manufacturers[_owner].drugName[_index];
     }
 
     function getDrugDetail(string _drugName) constant returns (address _owner, uint _amount, string _manuDate, string _expDate, uint _upstreamDrugCount, uint _downstreamDrugCount) {
@@ -104,6 +119,9 @@ contract DrugSupplyChainRecord {
         drugs[_drugName].amount = _drugAmount;
         drugs[_drugName].manuDate = _manudate;
         drugs[_drugName].expDate = _expdate;
+
+        manufacturers[msg.sender].drugName[manufacturers[msg.sender].amount] = _drugName;
+        manufacturers[msg.sender].amount += 1;
     }
 
     function addDrugStream(string _upstreamDrugName, string _downstreamDrugName, uint _amount) {
