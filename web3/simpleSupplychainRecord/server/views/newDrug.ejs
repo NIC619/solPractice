@@ -17,7 +17,7 @@
 			<tbody>
 				<form action="/addNewDrug" method="post">
 					<td>
-						<input type="text" name="name" size="10">
+						<input type="text" name="name" size="10" required>
 					</td>
 					<td>
 						<select name="owner">
@@ -27,16 +27,16 @@
 						</select>
 					</td>
 					<td>
-						<input type="number" name="amount" min="1" size="2">
+						<input type="number" name="amount" min="1" size="2"  required>
 					</td>
 					<td>
-						<input type="date" name="manuDate" size="15">
+						<input type="date" name="manuDate" size="15"  required>
 					</td>
 					<td>
-						<input type="date" name="expDate" size="15">
+						<input type="date" name="expDate" size="15"  required>
 					</td>
 					<td>
-						<input type="submit" value="Submit">
+						<input type="submit" value="Submit"  required>
 					</td>
 				</form>
 			</tbody>

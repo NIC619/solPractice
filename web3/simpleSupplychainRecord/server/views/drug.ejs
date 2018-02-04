@@ -13,7 +13,10 @@
 					<th>Expiration Date</th>
 					<th>Number of Upstream Drugs</th>
 					<th>Number of Downstream Drugs</th>
-					<th></th>
+					<% if(isAuthorized) { %>
+						<th></th>
+						<th></th>
+					<% } %>
 				</tr>
 			</thead>
 			<tbody>
@@ -26,30 +29,79 @@
 							<%= drug.owner %>
 						</td>
 						<td>
-							<!-- <%= drug.amount %> -->
+							<%= drug.amount %>
 						</td>
 						<td>
-							<!-- <%= drug.manuDate %> -->
+							<%= drug.manuDate %>
 						</td>
 						<td>
-							<!-- <%= drug.expDate %> -->
+							<%= drug.expDate %>
 						</td>
 						<td>
-							<!-- <%= drug.upstreamDrugAmount %> -->
+							<%= drug.upstreamDrugAmount %>
 						</td>
 						<td>
-							<!-- <%= drug.downstreamDrugAmountd %> -->
+							<%= drug.downstreamDrugAmount %>
 						</td>
-						<td>
-							<% if(isAuthorized) { %>
-								<a href="/addUpstream?addr=<%= drug.name %>" class="btn btn-primary">Add Upstream Drug</a>
-							<% } %>
-						</td>
+						<% if(isAuthorized) { %>
+							<td>
+								<a href="/addDrugStream?addr=<%= drug.owner %>&stream=up&name=<%= drug.name %>" class="btn btn-primary">Add Upstream Drug</a>
+							</td>
+							<td>
+								<a href="/addDrugStream?addr=<%= drug.owner %>&stream=down&name=<%= drug.name %>" class="btn btn-primary">Add Downstream Drug</a>
+							</td>
+						<% } %>
 					</tr>
 				<% } %>
 				
 			</tbody>
 		</table>
+	</div>
+	<div>
+		<div class="table-responsive" style="float: left; width: 500px;  margin-left: 100px;">
+			<table class="table table-bordered">
+				<thead>
+					<tr>
+						<th>Upstream Drug Name</th>
+						<th>Amount</th>
+					</tr>
+				</thead>
+				<tbody>
+					<% for(var i = 0; i < upstreamDrugList.length ; i++) { %>
+						<tr>
+							<td>
+								<%= upstreamDrugList[i].name %>
+							</td>
+							<td>
+								<%= upstreamDrugList[i].amount %>
+							</td>
+						</tr>
+					<% } %>
+				</tbody>
+			</table>
+		</div>
+		<div class="table-responsive">
+			<table class="table table-bordered" style="float: left; width: 500px; margin-left: 200px;">
+				<thead>
+					<tr>
+						<th>Downstream Drug Name</th>
+						<th>Amount</th>
+					</tr>
+				</thead>
+				<tbody>
+					<% for(var i = 0; i < downstreamDrugList.length ; i++) { %>
+						<tr>
+							<td>
+								<%= downstreamDrugList[i].name %>
+							</td>
+							<td>
+								<%= downstreamDrugList[i].amount %>
+							</td>
+						</tr>
+					<% } %>
+				</tbody>
+			</table>
+		</div>
 	</div>
 	<% if(debugMsg == "Contract not yet deployed!") { %>
 		<a href="/deploy" class="btn btn-primary">Deploy</a>
