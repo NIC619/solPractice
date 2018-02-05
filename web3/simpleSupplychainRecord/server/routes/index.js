@@ -58,6 +58,37 @@ router.get('/', function(req, res) {
 	res.render('index', {title: _title, isAuthorized: true, drugManufacturerList: drugManufacturers, debugMsg: _debugMsg});
 });
 
+/* GET manufacturer detail */
+router.get('/getDrugsByManufacturer', function(req, res) {
+	var _debugMsg = "";
+	if(contractDrugSupplyChainRecord == undefined) {
+		_debugMsg = "Contract not yet deployed!";
+		res.render('index', {title: _title, isAuthorized: true, drugManufacturerList: drugManufacturers, debugMsg: _debugMsg});
+	}
+	else {
+		console.log("Manufacturer detail inquery received, manufacturer: " + req.query.addr);
+		funcDrugSupplyChainRecord.getDrugsAmountByOwner(contractDrugSupplyChainRecord, authority, req.query.addr).then(function(amount){
+			if(amount.toString() == 0) {
+				console.log("Manufacturer detail inquery processed, drug list owned by this manufacturer: []");
+				res.render('manufacturer', {title: _title, isAuthorized: true, drugManufacturerList: drugManufacturers, drugList: [], debugMsg: _debugMsg});
+				return Promise.reject();
+			}
+			else {
+				var promiseList = [];
+				for(let i=0 ; i<amount ; i++) {
+					promiseList.push(funcDrugSupplyChainRecord.getDrugsOwnedByOwner(contractDrugSupplyChainRecord, authority, req.query.addr, i));
+				}
+				return Promise.all(promiseList);
+			}
+		}).then(function(_drugList){
+			console.log("Manufacturer detail inquery processed, drug list owned by this manufacturer: " + _drugList);
+ 			res.render('manufacturer', {title: _title, isAuthorized: true, drugManufacturerList: drugManufacturers, drugList: _drugList, debugMsg: _debugMsg});
+		}).catch(function(exception) {
+			console.log("Get manufacturer detail terminated.");
+		});
+	}
+});
+
 /* GET drug detail */
 router.get('/getDrugByName', function(req, res) {
 	var _debugMsg = "";
@@ -132,14 +163,6 @@ router.post('/addNewDrug', function(req, res) {
 		}).then(function() {
 			return funcDrugSupplyChainRecord.getDrugDetail(contractDrugSupplyChainRecord, authority, req.body.name);
 		}).then(function(_drugDetail){
-			// var drugDetail = {};
-			// drugDetail["name"] = req.body.name;
-			// drugDetail["owner"] = _drugDetail[0]
-			// drugDetail["amount"] = _drugDetail[1].toString();
-			// drugDetail["manuDate"] = _drugDetail[2];
-			// drugDetail["expDate"] = _drugDetail[3];
-			// drugDetail["upstreamDrugAmount"] = _drugDetail[4].toString();
-			// drugDetail["downstreamDrugAmount"] = _drugDetail[5].toString();
 			console.log("Request to add new drug processed, drug name: " + req.body.name);
 			res.redirect("/getDrugByName?name=" + req.body.name);
  			// res.render('drug', {title: _title, isAuthorized: true, drugManufacturerList: drugManufacturers, drug: drugDetail, debugMsg: _debugMsg});
