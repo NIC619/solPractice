@@ -58,22 +58,26 @@
 		</table>
 	</div>
 	<div>
-		<div class="table-responsive" style="float: left; width: 500px;  margin-left: 100px;">
+		<div class="table-responsive" style="float: left; width: 500px;">
 			<table class="table table-bordered">
 				<thead>
 					<tr>
 						<th>Upstream Drug Name</th>
 						<th>Amount</th>
+						<th>Confirmed</th>
 					</tr>
 				</thead>
 				<tbody>
 					<% for(var i = 0; i < upstreamDrugList.length ; i++) { %>
 						<tr>
 							<td>
-								<%= upstreamDrugList[i].name %>
+								<%= upstreamDrugList[i][0] %>
 							</td>
 							<td>
-								<%= upstreamDrugList[i].amount %>
+								<%= upstreamDrugList[i][1].toString() %>
+							</td>
+							<td>
+								<%= (upstreamDrugList[i][2] && upstreamDrugList[i][3]) %>
 							</td>
 						</tr>
 					<% } %>
@@ -81,21 +85,25 @@
 			</table>
 		</div>
 		<div class="table-responsive">
-			<table class="table table-bordered" style="float: left; width: 500px; margin-left: 200px;">
+			<table class="table table-bordered" style="float: left; width: 500px; margin-left: 100px;">
 				<thead>
 					<tr>
 						<th>Downstream Drug Name</th>
 						<th>Amount</th>
+						<th>Confirmed</th>
 					</tr>
 				</thead>
 				<tbody>
 					<% for(var i = 0; i < downstreamDrugList.length ; i++) { %>
 						<tr>
 							<td>
-								<%= downstreamDrugList[i].name %>
+								<%= downstreamDrugList[i][0] %>
 							</td>
 							<td>
-								<%= downstreamDrugList[i].amount %>
+								<%= downstreamDrugList[i][1].toString() %>
+							</td>
+							<td>
+								<%= (downstreamDrugList[i][2] && downstreamDrugList[i][3]) %>
 							</td>
 						</tr>
 					<% } %>
@@ -106,7 +114,7 @@
 	<% if(debugMsg == "Contract not yet deployed!") { %>
 		<a href="/deploy" class="btn btn-primary">Deploy</a>
 	<% } else { %>
-		<div>
+		<div style="clear:both">
 			<form action="/getDrugByName" method="GET">
 				Drug Name:
 				<input type="text" name="name">
