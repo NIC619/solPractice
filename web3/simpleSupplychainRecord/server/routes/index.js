@@ -173,4 +173,66 @@ router.post('/addNewDrug', function(req, res) {
 	}
 });
 
+/* GET add drug stream*/
+router.get('/addDrugStream', function(req, res) {
+	var _debugMsg = "";
+
+	if(contractDrugSupplyChainRecord == undefined) {
+		_debugMsg = "Contract not yet deployed!";
+		res.render('index', {title: _title, isAuthorized: true, drugManufacturerList: drugManufacturers, debugMsg: _debugMsg});
+	}
+	else {
+		console.log("Receive a request to add drug stream for drug: " + req.query.name);
+		res.render('addDrugStream', {title: _title, isAuthorized: true, owner: req.query.addr, drugName: req.query.name, upOrDownStream: req.query.stream, debugMsg: _debugMsg});
+	}
+});
+
+/* POST add drug stream*/
+router.post('/addDrugStream', function(req, res) {
+	var _debugMsg = "";
+
+	if(contractDrugSupplyChainRecord == undefined) {
+		_debugMsg = "Contract not yet deployed!";
+		res.render('index', {title: _title, isAuthorized: true, drugManufacturerList: drugManufacturers, debugMsg: _debugMsg});
+	}
+	else {
+		console.log("Receive a submission to add drug stream for drug: " + req.body.name);
+		var promiseList = [];
+		promiseList.push(funcDrugSupplyChainRecord.getDrugOwner(contractDrugSupplyChainRecord, authority, req.post.drugName));
+		promiseList.push(funcDrugSupplyChainRecord.getDrugOwner(contractDrugSupplyChainRecord, authority, req.post.otherDrugName));
+
+		Promise.all(promiseList).then(function(owners){
+			if(owners[0] != "0x0000000000000000000000000000000000000000") {
+				_debugMsg = "Failed to add drug stream, drug " + owners[0] + " is not registered";
+				console.log(_debugMsg);
+				res.render('addDrugStream', {title: _title, isAuthorized: true, drugName: req.body.drugName, upOrDownStream: req.body.stream, debugMsg: _debugMsg});
+				return Promise.resolve();
+			}
+			else if(owners[1] != "0x0000000000000000000000000000000000000000") {
+				_debugMsg = "Failed to add drug stream, drug " + owners[1] + " is not registered";
+				console.log(_debugMsg);
+				res.render('addDrugStream', {title: _title, isAuthorized: true, drugName: req.body.drugName, upOrDownStream: req.body.stream, debugMsg: _debugMsg});
+				return Promise.resolve();
+			}
+			else {
+				if(req.body.stream == "up") {
+					upstreamDrug = req.body.otherDrugName;
+					downstreamDrug = req.body.drugName;
+				}
+				else {
+					upstreamDrug = req.body.drugName;
+					downstreamDrug = req.body.otherDrugName;
+				}
+				return funcDrugSupplyChainRecord.addDrugStream(contractDrugSupplyChainRecord, req.body.owner, upstreamDrug, downstreamDrug, req.body.amount);
+			}
+		}).then(function() {
+			console.log("Request to add drug stream processed, drug: " + req.body.name);
+			res.render('index', {title: _title, isAuthorized: true, drugManufacturerList: drugManufacturers, debugMsg: _debugMsg});
+			return Promise.resolve();
+		}).catch(function(exception) {
+			console.log("Failed to add drug stream");
+		})
+	}
+});
+
 module.exports = router;

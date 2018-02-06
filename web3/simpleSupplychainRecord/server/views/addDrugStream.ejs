@@ -1,0 +1,56 @@
+<% layout('layout_html') -%>
+	<h1>
+		<a href="/">Drug Supply Chain System Demonstration</a>
+	</h1>
+	<div class="table-responsive">
+		<table class="table table-bordered">
+			<thead>
+				<tr>
+					<th>Drug Name</th>
+					<% if(upOrDownStream == "up") { %>
+						<th>Upstream Drug Name </th>
+					<% } else { %>
+						<th>Downstream Drug Name</th>
+					<% } %>
+					<th>Amount</th>
+					<th></th>
+				</tr>
+			</thead>
+			<tbody>
+				<form action="/addDrugStream" method="post">
+					<input type="hidden" name="owner" value="<%= owner %>">
+					<input type="hidden" name="name" value="<%= drugName %>">
+					<input type="hidden" name="stream" value="<%= upOrDownStream %>">
+					<td>
+						<%= drugName %>
+					</td>
+					<td>
+						<input type="text" name="otherDrugName" size="10">
+					</td>
+					<td>
+						<input type="number" name="amount" min="1" size="10">
+					</td>
+					<td>
+						<input type="submit" value="Submit">
+					</td>
+				</form>
+			</tbody>
+		</table>
+	</div>
+	<% if(debugMsg == "Contract not yet deployed!") { %>
+		<a href="/deploy" class="btn btn-primary">Deploy</a>
+	<% } else { %>
+		<div>
+			<form action="/getDrugByName" method="GET">
+				Drug Name:
+				<input type="text" name="name">
+				<input type="submit" value="Search" class="btn btn-primary">
+			</form>
+		</div>
+	<% } %>
+	<br>
+	<h3>
+		<font color="red">
+			<%= debugMsg %>
+		</font>
+	</h3>
