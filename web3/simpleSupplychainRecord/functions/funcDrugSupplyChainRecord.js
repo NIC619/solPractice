@@ -7,6 +7,7 @@ module.exports = {
                         console.log("Error in getDrugOwner: " + err);
                         reject(err);
                     } else {
+                        console.log("owner: " + owner);
                         resolve(owner);
                     }
                 }

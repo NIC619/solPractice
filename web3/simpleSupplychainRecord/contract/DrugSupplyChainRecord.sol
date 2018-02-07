@@ -125,6 +125,7 @@ contract DrugSupplyChainRecord {
     }
 
     function addDrugStream(string _upstreamDrugName, string _downstreamDrugName, uint _amount) {
+        require(getDrugOwner(_upstreamDrugName) != getDrugOwner(_downstreamDrugName));
         require(msg.sender == getDrugOwner(_upstreamDrugName) || msg.sender == getDrugOwner(_downstreamDrugName));
         assert(sha3(_upstreamDrugName) != sha3(_downstreamDrugName));
         addUpstreamDrug(_downstreamDrugName, _upstreamDrugName, _amount);
@@ -138,6 +139,9 @@ contract DrugSupplyChainRecord {
             drugs[_curDrugName].upstreamDrugIndex[_upstreamDrugName] = index;
             drugs[_curDrugName].upstreamDrugAmount[index] = _amount;
             drugs[_curDrugName].upstreamDrugCount += 1;
+        }
+        else {
+            require(drugs[_curDrugName].upstreamDrugAmount[index] == _amount);
         }
         if(msg.sender == getDrugOwner(_curDrugName)) {
             drugs[_curDrugName].ifOwnerAckUpstreamDrug[index] = true;
@@ -154,6 +158,9 @@ contract DrugSupplyChainRecord {
             drugs[_curDrugName].downstreamDrugIndex[_downstreamDrugName] = index;
             drugs[_curDrugName].downstreamDrugAmount[index] = _amount;
             drugs[_curDrugName].downstreamDrugCount += 1;
+        }
+        else {
+            require(drugs[_curDrugName].downstreamDrugAmount[index] == _amount);
         }
         if(msg.sender == getDrugOwner(_curDrugName)) {
             drugs[_curDrugName].ifOwnerAckDownstreamDrug[index] = true;
