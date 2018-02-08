@@ -218,13 +218,11 @@ router.post('/addDrugStream', function(req, res) {
 			if(owners[0] == "0x0000000000000000000000000000000000000000") {
 				_debugMsg = "Failed to add drug stream, drug '" + req.body.drugName + "' is not registered";
 				console.log(_debugMsg);
-				res.render('addDrugStream', {title: _title, isAuthorized: true, owner: req.body.owner, drugName: req.body.drugName, upOrDownStream: req.body.stream, debugMsg: _debugMsg});
 				return Promise.reject();
 			}
 			else if(owners[1] == "0x0000000000000000000000000000000000000000") {
 				_debugMsg = "Failed to add drug stream, drug '" + req.body.otherDrugName + "' is not registered";
 				console.log(_debugMsg);
-				res.render('addDrugStream', {title: _title, isAuthorized: true, owner: req.body.owner, drugName: req.body.drugName, upOrDownStream: req.body.stream, debugMsg: _debugMsg});
 				return Promise.reject();
 			}
 			else {
@@ -243,7 +241,11 @@ router.post('/addDrugStream', function(req, res) {
 			res.redirect('/getDrugByName?name=' + req.body.drugName);
 			return Promise.resolve();
 		}).catch(function(exception) {
-			console.log("Failed to add drug stream");
+			if(_debugMsg.length == 0) {
+				_debugMsg = "Failed to add drug stream";
+			}
+			console.log(_debugMsg);
+			res.render('addDrugStream', {title: _title, isAuthorized: true, owner: req.body.owner, drugName: req.body.drugName, upOrDownStream: req.body.stream, debugMsg: _debugMsg});
 		})
 	}
 });

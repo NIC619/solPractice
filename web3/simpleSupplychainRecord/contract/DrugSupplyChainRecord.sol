@@ -132,6 +132,7 @@ contract DrugSupplyChainRecord {
         addDownstreamDrug(_upstreamDrugName, _downstreamDrugName, _amount);
     }
     function addUpstreamDrug(string _curDrugName, string _upstreamDrugName, uint _amount) internal {
+        require(drugs[_curDrugName].downstreamDrugIndex[_upstreamDrugName] == 0);
         uint index = drugs[_curDrugName].upstreamDrugIndex[_upstreamDrugName];
         if(drugs[_curDrugName].ifOwnerAckUpstreamDrug[index] == false && drugs[_curDrugName].ifUpstreamOwnerAck[index] == false) {
             index = drugs[_curDrugName].upstreamDrugCount + 1;
@@ -151,6 +152,7 @@ contract DrugSupplyChainRecord {
         }
     }
     function addDownstreamDrug(string _curDrugName, string _downstreamDrugName, uint _amount) internal {
+        require(drugs[_curDrugName].upstreamDrugIndex[_downstreamDrugName] == 0);
         uint index = drugs[_curDrugName].downstreamDrugIndex[_downstreamDrugName];
         if(drugs[_curDrugName].ifOwnerAckDownstreamDrug[index] == false && drugs[_curDrugName].ifDownstreamOwnerAck[index] == false) {
             index = drugs[_curDrugName].downstreamDrugCount + 1;
