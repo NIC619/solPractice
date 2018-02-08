@@ -165,7 +165,7 @@ router.post('/addNewDrug', function(req, res) {
 	}
 	else {
 		console.log("Receive a request to add new drug: " + req.body.name);
-		funcDrugSupplyChainRecord.getDrugOwner(contractDrugSupplyChainRecord, authority, req.query.name).then(function(owner){
+		funcDrugSupplyChainRecord.getDrugOwner(contractDrugSupplyChainRecord, authority, req.body.name).then(function(owner){
 			if(owner != "0x0000000000000000000000000000000000000000") {
 				_debugMsg = "Drug has already been registered!";
 				return Promise.reject();
@@ -173,13 +173,14 @@ router.post('/addNewDrug', function(req, res) {
 			else {
 				return funcDrugSupplyChainRecord.addNewDrug(contractDrugSupplyChainRecord, req.body.owner, req.body.name, req.body.manuDate, req.body.expDate, req.body.amount);
 			}
-		}).then(function() {
-			return funcDrugSupplyChainRecord.getDrugDetail(contractDrugSupplyChainRecord, authority, req.body.name);
 		}).then(function(_drugDetail){
 			console.log("Request to add new drug processed, drug name: " + req.body.name);
 			res.redirect("/getDrugByName?name=" + req.body.name);
 		}).catch(function(exception){
-			console.log("Failed to add new drug");
+			if(_debugMsg.length == 0) {
+				_debugMsg = "Failed to add new drug";
+			}
+			console.log(_debugMsg);
 			res.render('newDrug', {title: _title, isAuthorized: true, drugManufacturerList: drugManufacturers, debugMsg: _debugMsg});
 		});
 	}
