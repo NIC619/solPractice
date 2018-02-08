@@ -168,22 +168,18 @@ router.post('/addNewDrug', function(req, res) {
 		funcDrugSupplyChainRecord.getDrugOwner(contractDrugSupplyChainRecord, authority, req.query.name).then(function(owner){
 			if(owner != "0x0000000000000000000000000000000000000000") {
 				_debugMsg = "Drug has already been registered!";
-				res.render('newDrug', {title: _title, isAuthorized: true, drugManufacturerList: drugManufacturers, debugMsg: _debugMsg});
+				return Promise.reject();
 			}
 			else {
 				return funcDrugSupplyChainRecord.addNewDrug(contractDrugSupplyChainRecord, req.body.owner, req.body.name, req.body.manuDate, req.body.expDate, req.body.amount);
 			}
-		}).catch(function(exception){
-			_debugMsg = "Failed to add new drug";
-			res.render('newDrug', {title: _title, isAuthorized: true, drugManufacturerList: drugManufacturers, debugMsg: _debugMsg});
 		}).then(function() {
 			return funcDrugSupplyChainRecord.getDrugDetail(contractDrugSupplyChainRecord, authority, req.body.name);
 		}).then(function(_drugDetail){
 			console.log("Request to add new drug processed, drug name: " + req.body.name);
 			res.redirect("/getDrugByName?name=" + req.body.name);
- 			// res.render('drug', {title: _title, isAuthorized: true, drugManufacturerList: drugManufacturers, drug: drugDetail, debugMsg: _debugMsg});
 		}).catch(function(exception){
-			_debugMsg = "Failed to add new drug";
+			console.log("Failed to add new drug");
 			res.render('newDrug', {title: _title, isAuthorized: true, drugManufacturerList: drugManufacturers, debugMsg: _debugMsg});
 		});
 	}
