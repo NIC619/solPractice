@@ -114,7 +114,7 @@ contract DrugSupplyChainRecord {
     function addNewDrug(string _drugName, string _manudate, string _expdate, uint _drugAmount) {
         require(drugs[_drugName].owner == 0x0);
         drugs[_drugName].owner = msg.sender;
-        drugName[drugAmount]=_drugName;
+        drugName[drugAmount + 1]=_drugName;
         drugAmount += 1;
         drugs[_drugName].amount = _drugAmount;
         drugs[_drugName].manuDate = _manudate;
