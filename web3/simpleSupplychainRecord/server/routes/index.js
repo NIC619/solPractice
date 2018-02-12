@@ -19,7 +19,7 @@ var funcDrugSupplyChainRecord = require("../../functions/funcDrugSupplyChainReco
 var contractDrugSupplyChainRecord;
 var authority = web3.eth.accounts[0];
 var drugManufacturers = [web3.eth.accounts[1], web3.eth.accounts[2], web3.eth.accounts[3]];
-
+var isAdmin = false;
 
 /* DEVELOPEMENT FUNCTIONS */
 router.get('/deploy', function(req, res) {
@@ -37,12 +37,12 @@ router.get('/deploy', function(req, res) {
 		console.log("Add drug manufacturer 3:", drugManufacturers[2]);
 		return funcDrugSupplyChainRecord.addNewParticipant(contractDrugSupplyChainRecord, drugManufacturers[2]);
 	}).then(function() {
-		res.render('index', {title: _title, isAuthorized: true, drugManufacturerList: drugManufacturers, debugMsg: _debugMsg});
+		res.render('index', {title: _title, isAuthorized: isAdmin, drugManufacturerList: drugManufacturers, debugMsg: _debugMsg});
 		// res.redirect('/');
 	}).catch(function(exception) {
 		console.log("Error while deploying contract and adding initial participants");
 		_debugMsg = "Contract initiation failed";
-		res.render('index', {title: _title, isAuthorized: true, drugManufacturerList: drugManufacturers, debugMsg: _debugMsg});
+		res.render('index', {title: _title, isAuthorized: isAdmin, drugManufacturerList: drugManufacturers, debugMsg: _debugMsg});
 	});
 });
 
@@ -53,9 +53,40 @@ router.get('/', function(req, res) {
 	var _debugMsg = "";
 
 	if(contractDrugSupplyChainRecord == undefined) {
-		_debugMsg = "Contract not yet deployed!";
+		deployDrugSupplyChainRecord.deploy(web3, abiDrugSupplyChainRecord, bytecodeDrugSupplyChainRecord, authority).then(function(instance){
+			contractDrugSupplyChainRecord = instance;
+			console.log("Add drug manufacturer 1:", drugManufacturers[0]);
+			return funcDrugSupplyChainRecord.addNewParticipant(contractDrugSupplyChainRecord, drugManufacturers[0]);
+		}).then(function() {
+			console.log("Add drug manufacturer 2:", drugManufacturers[1]);
+			return funcDrugSupplyChainRecord.addNewParticipant(contractDrugSupplyChainRecord, drugManufacturers[1]);
+		}).then(function() {
+			console.log("Add drug manufacturer 3:", drugManufacturers[2]);
+			return funcDrugSupplyChainRecord.addNewParticipant(contractDrugSupplyChainRecord, drugManufacturers[2]);
+		}).then(function() {
+			res.render('index', {title: _title, isAuthorized: isAdmin, drugManufacturerList: drugManufacturers, debugMsg: _debugMsg});
+			return Promise.resolve();
+		}).catch(function(exception) {
+			console.log("Error while deploying contract and adding initial participants");
+			_debugMsg = "Contract initiation failed";
+			res.render('index', {title: _title, isAuthorized: isAdmin, drugManufacturerList: drugManufacturers, debugMsg: _debugMsg});
+		});
 	}
-	res.render('index', {title: _title, isAuthorized: true, drugManufacturerList: drugManufacturers, debugMsg: _debugMsg});
+	else {
+		res.render('index', {title: _title, isAuthorized: isAdmin, drugManufacturerList: drugManufacturers, debugMsg: _debugMsg});
+	}
+});
+
+/* GET log in */
+router.get('/login', function(req, res) {
+	isAdmin = true;
+	res.redirect('/');
+});
+
+/* GET log out */
+router.get('/logout', function(req, res) {
+	isAdmin = false;
+	res.redirect('/');
 });
 
 /* GET manufacturer detail */
@@ -63,14 +94,14 @@ router.get('/getDrugsByManufacturer', function(req, res) {
 	var _debugMsg = "";
 	if(contractDrugSupplyChainRecord == undefined) {
 		_debugMsg = "Contract not yet deployed!";
-		res.render('index', {title: _title, isAuthorized: true, drugManufacturerList: drugManufacturers, debugMsg: _debugMsg});
+		res.render('index', {title: _title, isAuthorized: isAdmin, drugManufacturerList: drugManufacturers, debugMsg: _debugMsg});
 	}
 	else {
 		console.log("Manufacturer detail inquery received, manufacturer: " + req.query.addr);
 		funcDrugSupplyChainRecord.getDrugsAmountByOwner(contractDrugSupplyChainRecord, authority, req.query.addr).then(function(amount){
 			if(amount.toString() == 0) {
 				console.log("Manufacturer detail inquery processed, drug list owned by this manufacturer: []");
-				res.render('manufacturer', {title: _title, isAuthorized: true, drugManufacturerList: drugManufacturers, drugList: [], debugMsg: _debugMsg});
+				res.render('manufacturer', {title: _title, isAuthorized: isAdmin, drugManufacturerList: drugManufacturers, drugList: [], debugMsg: _debugMsg});
 				return Promise.reject();
 			}
 			else {
@@ -82,7 +113,7 @@ router.get('/getDrugsByManufacturer', function(req, res) {
 			}
 		}).then(function(_drugList){
 			console.log("Manufacturer detail inquery processed, drug list owned by this manufacturer: " + _drugList);
- 			res.render('manufacturer', {title: _title, isAuthorized: true, drugManufacturerList: drugManufacturers, drugList: _drugList, debugMsg: _debugMsg});
+ 			res.render('manufacturer', {title: _title, isAuthorized: isAdmin, drugManufacturerList: drugManufacturers, drugList: _drugList, debugMsg: _debugMsg});
 		}).catch(function(exception) {
 			console.log("Get manufacturer detail terminated.");
 		});
@@ -97,7 +128,7 @@ router.get('/getDrugByName', function(req, res) {
 	var _downstreamDrugList = [];
 	if(contractDrugSupplyChainRecord == undefined) {
 		_debugMsg = "Contract not yet deployed!";
-		res.render('index', {title: _title, isAuthorized: true, drugManufacturerList: drugManufacturers, drug: drugDetail, upstreamDrugList: _upstreamDrugList, downstreamDrugList: _downstreamDrugList, debugMsg: _debugMsg});
+		res.render('index', {title: _title, isAuthorized: isAdmin, drugManufacturerList: drugManufacturers, drug: drugDetail, upstreamDrugList: _upstreamDrugList, downstreamDrugList: _downstreamDrugList, debugMsg: _debugMsg});
 	}
 	else {
 		console.log("Drug detail inquery received, drug name: " + req.query.name);
@@ -107,7 +138,7 @@ router.get('/getDrugByName', function(req, res) {
 			if(owner == "0x0000000000000000000000000000000000000000") {
 				_debugMsg = "Drug '" + req.query.name + "' not found.";
 				console.log(_debugMsg);
-				res.render('drug', {title: _title, isAuthorized: true, drugManufacturerList: drugManufacturers, drug: drugDetail, upstreamDrugList: _upstreamDrugList, downstreamDrugList: _downstreamDrugList, debugMsg: _debugMsg});
+				res.render('drug', {title: _title, isAuthorized: isAdmin, drugManufacturerList: drugManufacturers, drug: drugDetail, upstreamDrugList: _upstreamDrugList, downstreamDrugList: _downstreamDrugList, debugMsg: _debugMsg});
 				return Promise.reject();
 			}
 			else {
@@ -136,7 +167,7 @@ router.get('/getDrugByName', function(req, res) {
 		}).then(function(downstreamDrugDetails) {
 			console.log("Drug detail - downstream drugs inquery processed, amount of downstream drugs: " + downstreamDrugDetails.length);
 			_downstreamDrugList = downstreamDrugDetails;
- 			res.render('drug', {title: _title, isAuthorized: true, drugManufacturerList: drugManufacturers, drug: drugDetail, upstreamDrugList: _upstreamDrugList, downstreamDrugList: _downstreamDrugList, debugMsg: _debugMsg});
+ 			res.render('drug', {title: _title, isAuthorized: isAdmin, drugManufacturerList: drugManufacturers, drug: drugDetail, upstreamDrugList: _upstreamDrugList, downstreamDrugList: _downstreamDrugList, debugMsg: _debugMsg});
 		}).catch(function(exception) {
 			console.log("Get drug detail terminated.");
 		});
@@ -149,10 +180,13 @@ router.get('/addNewDrug', function(req, res) {
 
 	if(contractDrugSupplyChainRecord == undefined) {
 		_debugMsg = "Contract not yet deployed!";
-		res.render('index', {title: _title, isAuthorized: true, drugManufacturerList: drugManufacturers, debugMsg: _debugMsg});
+		res.render('index', {title: _title, isAuthorized: isAdmin, drugManufacturerList: drugManufacturers, debugMsg: _debugMsg});
 	}
 	else {
-		res.render('newDrug', {title: _title, isAuthorized: true, drugManufacturerList: drugManufacturers, debugMsg: _debugMsg});
+		if (isAdmin == false) {
+			_debugMsg = "Only authorized person can add new drug record";
+		}
+		res.render('newDrug', {title: _title, isAuthorized: isAdmin, drugManufacturerList: drugManufacturers, debugMsg: _debugMsg});
 	}
 });
 
@@ -161,7 +195,11 @@ router.post('/addNewDrug', function(req, res) {
 	var _debugMsg = "";
 	if(contractDrugSupplyChainRecord == undefined) {
 		_debugMsg = "Contract not yet deployed!";
-		res.render('index', {title: _title, isAuthorized: true, drugManufacturerList: drugManufacturers, debugMsg: _debugMsg});
+		res.render('index', {title: _title, isAuthorized: isAdmin, drugManufacturerList: drugManufacturers, debugMsg: _debugMsg});
+	}
+	else if(isAdmin == false) {
+		_debugMsg = "Only authorized person can add new drug record";
+		res.render('newDrug', {title: _title, isAuthorized: isAdmin, drugManufacturerList: drugManufacturers, debugMsg: _debugMsg});
 	}
 	else {
 		console.log("Receive a request to add new drug: " + req.body.name);
@@ -181,7 +219,7 @@ router.post('/addNewDrug', function(req, res) {
 				_debugMsg = "Failed to add new drug";
 			}
 			console.log(_debugMsg);
-			res.render('newDrug', {title: _title, isAuthorized: true, drugManufacturerList: drugManufacturers, debugMsg: _debugMsg});
+			res.render('newDrug', {title: _title, isAuthorized: isAdmin, drugManufacturerList: drugManufacturers, debugMsg: _debugMsg});
 		});
 	}
 });
@@ -192,11 +230,14 @@ router.get('/addDrugStream', function(req, res) {
 
 	if(contractDrugSupplyChainRecord == undefined) {
 		_debugMsg = "Contract not yet deployed!";
-		res.render('index', {title: _title, isAuthorized: true, drugManufacturerList: drugManufacturers, debugMsg: _debugMsg});
+		res.render('index', {title: _title, isAuthorized: isAdmin, drugManufacturerList: drugManufacturers, debugMsg: _debugMsg});
 	}
 	else {
 		console.log("Receive a request to add drug stream for drug: " + req.query.name);
-		res.render('addDrugStream', {title: _title, isAuthorized: true, owner: req.query.addr, drugName: req.query.name, upOrDownStream: req.query.stream, debugMsg: _debugMsg});
+		if (isAdmin == false) {
+			_debugMsg = "Only authorized person can add drug stream record";
+		}
+		res.render('addDrugStream', {title: _title, isAuthorized: isAdmin, owner: req.query.addr, drugName: req.query.name, upOrDownStream: req.query.stream, debugMsg: _debugMsg});
 	}
 });
 
@@ -206,7 +247,11 @@ router.post('/addDrugStream', function(req, res) {
 
 	if(contractDrugSupplyChainRecord == undefined) {
 		_debugMsg = "Contract not yet deployed!";
-		res.render('index', {title: _title, isAuthorized: true, drugManufacturerList: drugManufacturers, debugMsg: _debugMsg});
+		res.render('index', {title: _title, isAuthorized: isAdmin, drugManufacturerList: drugManufacturers, debugMsg: _debugMsg});
+	}
+	else if(isAdmin == false) {
+		_debugMsg = "Only authorized person can add drug stream record";
+		res.render('addDrugStream', {title: _title, isAuthorized: isAdmin, owner: req.body.owner, drugName: req.body.drugName, upOrDownStream: req.body.stream, debugMsg: _debugMsg});
 	}
 	else {
 		var promiseList = [];
@@ -245,7 +290,7 @@ router.post('/addDrugStream', function(req, res) {
 				_debugMsg = "Failed to add drug stream";
 			}
 			console.log(_debugMsg);
-			res.render('addDrugStream', {title: _title, isAuthorized: true, owner: req.body.owner, drugName: req.body.drugName, upOrDownStream: req.body.stream, debugMsg: _debugMsg});
+			res.render('addDrugStream', {title: _title, isAuthorized: isAdmin, owner: req.body.owner, drugName: req.body.drugName, upOrDownStream: req.body.stream, debugMsg: _debugMsg});
 		})
 	}
 });
