@@ -1,8 +1,19 @@
 <% layout('layout_html') -%>
-	<h1>
-		<a href="/">Drug Supply Chain System Demonstration</a>
-	</h1>
-	<div class="table-responsive">
+	<div style="width: 100%;">
+		<div style="float: left;">
+			<h1>
+				<a href="/">Drug Supply Chain System Demonstration</a>
+			</h1>
+		</div>
+		<div style="float: right; margin-top: 30px; margin-right: 10px;">
+			<% if(isAuthorized) { %>
+					<a href="/logout" class="btn btn-primary" style="background-color: white; color: black;">Log Out As User</a>
+				<% } else { %>
+					<a href="/login" class="btn btn-primary" style="background-color: white; color: black;">Log In As Admin</a>
+			<% } %>
+		</div>
+	</div>
+	<div class="table-responsive" style="clear: both;">
 		<table class="table table-bordered">
 			<thead>
 				<tr>
