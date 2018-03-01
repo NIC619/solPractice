@@ -138,7 +138,7 @@ router.get('/getDrugByName', function(req, res) {
 			if(owner == "0x0000000000000000000000000000000000000000") {
 				_debugMsg = "Drug '" + req.query.name + "' not found.";
 				console.log(_debugMsg);
-				res.render('drug', {title: _title, isAuthorized: isAdmin, drugManufacturerList: drugManufacturers, drug: drugDetail, upstreamDrugList: _upstreamDrugList, downstreamDrugList: _downstreamDrugList, debugMsg: _debugMsg});
+				res.render('drug', {title: _title, isAuthorized: isAdmin, drugManufacturerList: drugManufacturers, drug: drugDetail, upstreamDrugList: _upstreamDrugList, downstreamDrugList: _downstreamDrugList, debugMsg: _debugMsg, isDistributionValid: true});
 				return Promise.reject();
 			}
 			else {
@@ -167,7 +167,10 @@ router.get('/getDrugByName', function(req, res) {
 		}).then(function(downstreamDrugDetails) {
 			console.log("Drug detail - downstream drugs inquery processed, amount of downstream drugs: " + downstreamDrugDetails.length);
 			_downstreamDrugList = downstreamDrugDetails;
- 			res.render('drug', {title: _title, isAuthorized: isAdmin, drugManufacturerList: drugManufacturers, drug: drugDetail, upstreamDrugList: _upstreamDrugList, downstreamDrugList: _downstreamDrugList, debugMsg: _debugMsg});
+			return funcDrugSupplyChainRecord.isDrugDistributeValid(contractDrugSupplyChainRecord, authority, req.query.name);
+		}).then(function(_isDistributionValid) {
+			console.log("Is the drug distribution of this drug valid: " + _isDistributionValid);
+ 			res.render('drug', {title: _title, isAuthorized: isAdmin, drugManufacturerList: drugManufacturers, drug: drugDetail, upstreamDrugList: _upstreamDrugList, downstreamDrugList: _downstreamDrugList, debugMsg: _debugMsg, isDistributionValid: _isDistributionValid});
 		}).catch(function(exception) {
 			console.log("Get drug detail terminated.");
 		});

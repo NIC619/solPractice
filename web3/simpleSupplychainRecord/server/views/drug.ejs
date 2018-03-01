@@ -40,7 +40,11 @@
 							<%= drug.owner %>
 						</td>
 						<td>
-							<%= drug.amount %>
+							<% if(isDistributionValid) { %>
+								<%= drug.amount %>
+							<% } else { %>
+								<font color="red"><%= drug.amount %></font>
+							<% } %>
 						</td>
 						<td>
 							<%= drug.manuDate %>
@@ -85,7 +89,11 @@
 								<%= upstreamDrugList[i][0] %>
 							</td>
 							<td>
-								<%= upstreamDrugList[i][1].toString() %>
+								<% if(isDistributionValid) { %>
+									<%= upstreamDrugList[i][1].toString() %>
+								<% } else { %>
+									<font color="red"><%= upstreamDrugList[i][1].toString() %></font>
+								<% } %>
 							</td>
 							<td>
 								<%= (upstreamDrugList[i][2] && upstreamDrugList[i][3]) %>
@@ -111,7 +119,11 @@
 								<%= downstreamDrugList[i][0] %>
 							</td>
 							<td>
-								<%= downstreamDrugList[i][1].toString() %>
+								<% if(isDistributionValid) { %>
+									<%= downstreamDrugList[i][1].toString() %>
+								<% } else { %>
+									<font color="red"><%= downstreamDrugList[i][1].toString() %></font>
+								<% } %>
 							</td>
 							<td>
 								<%= (downstreamDrugList[i][2] && downstreamDrugList[i][3]) %>
