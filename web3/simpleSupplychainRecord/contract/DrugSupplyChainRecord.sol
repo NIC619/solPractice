@@ -101,7 +101,7 @@ contract DrugSupplyChainRecord {
                 downStreamDistributeAmount += drugs[_curDrugName].downstreamDrugAmount[i];
             }
         }
-        isValid = downStreamDistributeAmount < drugs[_curDrugName].amount;
+        isValid = downStreamDistributeAmount <= drugs[_curDrugName].amount;
     }
 
     // Add participant
