@@ -8,7 +8,7 @@ var _title = "Drug Supply Chain System";
 
 /* web3 set up */
 if(!web3.currentProvider)
-	web3.setProvider(new web3.providers.HttpProvider('http://localhost:8545'));
+	web3.setProvider(new web3.providers.HttpProvider('http://:8545'));
 
 // Get contract abi & bytecode
 var abiDrugSupplyChainRecord = JSON.parse( fs.readFileSync('../compile/DrugSupplyChainRecord.abi', 'utf-8') );
@@ -37,13 +37,31 @@ router.get('/deploy', function(req, res) {
 		console.log("Add drug manufacturer 3:", drugManufacturers[2]);
 		return funcDrugSupplyChainRecord.addNewParticipant(contractDrugSupplyChainRecord, drugManufacturers[2]);
 	}).then(function() {
-		res.render('index', {title: _title, isAuthorized: isAdmin, drugManufacturerList: drugManufacturers, debugMsg: _debugMsg});
-		// res.redirect('/');
+		// res.render('index', {title: _title, isAuthorized: isAdmin, drugManufacturerList: drugManufacturers, debugMsg: _debugMsg});
+		res.redirect('/');
 	}).catch(function(exception) {
 		console.log("Error while deploying contract and adding initial participants");
 		_debugMsg = "Contract initiation failed";
 		res.render('index', {title: _title, isAuthorized: isAdmin, drugManufacturerList: drugManufacturers, debugMsg: _debugMsg});
 	});
+});
+
+/* POST hook on existing contract */
+router.get('/hook', function(req, res) {
+	var _debugMsg = "";
+	if(req.query.addr.length != 42 || req.query.addr.substr(0, 2) != "0x") {
+		_debugMsg = "Incorrect address format!";
+		console.log(_debugMsg + " address: " + req.query.addr + " with length: " + req.query.addr.length);
+		res.render('index', {title: _title, isAuthorized: isAdmin, drugManufacturerList: drugManufacturers, debugMsg: _debugMsg});
+	}
+	else if(contractDrugSupplyChainRecord) {
+		res.redirect('/');
+	}
+	else {
+		console.log("Receive a request to hook on address: " + req.query.addr);
+		contractDrugSupplyChainRecord = web3.eth.contract(abiDrugSupplyChainRecord).at(req.query.addr);
+		res.redirect('/');
+	}
 });
 
 
@@ -53,24 +71,26 @@ router.get('/', function(req, res) {
 	var _debugMsg = "";
 
 	if(contractDrugSupplyChainRecord == undefined) {
-		deployDrugSupplyChainRecord.deploy(web3, abiDrugSupplyChainRecord, bytecodeDrugSupplyChainRecord, authority).then(function(instance){
-			contractDrugSupplyChainRecord = instance;
-			console.log("Add drug manufacturer 1:", drugManufacturers[0]);
-			return funcDrugSupplyChainRecord.addNewParticipant(contractDrugSupplyChainRecord, drugManufacturers[0]);
-		}).then(function() {
-			console.log("Add drug manufacturer 2:", drugManufacturers[1]);
-			return funcDrugSupplyChainRecord.addNewParticipant(contractDrugSupplyChainRecord, drugManufacturers[1]);
-		}).then(function() {
-			console.log("Add drug manufacturer 3:", drugManufacturers[2]);
-			return funcDrugSupplyChainRecord.addNewParticipant(contractDrugSupplyChainRecord, drugManufacturers[2]);
-		}).then(function() {
-			res.render('index', {title: _title, isAuthorized: isAdmin, drugManufacturerList: drugManufacturers, debugMsg: _debugMsg});
-			return Promise.resolve();
-		}).catch(function(exception) {
-			console.log("Error while deploying contract and adding initial participants");
-			_debugMsg = "Contract initiation failed";
-			res.render('index', {title: _title, isAuthorized: isAdmin, drugManufacturerList: drugManufacturers, debugMsg: _debugMsg});
-		});
+		// deployDrugSupplyChainRecord.deploy(web3, abiDrugSupplyChainRecord, bytecodeDrugSupplyChainRecord, authority).then(function(instance){
+		// 	contractDrugSupplyChainRecord = instance;
+		// 	console.log("Add drug manufacturer 1:", drugManufacturers[0]);
+		// 	return funcDrugSupplyChainRecord.addNewParticipant(contractDrugSupplyChainRecord, drugManufacturers[0]);
+		// }).then(function() {
+		// 	console.log("Add drug manufacturer 2:", drugManufacturers[1]);
+		// 	return funcDrugSupplyChainRecord.addNewParticipant(contractDrugSupplyChainRecord, drugManufacturers[1]);
+		// }).then(function() {
+		// 	console.log("Add drug manufacturer 3:", drugManufacturers[2]);
+		// 	return funcDrugSupplyChainRecord.addNewParticipant(contractDrugSupplyChainRecord, drugManufacturers[2]);
+		// }).then(function() {
+		// 	res.render('index', {title: _title, isAuthorized: isAdmin, drugManufacturerList: drugManufacturers, debugMsg: _debugMsg});
+		// 	return Promise.resolve();
+		// }).catch(function(exception) {
+		// 	console.log("Error while deploying contract and adding initial participants");
+		// 	_debugMsg = "Contract initiation failed";
+		// 	res.render('index', {title: _title, isAuthorized: isAdmin, drugManufacturerList: drugManufacturers, debugMsg: _debugMsg});
+		// });
+		_debugMsg = "Contract not yet deployed!";
+		res.render('index', {title: _title, isAuthorized: isAdmin, drugManufacturerList: drugManufacturers, debugMsg: _debugMsg});
 	}
 	else {
 		res.render('index', {title: _title, isAuthorized: isAdmin, drugManufacturerList: drugManufacturers, debugMsg: _debugMsg});

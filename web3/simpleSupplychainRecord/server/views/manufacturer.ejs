@@ -37,7 +37,11 @@
 		</table>
 	</div>
 	<% if(debugMsg == "Contract not yet deployed!") { %>
-		<a href="/deploy" class="btn btn-primary">Deploy</a>
+		<div style="display: inline-block; width: 1000px;">
+			<form action="/hook" method="GET">
+				<a href="/deploy" class="btn btn-primary">Deploy</a> or Hook on existing contract: <input type="text" name="addr" size="25" required> <input type="submit" value="Hook" class="btn btn-primary">
+			</form> 
+		</div>
 	<% } else { %>
 		<div>
 			<form action="/getDrugByName" method="GET">
