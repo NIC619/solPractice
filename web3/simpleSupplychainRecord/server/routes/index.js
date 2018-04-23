@@ -8,7 +8,7 @@ var _title = "Drug Supply Chain System";
 
 /* web3 set up */
 if(!web3.currentProvider)
-	web3.setProvider(new web3.providers.HttpProvider('http://:8545'));
+	web3.setProvider(new web3.providers.HttpProvider('http://localhost:8545'));
 
 // Get contract abi & bytecode
 var abiDrugSupplyChainRecord = JSON.parse( fs.readFileSync('../compile/DrugSupplyChainRecord.abi', 'utf-8') );
@@ -236,7 +236,7 @@ router.post('/addNewDrug', function(req, res) {
 			}
 		}).then(function(_drugDetail){
 			console.log("Request to add new drug processed, drug name: " + req.body.name);
-			res.redirect("/getDrugByName?name=" + req.body.name);
+			res.redirect("/getDrugByName?name=" + encodeURI(req.body.name));
 		}).catch(function(exception){
 			if(_debugMsg.length == 0) {
 				_debugMsg = "Failed to add new drug";
