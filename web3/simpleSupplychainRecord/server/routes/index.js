@@ -306,7 +306,7 @@ router.post('/addDrugStream', function(req, res) {
 			}
 		}).then(function() {
 			console.log("Request to add drug stream processed, drug: " + req.body.drugName);
-			res.redirect('/getDrugByName?name=' + req.body.drugName);
+			res.redirect('/getDrugByName?name=' + encodeURI(req.body.drugName));
 			return Promise.resolve();
 		}).catch(function(exception) {
 			if(_debugMsg.length == 0) {
