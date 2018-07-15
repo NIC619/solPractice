@@ -1,7 +1,7 @@
 pragma solidity ^0.4.20;
 // Contract that throws when token contract calls 'tokenFallback'
 // function on it.
-contract ErrorFallback {
+contract ErrorFallbackReceiver {
     function () {
         assert(false);
     }
