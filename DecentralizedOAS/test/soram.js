@@ -13,7 +13,7 @@ contract('SORAM', (accounts) => {
     const SORAMInstance = await SORAM.deployed();
     const graffity = new Uint8Array(32);
     graffity[0] = 33;
-    await SORAMInstance.write.call(0, graffity, []).catch(function(error) {
+    await SORAMInstance.write(0, graffity, []).catch(function(error) {
       console.error(error);
     });
   });
@@ -29,7 +29,57 @@ contract('SORAM', (accounts) => {
       }
       data_blocks_graffity[i] = tmp;
     }
+    await SORAMInstance.write(1, index_block_graffity, data_blocks_graffity);
+  });
+  it('should successfully read index block', async () => {
+    const SORAMInstance = await SORAM.deployed();
+    const index_block_graffity = new Uint8Array(32);
+    index_block_graffity[0] = 33;
+    var data_blocks_graffity = new Array(4);
+    for (var i = 0; i < data_blocks_graffity.length; i++) {
+      var tmp = new Uint8Array(32);
+      for (var j = 0; j < 32; j++) {
+        tmp[j] = j + i;
+      }
+      data_blocks_graffity[i] = tmp;
+    }
+    await SORAMInstance.write(1, index_block_graffity, data_blocks_graffity);
+    var index_block = await SORAMInstance.read_index_block.call(1);
+    assert.equal(index_block, web3.utils.bytesToHex(index_block_graffity), "Mismatched index block");
+  });
+  it('should successfully read data blocks by layer', async () => {
+    const SORAMInstance = await SORAM.deployed();
+    const index_block_graffity = new Uint8Array(32);
+    index_block_graffity[0] = 33;
+    var data_blocks_graffity = new Array(4);
+    for (var i = 0; i < data_blocks_graffity.length; i++) {
+      var tmp = new Uint8Array(32);
+      for (var j = 0; j < 32; j++) {
+        tmp[j] = j + i;
+      }
+      data_blocks_graffity[i] = tmp;
+    }
+    await SORAMInstance.write(1, index_block_graffity, data_blocks_graffity);
+    var data_blocks = await SORAMInstance.read_data_blocks_by.call(1);
+    console.log(data_blocks);
     console.log(data_blocks_graffity);
-    await SORAMInstance.write.call(1, index_block_graffity, data_blocks_graffity)
+    assert.equal(data_blocks, web3.utils.bytesToHex(data_blocks_graffity), "Mismatched index block");
+  });
+  it('should successfully read data block at (layer, index)', async () => {
+    const SORAMInstance = await SORAM.deployed();
+    const index_block_graffity = new Uint8Array(32);
+    index_block_graffity[0] = 33;
+    var data_blocks_graffity = new Array(4);
+    for (var i = 0; i < data_blocks_graffity.length; i++) {
+      var tmp = new Uint8Array(32);
+      for (var j = 0; j < 32; j++) {
+        tmp[j] = j + i;
+      }
+      data_blocks_graffity[i] = tmp;
+    }
+    await SORAMInstance.write(1, index_block_graffity, data_blocks_graffity);
+    var index = 3;  // NOTE: index starts from 1
+    var data_block = await SORAMInstance.read_data_block_at.call(1, index);
+    assert.equal(data_block, web3.utils.bytesToHex(data_blocks_graffity[index - 1]), "Mismatched index block");
   });
 });
