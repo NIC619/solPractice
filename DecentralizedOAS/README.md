@@ -19,3 +19,7 @@
   - read all data blocks at specified layer
 - `constructor(uint256 _max_layer)`
   - when deploying the contract, specify max layer of the storage
+
+### Testing
+
+` truffle test test/soram.js`
