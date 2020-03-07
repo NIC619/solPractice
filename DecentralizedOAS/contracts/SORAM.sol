@@ -50,10 +50,10 @@ contract SORAM {
         require(layer >= 1, "Invalid layer.");
         require(layer <= max_layer, "Invalid layer.");
 
-        bytes32[] memory data_blocks;
         uint256 data_blocks_counter = 0;
         uint256 num_data_blocks = 2**(layer.add(1));
         uint256 start_index = num_data_blocks.sub(4);
+        bytes32[] memory data_blocks = new bytes32[](num_data_blocks);
         for(uint position = start_index; position < (start_index.add(num_data_blocks)); position++) {
             data_blocks[data_blocks_counter] = data_block_storage[position];
             data_blocks_counter = data_blocks_counter.add(1);
