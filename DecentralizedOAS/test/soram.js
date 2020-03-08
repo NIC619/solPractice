@@ -78,9 +78,9 @@ contract('SORAM', (accounts) => {
       data_blocks_graffity[i] = tmp;
     }
     await SORAMInstance.write(1, index_block_graffity, data_blocks_graffity);
-    for (var index = 1; index <= 4; index++) {  // NOTE: index starts from 1
+    for (var index = 0; index < 4; index++) {
       var data_block = await SORAMInstance.read_data_block_at.call(1, index);
-      assert.equal(data_block, web3.utils.bytesToHex(data_blocks_graffity[index - 1]), "Mismatched index block");
+      assert.equal(data_block, web3.utils.bytesToHex(data_blocks_graffity[index]), "Mismatched index block");
     }
   });
 });

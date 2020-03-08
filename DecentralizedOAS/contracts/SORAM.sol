@@ -15,7 +15,7 @@ contract SORAM {
     // 4~11 are positions for data blocks in second layer.
     // 12~27 are positions for data blocks in third layer.
     // etc.
-    mapping(uint256 => bytes32) public data_block_storage;
+    mapping(uint256 => bytes32[]) public data_blocks_storage;
 
     modifier onlyOwner {
         require(msg.sender == owner, "Not onwer.");
@@ -31,11 +31,12 @@ contract SORAM {
         // Write index block
         index_block_storage[layer] = index_block;
 
-        uint256 input_data_blocks_counter = 0;
-        uint256 start_index = num_data_blocks.sub(4);
-        for(uint position = start_index; position < (start_index.add(num_data_blocks)); position++) {
-            data_block_storage[position] = data_blocks[input_data_blocks_counter];
-            input_data_blocks_counter = input_data_blocks_counter.add(1);
+        if(data_blocks_storage[layer].length == 0) {
+            data_blocks_storage[layer] = new bytes32[](num_data_blocks);
+        }
+
+        for(uint index = 0; index < num_data_blocks; index++) {
+            data_blocks_storage[layer][index] = data_blocks[index];
         }
     }
 
@@ -50,15 +51,7 @@ contract SORAM {
         require(layer >= 1, "Invalid layer.");
         require(layer <= max_layer, "Invalid layer.");
 
-        uint256 data_blocks_counter = 0;
-        uint256 num_data_blocks = 2**(layer.add(1));
-        uint256 start_index = num_data_blocks.sub(4);
-        bytes32[] memory data_blocks = new bytes32[](num_data_blocks);
-        for(uint position = start_index; position < (start_index.add(num_data_blocks)); position++) {
-            data_blocks[data_blocks_counter] = data_block_storage[position];
-            data_blocks_counter = data_blocks_counter.add(1);
-        }
-        return data_blocks;
+        return data_blocks_storage[layer];
     }
 
     // NOTE: index starts from 1
@@ -67,11 +60,10 @@ contract SORAM {
         require(layer <= max_layer, "Invalid layer.");
 
         uint256 num_data_blocks = 2**(layer.add(1));
-        require(0 < index, "Invalid index.");
-        require(index <= num_data_blocks, "Invalid index.");
+        require(0 <= index, "Invalid index.");
+        require(index < num_data_blocks, "Invalid index.");
 
-        uint256 start_index = num_data_blocks.sub(4);
-        return data_block_storage[start_index.add(index).sub(1)];
+        return data_blocks_storage[layer][index];
     }
 
     constructor(uint256 _max_layer) public {
