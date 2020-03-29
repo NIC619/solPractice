@@ -10,11 +10,7 @@ contract SORAM {
     uint256 NUM_FIRST_LAYER_DATA_BLOCK = 4;
     mapping(uint256 => bytes32) public index_block_storage;  // layer -> index block
 
-    // position -> data block,
-    // e.g., 0~3 are the positions for data blocks in first layer.
-    // 4~11 are positions for data blocks in second layer.
-    // 12~27 are positions for data blocks in third layer.
-    // etc.
+    // mapping of (layer -> data blocks)
     mapping(uint256 => bytes32[]) public data_blocks_storage;
 
     modifier onlyOwner {
