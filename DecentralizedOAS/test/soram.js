@@ -11,7 +11,7 @@ contract('SORAM', (accounts) => {
 	});
 	it('should fail to write to layer 0', async () => {
 		const SORAMInstance = await SORAM.deployed();
-		const graffity = new Uint8Array(32);
+		var graffity = new Uint8Array(32);
 		graffity[0] = 33;
 		await SORAMInstance.write(0, graffity, []).catch(function (error) {
 			console.error(error);
@@ -19,7 +19,7 @@ contract('SORAM', (accounts) => {
 	});
 	it('should successfully write to first layer', async () => {
 		const SORAMInstance = await SORAM.deployed();
-		const index_block_graffity = new Uint8Array(32);
+		var index_block_graffity = new Uint8Array(32);
 		index_block_graffity[0] = 33;
 		var data_blocks_graffity = new Array(4);
 		for (var i = 0; i < data_blocks_graffity.length; i++) {
@@ -33,7 +33,7 @@ contract('SORAM', (accounts) => {
 	});
 	it('should successfully read index block', async () => {
 		const SORAMInstance = await SORAM.deployed();
-		const index_block_graffity = new Uint8Array(32);
+		var index_block_graffity = new Uint8Array(32);
 		index_block_graffity[0] = 33;
 		var data_blocks_graffity = new Array(4);
 		for (var i = 0; i < data_blocks_graffity.length; i++) {
@@ -49,7 +49,7 @@ contract('SORAM', (accounts) => {
 	});
 	it('should successfully read data blocks by layer', async () => {
 		const SORAMInstance = await SORAM.deployed();
-		const index_block_graffity = new Uint8Array(32);
+		var index_block_graffity = new Uint8Array(32);
 		index_block_graffity[0] = 33;
 		var data_blocks_graffity = new Array(4);
 		for (var i = 0; i < data_blocks_graffity.length; i++) {
@@ -67,7 +67,7 @@ contract('SORAM', (accounts) => {
 	});
 	it('should successfully read data block at (layer, index)', async () => {
 		const SORAMInstance = await SORAM.deployed();
-		const index_block_graffity = new Uint8Array(32);
+		var index_block_graffity = new Uint8Array(32);
 		index_block_graffity[0] = 33;
 		var data_blocks_graffity = new Array(4);
 		for (var i = 0; i < data_blocks_graffity.length; i++) {
@@ -85,7 +85,7 @@ contract('SORAM', (accounts) => {
 	});
 	it('should successfully write again', async () => {
 		const SORAMInstance = await SORAM.deployed();
-		const index_block_graffity = new Uint8Array(32);
+		var index_block_graffity = new Uint8Array(32);
 		index_block_graffity[0] = 33;
 		var data_blocks_graffity = new Array(4);
 		// First write

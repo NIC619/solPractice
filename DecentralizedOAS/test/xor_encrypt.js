@@ -3,7 +3,7 @@ const XOREncrypt = artifacts.require("XOREncrypt");
 contract('XOREncrypt', () => {
 	it('should successfully encrypt', async () => {
 		const XOREncryptInstance = await XOREncrypt.deployed();
-		const plain_text = new Uint8Array(32);
+		var plain_text = new Uint8Array(32);
 		for (var i = 0; i < plain_text.length; i++) {
 			plain_text[i] = Math.floor((Math.random() * 256));
 		}
