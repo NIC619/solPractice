@@ -36,11 +36,18 @@ function garbled_NAND_result(x_0, x_1, y_0, y_1, z_0, z_1) {
 contract('GarbledCircuit', () => {
 	it('should successfully deploy 2 bit circuit', async () => {
 		const GarbledCircuitInstance = await GarbledCircuit.deployed();
-		const num_bits = 2;
-		const num_gttables = Math.pow(2, num_bits) - 1;
-		// const num_gttables = 1;
+
+		// Layout of tables(gates have the same layout)
+		//        t_0
+		//      /     \
+		//    t_1     t_2
+		//   /  \     /  \
+		// t_3  t_4  t_5  t_6
+		const num_input_bits = 2;
+		const num_gttables = Math.pow(2, num_input_bits) - 1;
 		var ttables = new Array(num_gttables);
 		var gttables = new Array(num_gttables);
+		// Generate truth tables and garbled truth tables 
 		for (var i = 0; i < num_gttables; i++) {
 			var ttable = new Object();
 			var gttable = new Array(4);
@@ -67,12 +74,33 @@ contract('GarbledCircuit', () => {
 			gttables[i] = gttable;
 		}
 
+		// Sample half of inputs
+		var start_index = num_gttables - num_input_bits;
+		var half_inputs = new Array(num_input_bits);
+		for (var i = 0; i < num_input_bits; i++) {
+			var bit_index = Math.floor((Math.random() * 2));
+			if(bit_index == 0) {
+				half_inputs[i] = ttables[start_index + i].y_0;
+			} else {
+				half_inputs[i] = ttables[start_index + i].y_1;
+			}
+		}
+
+		// Garbled circuit results
 		var bit_results = [ttables[0].z_0, ttables[0].z_1];
-		await GarbledCircuitInstance.deploy(num_bits, gttables, bit_results);
+
+		// Deploy the circuit
+		await GarbledCircuitInstance.deploy(num_input_bits, half_inputs, gttables, bit_results);
+
+		// Verify results
+		for (var i = 0; i < num_input_bits; i++) {
+			var input = await GarbledCircuitInstance.half_of_inputs.call(i);
+			assert.equal(input, web3.utils.bytesToHex(half_inputs[i]), "Incorrect half of inputs");
+		}
 		for (var i = 0; i < num_gttables; i++) {
 			var gtt = await GarbledCircuitInstance.read_gtt.call(i);
 			for (var j = 0; j < 4; j++) {
-				assert.equal(gtt[j], web3.utils.bytesToHex(gttables[i][j]), "Mismatched entry content");
+				assert.equal(gtt[j], web3.utils.bytesToHex(gttables[i][j]), "Incorrect entry content");
 			}
 		}
 	});

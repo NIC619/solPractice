@@ -10,7 +10,10 @@ contract GarbledCircuit {
         mapping(uint256 => bytes32) entry;
     }
 
+    uint256 public num_input_bits;
     mapping(uint256 => GarbledTruthTable) circuit;
+    mapping(uint256 => bytes32) public half_of_inputs;
+    mapping(uint256 => bytes32) public bit_results;
 
     struct BitResult {
         bytes32 bit_zero;
@@ -24,18 +27,27 @@ contract GarbledCircuit {
         gtt[3] = circuit[index].entry[3];
     }
 
-    function encrypt(bytes32 key, bytes32 pText) public pure returns(uint256 cText) {
-        cText = uint256(key) ^ uint256(pText);
-    }
+    function deploy(
+        uint256 _num_input_bits,
+        bytes32[] memory _half_of_inputs,
+        bytes32[4][] memory all_table_entries,
+        bytes32[] memory _bit_results) public {
+        require(_num_input_bits > 0, "Invalid number of bits for the circuit.");
+        require(_half_of_inputs.length == _num_input_bits, "Mismatched number of inputs.");
+        require(all_table_entries.length == (2**_num_input_bits - 1), "Mismatched number of tables.");
+        num_input_bits = _num_input_bits;
 
-    function deploy(uint256 num_bits, bytes32[4][] memory all_table_entries, bytes32[] memory bit_results) public {
-        require(num_bits > 0, "Invalid number of bits for the circuit.");
-
+        for(uint256 i = 0; i < _half_of_inputs.length; i++) {
+            half_of_inputs[i] = _half_of_inputs[i];
+        }
         for(uint256 i = 0; i < all_table_entries.length; i++) {
             circuit[i].entry[0] = all_table_entries[i][0];
             circuit[i].entry[1] = all_table_entries[i][1];
             circuit[i].entry[2] = all_table_entries[i][2];
             circuit[i].entry[3] = all_table_entries[i][3];
+        }
+        for(uint256 i = 0; i < _bit_results.length; i++) {
+            bit_results[i] = _bit_results[i];
         }
     }
 }
