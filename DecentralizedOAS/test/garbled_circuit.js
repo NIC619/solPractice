@@ -66,5 +66,14 @@ contract('GarbledCircuit', () => {
 			gttable = garbled_NAND_result(ttable.x_0, ttable.x_1, ttable.y_0, ttable.y_1, ttable.z_0, ttable.z_1);
 			gttables[i] = gttable;
 		}
+
+		var bit_results = [ttables[0].z_0, ttables[0].z_1];
+		await GarbledCircuitInstance.deploy(num_bits, gttables, bit_results);
+		for (var i = 0; i < num_gttables; i++) {
+			var gtt = await GarbledCircuitInstance.read_gtt.call(i);
+			for (var j = 0; j < 4; j++) {
+				assert.equal(gtt[j], web3.utils.bytesToHex(gttables[i][j]), "Mismatched entry content");
+			}
+		}
 	});
 });

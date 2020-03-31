@@ -28,7 +28,7 @@ contract GarbledCircuit {
         cText = uint256(key) ^ uint256(pText);
     }
 
-    function deploy(uint256 num_bits, bytes32[][4] memory all_table_entries, bytes32[] memory bit_results) public {
+    function deploy(uint256 num_bits, bytes32[4][] memory all_table_entries, bytes32[] memory bit_results) public {
         require(num_bits > 0, "Invalid number of bits for the circuit.");
 
         for(uint256 i = 0; i < all_table_entries.length; i++) {
