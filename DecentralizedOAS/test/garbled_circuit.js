@@ -93,7 +93,7 @@ contract('GarbledCircuit', () => {
 		// Deploy the circuit
 		await GarbledCircuitInstance.deploy(num_input_bits, half_inputs, gttables, bit_results);
 
-		// Verify results
+		// Verify content of deployed circuit
 		for (var i = 0; i < num_input_bits; i++) {
 			var input = await GarbledCircuitInstance.read_inputs_of_gate.call(start_index + i);
 			assert.equal(input[1], web3.utils.bytesToHex(half_inputs[i]), "Incorrect half of inputs");
@@ -104,5 +104,8 @@ contract('GarbledCircuit', () => {
 				assert.equal(gtt[j], web3.utils.bytesToHex(gttables[i][j]), "Incorrect entry content");
 			}
 		}
+		var results = await GarbledCircuitInstance.read_bit_results.call(0);
+		assert.equal(results[0], web3.utils.bytesToHex(bit_results[0]), "Incorrect bit results");
+		assert.equal(results[1], web3.utils.bytesToHex(bit_results[1]), "Incorrect bit results");
 	});
 });

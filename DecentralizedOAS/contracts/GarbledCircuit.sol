@@ -11,9 +11,10 @@ contract GarbledCircuit {
     }
 
     uint256 public num_input_bits;
+    uint256 public num_result_bits;
     mapping(uint256 => GarbledTruthTable) circuit;
     mapping(uint256 => CachedInput) inputs_of_gate;
-    mapping(uint256 => bytes32) public bit_results;
+    mapping(uint256 => BitResult) bit_results;
 
     struct BitResult {
         bytes32 bit_zero;
@@ -25,6 +26,16 @@ contract GarbledCircuit {
         gtt[1] = circuit[index].entry[1];
         gtt[2] = circuit[index].entry[2];
         gtt[3] = circuit[index].entry[3];
+    }
+
+    function read_inputs_of_gate(uint256 gate) public view returns(bytes32[2] memory inputs) {
+        inputs[0] = inputs_of_gate[gate].x;
+        inputs[1] = inputs_of_gate[gate].y;
+    }
+
+    function read_bit_results(uint256 result_index) public view returns(bytes32[2] memory results) {
+        results[0] = bit_results[result_index].bit_zero;
+        results[1] = bit_results[result_index].bit_one;
     }
 
     function deploy(
@@ -47,8 +58,10 @@ contract GarbledCircuit {
             circuit[i].entry[2] = all_table_entries[i][2];
             circuit[i].entry[3] = all_table_entries[i][3];
         }
-        for(uint256 i = 0; i < _bit_results.length; i++) {
-            bit_results[i] = _bit_results[i];
+        num_result_bits = _bit_results.length / 2;
+        for(uint256 i = 0; i < _bit_results.length; i = i + 2) {
+            bit_results[i / 2].bit_zero = _bit_results[i];
+            bit_results[i / 2].bit_one = _bit_results[i + 1];
         }
     }
 }
