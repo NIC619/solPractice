@@ -37,7 +37,7 @@ contract('GarbledCircuit', () => {
 	it('should successfully deploy 2 bit circuit', async () => {
 		const GarbledCircuitInstance = await GarbledCircuit.deployed();
 
-		// Layout of tables(gates have the same layout)
+		// Layout of tables, i.e. gates
 		//        t_0
 		//      /     \
 		//    t_1     t_2
@@ -75,7 +75,8 @@ contract('GarbledCircuit', () => {
 		}
 
 		// Sample half of inputs
-		var start_index = num_gttables - num_input_bits;
+		// inputs are for gates in the bottom layer
+		var start_index = num_input_bits - 1;
 		var half_inputs = new Array(num_input_bits);
 		for (var i = 0; i < num_input_bits; i++) {
 			var bit_index = Math.floor((Math.random() * 2));
@@ -94,8 +95,8 @@ contract('GarbledCircuit', () => {
 
 		// Verify results
 		for (var i = 0; i < num_input_bits; i++) {
-			var input = await GarbledCircuitInstance.half_of_inputs.call(i);
-			assert.equal(input, web3.utils.bytesToHex(half_inputs[i]), "Incorrect half of inputs");
+			var input = await GarbledCircuitInstance.read_inputs_of_gate.call(start_index + i);
+			assert.equal(input[1], web3.utils.bytesToHex(half_inputs[i]), "Incorrect half of inputs");
 		}
 		for (var i = 0; i < num_gttables; i++) {
 			var gtt = await GarbledCircuitInstance.read_gtt.call(i);
