@@ -54,7 +54,7 @@ t_0       t_1
 - `function deploy(uint256 _num_inputs, uint256[3][] memory table_relation, bytes32[4][] memory all_table_entries, uint256[] memory table_index_of_garbled_inputs, bytes32[] memory garbled_inputs, uint256[] memory table_index_of_outputs, bytes32[2][] memory _outputs)`
   - deploy circuit
   - entry in `table_relation` represents relation between a child table and its parent table, e.g., t_0(child) -> t_4(parent)
-    - also need to include info of which input is the child to parent, e.g., t_0's output is x(bit 0)) input of t_4, t_5's output is y(bit 1)) input of t_6
+    - also need to include info of which input is the child to parent, e.g., t_0's output is x(bit 0)) input of t_4 and t_5's output is y(bit 1)) input of t_6
   - `all_table_entries` represents (shuffled) entries of each table
   - `table_index_of_garbled_inputs` and `garbled_inputs` are used to fill in the y inputs of input tables, e.g., y inputs of t_0, t_1, t_2 and t_3
   - `table_index_of_outputs` and `_outputs` are used to fill in the outputs of end tables, e.g., output of t_6
@@ -69,5 +69,5 @@ t_0       t_1
 
 ### Testing
 
-` truffle test test/soram.js`
-` truffle test test/garbled_circuit.js`
+- ` truffle test test/soram.js`
+- ` truffle test test/garbled_circuit.js`
