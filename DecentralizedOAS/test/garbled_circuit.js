@@ -125,10 +125,10 @@ contract('GarbledCircuit', () => {
 		}
 
 		// Garbled circuit results
-		var bit_results = new Array(num_results);
+		var outputs = new Array(num_results);
 		for (var i = 0; i < indices_of_end_tables.length; i++) {
 			var table_index = indices_of_end_tables[i];
-			bit_results[i] = [ttables[table_index].z_0, ttables[table_index].z_1];
+			outputs[i] = [ttables[table_index].z_0, ttables[table_index].z_1];
 		}
 
 		// Deploy the circuit
@@ -139,7 +139,7 @@ contract('GarbledCircuit', () => {
 			indices_of_initial_input_tables,
 			half_inputs,
 			indices_of_end_tables,
-			bit_results,
+			outputs,
 		);
 
 		// Verify content of deployed circuit
@@ -156,9 +156,9 @@ contract('GarbledCircuit', () => {
 		}
 		for (var i = 0; i < indices_of_end_tables.length; i++) {
 			var table_index = indices_of_end_tables[i];
-			var results = await GarbledCircuitInstance.read_bit_results.call(table_index);
-			assert.equal(results[0], web3.utils.bytesToHex(bit_results[i][0]), "Incorrect bit results");
-			assert.equal(results[1], web3.utils.bytesToHex(bit_results[i][1]), "Incorrect bit results");
+			var results = await GarbledCircuitInstance.read_outputs_of_table.call(table_index);
+			assert.equal(results[0], web3.utils.bytesToHex(outputs[i][0]), "Incorrect bit results");
+			assert.equal(results[1], web3.utils.bytesToHex(outputs[i][1]), "Incorrect bit results");
 		}
 
 		// Sample the other half of initial inputs

@@ -19,7 +19,7 @@ contract GarbledCircuit {
     uint256 public num_results;
     mapping(uint256 => uint256) decrpytion_result;
     mapping(uint256 => GarbledTruthTable) circuit;
-    mapping(uint256 => BitResult) bit_results;
+    mapping(uint256 => BitResult) outputs;
 
     struct BitResult {
         bytes32 bit_zero;
@@ -38,9 +38,9 @@ contract GarbledCircuit {
         inputs[1] = circuit[table_index].input_y;
     }
 
-    function read_bit_results(uint256 table_index) public view returns(bytes32[2] memory results) {
-        results[0] = bit_results[table_index].bit_zero;
-        results[1] = bit_results[table_index].bit_one;
+    function read_outputs_of_table(uint256 table_index) public view returns(bytes32[2] memory _outputs) {
+        _outputs[0] = outputs[table_index].bit_zero;
+        _outputs[1] = outputs[table_index].bit_one;
     }
 
     function read_decryption_result(uint256 table_index) public view returns(uint256) {
@@ -81,9 +81,9 @@ contract GarbledCircuit {
                 }
             }
             if(is_end_table == true) {
-                if(result == uint256(bit_results[table_index].bit_zero)) {
+                if(result == uint256(outputs[table_index].bit_zero)) {
                     decrpytion_result[i] = 1;
-                } else if(result == uint256(bit_results[table_index].bit_one)) {
+                } else if(result == uint256(outputs[table_index].bit_one)) {
                     decrpytion_result[i] = 2;
                 } else {
                     revert("Incorrect result.");
@@ -104,8 +104,8 @@ contract GarbledCircuit {
         bytes32[4][] memory all_table_entries,
         uint256[] memory table_index_of_garbled_inputs,
         bytes32[] memory garbled_inputs,
-        uint256[] memory table_index_of_bit_results,
-        bytes32[2][] memory _bit_results) public {
+        uint256[] memory table_index_of_outputs,
+        bytes32[2][] memory _outputs) public {
         require(_num_inputs > 0, "Invalid number of bits for the circuit.");
         require(garbled_inputs.length == _num_inputs, "Mismatched number of inputs.");
         require(table_index_of_garbled_inputs.length == garbled_inputs.length, "Mismatch between number of table indices and number of garbled inputs");
@@ -132,11 +132,11 @@ contract GarbledCircuit {
             circuit[i].entry[2] = all_table_entries[i][2];
             circuit[i].entry[3] = all_table_entries[i][3];
         }
-        num_results = table_index_of_bit_results.length;
-        for(uint256 i = 0; i < table_index_of_bit_results.length; i++) {
-            table_index = table_index_of_bit_results[i];
-            bit_results[table_index].bit_zero = _bit_results[i][0];
-            bit_results[table_index].bit_one = _bit_results[i][1];
+        num_results = table_index_of_outputs.length;
+        for(uint256 i = 0; i < table_index_of_outputs.length; i++) {
+            table_index = table_index_of_outputs[i];
+            outputs[table_index].bit_zero = _outputs[i][0];
+            outputs[table_index].bit_one = _outputs[i][1];
         }
     }
 }
