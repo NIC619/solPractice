@@ -17,7 +17,7 @@ contract GarbledCircuit {
     uint256 public num_inputs;
     uint256 public num_tables;
     uint256 public num_results;
-    mapping(uint256 => bool) decrpytion_result;
+    mapping(uint256 => uint256) decrpytion_result;
     mapping(uint256 => GarbledTruthTable) circuit;
     mapping(uint256 => BitResult) bit_results;
 
@@ -43,8 +43,12 @@ contract GarbledCircuit {
         results[1] = bit_results[table_index].bit_one;
     }
 
-    function read_decryption_result(uint256 table_index) public view returns(bool) {
-        return decrpytion_result[table_index];
+    function read_decryption_result(uint256 table_index) public view returns(uint256) {
+        // 2: true
+        // 1: false
+        // 0: not set
+        require(decrpytion_result[table_index] > 0, "Decryption result is not set");
+        return decrpytion_result[table_index] - 1;
     }
 
     function decrypt(
@@ -78,9 +82,9 @@ contract GarbledCircuit {
             }
             if(is_end_table == true) {
                 if(result == uint256(bit_results[table_index].bit_zero)) {
-                    decrpytion_result[i] = false;
+                    decrpytion_result[i] = 1;
                 } else if(result == uint256(bit_results[table_index].bit_one)) {
-                    decrpytion_result[i] = true;
+                    decrpytion_result[i] = 2;
                 } else {
                     revert("Incorrect result.");
                 }

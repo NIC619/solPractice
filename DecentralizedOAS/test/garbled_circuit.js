@@ -39,7 +39,7 @@ function garbled_NAND_result(x_0, x_1, y_0, y_1, z_0, z_1) {
 }
 
 contract('GarbledCircuit', () => {
-	it('should successfully deploy 2 input circuit', async () => {
+	it('should successfully deploy and decrypt a 7 tables circuit', async () => {
 		const GarbledCircuitInstance = await GarbledCircuit.deployed();
 
 		// Layout of tables
@@ -67,7 +67,7 @@ contract('GarbledCircuit', () => {
 		var execution_sequence = [0, 1, 2, 3, 4, 5, 6];
 
 		var ttables = new Array(num_gttables);
-		// Generate x,y inputs of truth tables
+		// Generate x,y inputs for each truth tables
 		for (var i = 0; i < num_gttables; i++) {
 			var ttable = new Object();
 			ttable.x_0 = gen_key(32);
@@ -94,7 +94,7 @@ contract('GarbledCircuit', () => {
 				ttable.z_1 = parent_table.y_1;
 			}
 		}
-		// Generate ouput z for end tables
+		// Generate z(output of table) for end tables
 		for (var i = 0; i < indices_of_end_tables.length; i++) {
 			var ttable = ttables[indices_of_end_tables[i]];
 			ttable.z_0 = gen_key(32);
@@ -104,13 +104,11 @@ contract('GarbledCircuit', () => {
 		var gttables = new Array(num_gttables);
 		for (var i = 0; i < num_gttables; i++) {
 			var ttable = ttables[i];
-			var gttable = new Array(4);
 			gttable = garbled_NAND_result(ttable.x_0, ttable.x_1, ttable.y_0, ttable.y_1, ttable.z_0, ttable.z_1);
 			gttables[i] = gttable;
 		}
 
-		// Sample half of inputs
-		// inputs are for tables in the bottom layer
+		// Sample half of initial inputs
 		var half_inputs = new Array(num_inputs);
 		var inputs_to_each_table = new Array(num_gttables);
 		for (var i = 0; i < indices_of_initial_input_tables.length; i++) {
@@ -127,7 +125,7 @@ contract('GarbledCircuit', () => {
 		}
 
 		// Garbled circuit results
-		var bit_results = new Array(2 * num_results);
+		var bit_results = new Array(num_results);
 		for (var i = 0; i < indices_of_end_tables.length; i++) {
 			var table_index = indices_of_end_tables[i];
 			bit_results[i] = [ttables[table_index].z_0, ttables[table_index].z_1];
@@ -163,7 +161,7 @@ contract('GarbledCircuit', () => {
 			assert.equal(results[1], web3.utils.bytesToHex(bit_results[i][1]), "Incorrect bit results");
 		}
 
-		// Sample the other half of inputs
+		// Sample the other half of initial inputs
 		var other_half_inputs = new Array(num_inputs);
 		for (var i = 0; i < indices_of_initial_input_tables.length; i++) {
 			var table_index = indices_of_initial_input_tables[i];
@@ -191,7 +189,7 @@ contract('GarbledCircuit', () => {
 			if(indices_of_end_tables.indexOf(table_index) >= 0) {
 				entry_result_of_end_tables[table_index] = entry_result;
 			}
-			// Fill in entry result for parent table if it is not an end table
+			// Fill in entry result for parent table if this is not an end table
 			if(parent_table_index !== undefined) {
 				if(inputs_to_each_table[parent_table_index] === undefined) {
 					inputs_to_each_table[parent_table_index] = new Object();
