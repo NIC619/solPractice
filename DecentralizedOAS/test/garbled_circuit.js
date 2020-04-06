@@ -49,9 +49,8 @@ contract('GarbledCircuit', () => {
 		//   /  \     /  \
 		// t_0  t_1  t_2  t_3
 
-		const num_inputs = 2;
-		// const num_gttables = 7;
-		const num_gttables = 3;
+		const num_inputs = 4;
+		const num_gttables = 7;
 		const num_results = 1;
 		// Format of table relation entry: [child_table_index, parent_table_index, is_input_x_to_parent_table]
 		// and for is_input_x_to_parent_table, 1 means yes, 0 means
@@ -62,12 +61,10 @@ contract('GarbledCircuit', () => {
 		// paretn table of table 3 is input y of table 5
 		// paretn table of table 4 is input x of table 6
 		// paretn table of table 5 is input y of table 6
-		// var table_relation = [[0, 4, 1], [1, 4, 0], [2, 5, 1], [3, 5, 0], [4, 6, 1], [5, 6, 0]];
-		var table_relation = [[0, 2, 1], [1, 2, 0]];
-		// var indices_of_end_tables = [6];
-		var indices_of_end_tables = [2];
-		// var indices_of_initial_input_tables = [0, 1, 2, 3];
-		var indices_of_initial_input_tables = [0, 1];
+		var table_relation = [[0, 4, 1], [1, 4, 0], [2, 5, 1], [3, 5, 0], [4, 6, 1], [5, 6, 0]];
+		var indices_of_end_tables = [6];
+		var indices_of_initial_input_tables = [0, 1, 2, 3];
+		var execution_sequence = [0, 1, 2, 3, 4, 5, 6];
 
 		var ttables = new Array(num_gttables);
 		// Generate x,y inputs of truth tables
@@ -86,7 +83,6 @@ contract('GarbledCircuit', () => {
 		for (var i = 0; i < table_relation.length; i++) {
 			var ttable = ttables[table_relation[i][0]];
 			ttable.parent_table_index = table_relation[i][1];
-			console.log("table", table_relation[i][0], "parent", ttable.parent_table_index);
 			var parent_table = ttables[ttable.parent_table_index];
 			if(table_relation[i][2] == 1) {
 				ttable.input_x = 1;
@@ -118,22 +114,23 @@ contract('GarbledCircuit', () => {
 		var half_inputs = new Array(num_inputs);
 		var inputs_to_each_table = new Array(num_gttables);
 		for (var i = 0; i < indices_of_initial_input_tables.length; i++) {
+			var table_index = indices_of_initial_input_tables[i];
 			var bit_index = Math.floor((Math.random() * 2));
-			inputs_to_each_table[indices_of_initial_input_tables[i]] = new Object();
+			inputs_to_each_table[table_index] = new Object();
 			if(bit_index == 0) {
-				half_inputs[i] = ttables[indices_of_initial_input_tables[i]].y_0;
-				inputs_to_each_table[indices_of_initial_input_tables[i]].y = 0;
+				half_inputs[i] = ttables[table_index].y_0;
+				inputs_to_each_table[table_index].y = 0;
 			} else {
-				half_inputs[i] = ttables[indices_of_initial_input_tables[i]].y_1;
-				inputs_to_each_table[indices_of_initial_input_tables[i]].y = 1;
+				half_inputs[i] = ttables[table_index].y_1;
+				inputs_to_each_table[table_index].y = 1;
 			}
 		}
 
 		// Garbled circuit results
 		var bit_results = new Array(2 * num_results);
 		for (var i = 0; i < indices_of_end_tables.length; i++) {
-			bit_results[2 * i] = ttables[indices_of_end_tables[i]].z_0;
-			bit_results[2 * i + 1] = ttables[indices_of_end_tables[i]].z_1;
+			var table_index = indices_of_end_tables[i];
+			bit_results[i] = [ttables[table_index].z_0, ttables[table_index].z_1];
 		}
 
 		// Deploy the circuit
@@ -143,12 +140,14 @@ contract('GarbledCircuit', () => {
 			gttables,
 			indices_of_initial_input_tables,
 			half_inputs,
+			indices_of_end_tables,
 			bit_results,
 		);
 
 		// Verify content of deployed circuit
 		for (var i = 0; i < indices_of_initial_input_tables.length; i++) {
-			var input = await GarbledCircuitInstance.read_inputs_of_table.call(indices_of_initial_input_tables[i]);
+			var table_index = indices_of_initial_input_tables[i];
+			var input = await GarbledCircuitInstance.read_inputs_of_table.call(table_index);
 			assert.equal(input[1], web3.utils.bytesToHex(half_inputs[i]), "Incorrect half of inputs");
 		}
 		for (var i = 0; i < num_gttables; i++) {
@@ -158,52 +157,66 @@ contract('GarbledCircuit', () => {
 			}
 		}
 		for (var i = 0; i < indices_of_end_tables.length; i++) {
-			var results = await GarbledCircuitInstance.read_bit_results.call(i);
-			assert.equal(results[0], web3.utils.bytesToHex(bit_results[0]), "Incorrect bit results");
-			assert.equal(results[1], web3.utils.bytesToHex(bit_results[1]), "Incorrect bit results");
+			var table_index = indices_of_end_tables[i];
+			var results = await GarbledCircuitInstance.read_bit_results.call(table_index);
+			assert.equal(results[0], web3.utils.bytesToHex(bit_results[i][0]), "Incorrect bit results");
+			assert.equal(results[1], web3.utils.bytesToHex(bit_results[i][1]), "Incorrect bit results");
 		}
 
-		// // Sample the other half of inputs
-		// var other_half_inputs = new Array(num_inputs);
-		// for (var i = 0; i < num_inputs; i++) {
-		// 	var bit_index = Math.floor((Math.random() * 2));
-		// 	if(bit_index == 0) {
-		// 		other_half_inputs[i] = ttables[start_index + i].x_0;
-		// 		inputs_to_each_table[start_index + i].x = 0;
-		// 	} else {
-		// 		other_half_inputs[i] = ttables[start_index + i].x_1;
-		// 		inputs_to_each_table[start_index + i].x = 1;
-		// 	}
-		// }
+		// Sample the other half of inputs
+		var other_half_inputs = new Array(num_inputs);
+		for (var i = 0; i < indices_of_initial_input_tables.length; i++) {
+			var table_index = indices_of_initial_input_tables[i];
+			var bit_index = Math.floor((Math.random() * 2));
+			if(bit_index == 0) {
+				other_half_inputs[i] = ttables[table_index].x_0;
+				inputs_to_each_table[table_index].x = 0;
+			} else {
+				other_half_inputs[i] = ttables[table_index].x_1;
+				inputs_to_each_table[table_index].x = 1;
+			}
+		}
 
-		// // Compute final entry sequence
-		// var entry_sequence = new Array(num_gttables);
-		// for (var i = num_gttables - 1; i > 0; i--) {
-		// 	var parent_table_index = get_parent_table_index(i);
-		// 	var entry_index = get_entry_index(inputs_to_each_table[i].x, inputs_to_each_table[i].y);
-		// 	var entry_result = ttables[i].fn_get_entry_result(entry_index);
-		// 	if(inputs_to_each_table[parent_table_index] === undefined) {
-		// 		inputs_to_each_table[parent_table_index] = new Object();
-		// 	}
-		// 	if(i % 2 == 1) {
-		// 		inputs_to_each_table[parent_table_index].x = entry_result;
-		// 	} else {
-		// 		inputs_to_each_table[parent_table_index].y = entry_result;
-		// 	}
-		// 	entry_sequence[i] = ttables[i].shuffled_sequence.indexOf(entry_index);
-		// }
-		// // Compute entry for table 0
-		// var entry_index = get_entry_index(inputs_to_each_table[0].x, inputs_to_each_table[0].y);
-		// entry_sequence[0] = ttables[0].shuffled_sequence.indexOf(entry_index);
+		// Compute final entry sequence
+		var entry_sequence = new Array(execution_sequence.length);
+		var entry_result_of_end_tables = new Object();
+		for (var i = 0; i < execution_sequence.length; i++) {
+			var table_index = execution_sequence[i];
+			var ttable = ttables[table_index];
+			var parent_table_index = ttable.parent_table_index;
+			var entry_index = get_entry_index(inputs_to_each_table[i].x, inputs_to_each_table[i].y);
+			entry_sequence[i] = [execution_sequence[i], ttable.shuffled_sequence.indexOf(entry_index)];
+			var entry_result = ttable.fn_get_entry_result(entry_index);
+			// Record entry result for end tables
+			if(indices_of_end_tables.indexOf(table_index) >= 0) {
+				entry_result_of_end_tables[table_index] = entry_result;
+			}
+			// Fill in entry result for parent table if it is not an end table
+			if(parent_table_index !== undefined) {
+				if(inputs_to_each_table[parent_table_index] === undefined) {
+					inputs_to_each_table[parent_table_index] = new Object();
+				}
+				if(ttable.input_x == undefined) throw 'No indication of x or y input';
+				else if(ttable.input_x == 1) {
+					inputs_to_each_table[parent_table_index].x = entry_result;
+				} else {
+					inputs_to_each_table[parent_table_index].y = entry_result;
+				}
+			}
+		}
 
-		// // Decrypt
-		// await GarbledCircuitInstance.decrypt(
-		// 	other_half_inputs,
-		// 	entry_sequence,
-		// );
-		// // Verify that result is correct
-		// var decrypt_results = await GarbledCircuitInstance.decrpytion_result.call(0);
-		// assert.equal(decrypt_results, ttables[0].fn_get_entry_result(entry_sequence[0]), "Incorrect results");
+		// Decrypt
+		await GarbledCircuitInstance.decrypt(
+			indices_of_initial_input_tables,
+			other_half_inputs,
+			entry_sequence,
+			indices_of_end_tables,
+		);
+		// Verify that result is correct
+		for (table_index in entry_result_of_end_tables) {
+			var decryption_result = await GarbledCircuitInstance.read_decryption_result.call(table_index);
+			assert.equal(decryption_result, entry_result_of_end_tables[table_index], "Incorrect results");
+		}
 
 	});
 });
