@@ -16,8 +16,8 @@ contract GarbledCircuit {
 
     uint256 public num_inputs;
     uint256 public num_tables;
-    uint256 public num_result_bits;
-    bool[] public decrpytion_result;
+    uint256 public num_results;
+    mapping(uint256 => bool) decrpytion_result;
     mapping(uint256 => GarbledTruthTable) circuit;
     mapping(uint256 => BitResult) bit_results;
 
@@ -38,45 +38,58 @@ contract GarbledCircuit {
         inputs[1] = circuit[table_index].input_y;
     }
 
-    function read_bit_results(uint256 result_index) public view returns(bytes32[2] memory results) {
-        results[0] = bit_results[result_index].bit_zero;
-        results[1] = bit_results[result_index].bit_one;
+    function read_bit_results(uint256 table_index) public view returns(bytes32[2] memory results) {
+        results[0] = bit_results[table_index].bit_zero;
+        results[1] = bit_results[table_index].bit_one;
     }
 
-    function decrypt(uint256[] memory table_index_of_garbled_inputs, bytes32[] memory garbled_inputs, uint256[] memory entries_chosen) public {
+    function read_decryption_result(uint256 table_index) public view returns(bool) {
+        return decrpytion_result[table_index];
+    }
+
+    function decrypt(
+        uint256[] memory table_index_of_garbled_inputs,
+        bytes32[] memory garbled_inputs,
+        uint256[2][] memory entries_chosen,
+        uint256[] memory table_index_of_end_tables) public {
         require(garbled_inputs.length == num_inputs, "Mismatched number of garbled inputs.");
         require(table_index_of_garbled_inputs.length == garbled_inputs.length, "Mismatch between number of table indices and number of garbled inputs");
         require(entries_chosen.length == num_tables, "Mismatched number of chosen entries(should match the number of tables).");
+        require(table_index_of_end_tables.length == num_results, "Mismatched number of end tables.");
 
         // Fill in the given inputs
         for(uint256 i = 0; i < num_inputs; i++) {
             circuit[table_index_of_garbled_inputs[i]].input_x = garbled_inputs[i];
         }
 
+        uint256 table_index;
         bytes32 entry;
         uint256 result;
-        for(uint256 i = num_tables - 1; i > 0; i--) {
-            entry = circuit[i].entry[entries_chosen[i]];
-            result = uint256(entry) ^ uint256(circuit[i].input_x) ^ uint256(circuit[i].input_y);
-            if(i % 2 == 1) {
-                circuit[circuit[i].parent_table_index].input_x = bytes32(result);
-            } else {
-                circuit[circuit[i].parent_table_index].input_y = bytes32(result);
+        bool is_end_table;
+        for(uint256 i = 0; i < entries_chosen.length; i++) {
+            table_index = entries_chosen[i][0];
+            entry = circuit[table_index].entry[entries_chosen[i][1]];
+            result = uint256(entry) ^ uint256(circuit[table_index].input_x) ^ uint256(circuit[table_index].input_y);
+            is_end_table = false;
+            for(uint256 j = 0; j < table_index_of_end_tables.length; j++) {
+                if(table_index == table_index_of_end_tables[j]) {
+                    is_end_table = true;
+                }
             }
-        }
-        // Compute result, i.e., result of table 0
-        require(circuit[0].input_x != bytes32(0) && circuit[0].input_y != bytes32(0), "Missing inputs to final table.");
-        entry = circuit[0].entry[entries_chosen[0]];
-        result = uint256(entry) ^ uint256(circuit[0].input_x) ^ uint256(circuit[0].input_y);
-
-        // Compare results against results table
-        for(uint256 i = 0; i < num_result_bits; i++) {
-            if(result == uint256(bit_results[i].bit_zero)) {
-                decrpytion_result[i] = false;
-            } else if(result == uint256(bit_results[i].bit_one)) {
-                decrpytion_result[i] = true;
+            if(is_end_table == true) {
+                if(result == uint256(bit_results[table_index].bit_zero)) {
+                    decrpytion_result[i] = false;
+                } else if(result == uint256(bit_results[table_index].bit_one)) {
+                    decrpytion_result[i] = true;
+                } else {
+                    revert("Incorrect result.");
+                }
             } else {
-                revert("Incorrect result.");
+                if(circuit[table_index].is_input_x == true) {
+                    circuit[circuit[table_index].parent_table_index].input_x = bytes32(result);
+                } else {
+                    circuit[circuit[table_index].parent_table_index].input_y = bytes32(result);
+                }
             }
         }
     }
@@ -87,7 +100,8 @@ contract GarbledCircuit {
         bytes32[4][] memory all_table_entries,
         uint256[] memory table_index_of_garbled_inputs,
         bytes32[] memory garbled_inputs,
-        bytes32[] memory _bit_results) public {
+        uint256[] memory table_index_of_bit_results,
+        bytes32[2][] memory _bit_results) public {
         require(_num_inputs > 0, "Invalid number of bits for the circuit.");
         require(garbled_inputs.length == _num_inputs, "Mismatched number of inputs.");
         require(table_index_of_garbled_inputs.length == garbled_inputs.length, "Mismatch between number of table indices and number of garbled inputs");
@@ -95,8 +109,10 @@ contract GarbledCircuit {
         num_inputs = _num_inputs;
         num_tables = all_table_entries.length;
 
+        uint256 table_index;
         for(uint256 i = 0; i < garbled_inputs.length; i++) {
-            circuit[table_index_of_garbled_inputs[i]].input_y = garbled_inputs[i];
+            table_index = table_index_of_garbled_inputs[i];
+            circuit[table_index].input_y = garbled_inputs[i];
         }
         for(uint256 i = 0; i < table_relation.length; i++) {
             circuit[table_relation[i][0]].parent_table_index = table_relation[i][1];
@@ -112,11 +128,11 @@ contract GarbledCircuit {
             circuit[i].entry[2] = all_table_entries[i][2];
             circuit[i].entry[3] = all_table_entries[i][3];
         }
-        num_result_bits = _bit_results.length / 2;
-        for(uint256 i = 0; i < _bit_results.length; i = i + 2) {
-            bit_results[i / 2].bit_zero = _bit_results[i];
-            bit_results[i / 2].bit_one = _bit_results[i + 1];
+        num_results = table_index_of_bit_results.length;
+        for(uint256 i = 0; i < table_index_of_bit_results.length; i++) {
+            table_index = table_index_of_bit_results[i];
+            bit_results[table_index].bit_zero = _bit_results[i][0];
+            bit_results[table_index].bit_one = _bit_results[i][1];
         }
-        decrpytion_result = new bool[](num_result_bits);
     }
 }
