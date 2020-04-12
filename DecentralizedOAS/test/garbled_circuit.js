@@ -101,6 +101,7 @@ contract('GarbledCircuit', () => {
 			ttable.z_1 = gen_key(32);
 		}
 		// Generate garbled truth tables
+		var table_indices = [0, 1, 2, 3, 4, 5, 6];
 		var gttables = new Array(num_gttables);
 		for (var i = 0; i < num_gttables; i++) {
 			var ttable = ttables[i];
@@ -135,6 +136,7 @@ contract('GarbledCircuit', () => {
 		await GarbledCircuitInstance.deploy(
 			num_inputs,
 			table_relation,
+			table_indices,
 			gttables,
 			indices_of_initial_input_tables,
 			half_inputs,

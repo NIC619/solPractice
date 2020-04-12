@@ -104,6 +104,7 @@ contract GarbledCircuit {
     function deploy(
         uint256 _num_inputs,
         uint256[3][] memory table_relation,
+        uint256[] memory table_index_of_table_entries,
         bytes32[4][] memory all_table_entries,
         uint256[] memory table_index_of_garbled_inputs,
         bytes32[] memory garbled_inputs,
@@ -132,11 +133,12 @@ contract GarbledCircuit {
                 circuit[table_relation[i][0]].is_input_x_to_table[num_parent_tables] = false;
             }
         }
-        for(uint256 i = 0; i < all_table_entries.length; i++) {
-            circuit[i].entry[0] = all_table_entries[i][0];
-            circuit[i].entry[1] = all_table_entries[i][1];
-            circuit[i].entry[2] = all_table_entries[i][2];
-            circuit[i].entry[3] = all_table_entries[i][3];
+        for(uint256 i = 0; i < table_index_of_table_entries.length; i++) {
+            table_index = table_index_of_table_entries[i];
+            circuit[table_index].entry[0] = all_table_entries[i][0];
+            circuit[table_index].entry[1] = all_table_entries[i][1];
+            circuit[table_index].entry[2] = all_table_entries[i][2];
+            circuit[table_index].entry[3] = all_table_entries[i][3];
         }
         num_results = table_index_of_outputs.length;
         for(uint256 i = 0; i < table_index_of_outputs.length; i++) {
