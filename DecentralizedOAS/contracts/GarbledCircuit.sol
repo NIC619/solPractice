@@ -7,8 +7,9 @@ contract GarbledCircuit {
     using SafeMath for uint256;
 
     struct GarbledTruthTable {
-        uint256 parent_table_index;
-        bool is_input_x;
+        uint256 num_parent_tables;
+        mapping(uint256 => uint256) parent_table_indices;
+        mapping(uint256 => bool) is_input_x_to_table;
         mapping(uint256 => bytes32) entry;
         bytes32 input_x;
         bytes32 input_y;
@@ -89,10 +90,12 @@ contract GarbledCircuit {
                     revert("Incorrect result.");
                 }
             } else {
-                if(circuit[table_index].is_input_x == true) {
-                    circuit[circuit[table_index].parent_table_index].input_x = bytes32(result);
-                } else {
-                    circuit[circuit[table_index].parent_table_index].input_y = bytes32(result);
+                for(uint256 j = 0; j < circuit[table_index].num_parent_tables; j++) {
+                    if(circuit[table_index].is_input_x_to_table[j] == true) {
+                        circuit[circuit[table_index].parent_table_indices[j]].input_x = bytes32(result);
+                    } else {
+                        circuit[circuit[table_index].parent_table_indices[j]].input_y = bytes32(result);
+                    }
                 }
             }
         }
@@ -118,12 +121,15 @@ contract GarbledCircuit {
             table_index = table_index_of_garbled_inputs[i];
             circuit[table_index].input_y = garbled_inputs[i];
         }
+        uint256 num_parent_tables;
         for(uint256 i = 0; i < table_relation.length; i++) {
-            circuit[table_relation[i][0]].parent_table_index = table_relation[i][1];
+            num_parent_tables = circuit[table_relation[i][0]].num_parent_tables;
+            circuit[table_relation[i][0]].num_parent_tables = circuit[table_relation[i][0]].num_parent_tables.add(1);
+            circuit[table_relation[i][0]].parent_table_indices[num_parent_tables] = table_relation[i][1];
             if(table_relation[i][2] == 1) {
-                circuit[table_relation[i][0]].is_input_x = true;
+                circuit[table_relation[i][0]].is_input_x_to_table[num_parent_tables] = true;
             } else {
-                circuit[table_relation[i][0]].is_input_x = false;
+                circuit[table_relation[i][0]].is_input_x_to_table[num_parent_tables] = false;
             }
         }
         for(uint256 i = 0; i < all_table_entries.length; i++) {
