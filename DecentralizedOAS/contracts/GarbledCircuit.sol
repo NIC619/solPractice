@@ -34,6 +34,15 @@ contract GarbledCircuit {
         gtt[3] = circuit[table_index].entry[3];
     }
 
+    function read_parent_table_indices(uint256 table_index) public view returns(uint256[] memory) {
+        uint256 num_parent_tables = circuit[table_index].num_parent_tables;
+        uint256[] memory indices = new uint256[](num_parent_tables);
+        for(uint256 i = 0; i < num_parent_tables; i++) {
+            indices[i] = circuit[table_index].parent_table_indices[i];
+        }
+        return indices;
+    }
+
     function read_inputs_of_table(uint256 table_index) public view returns(bytes32[2] memory inputs) {
         inputs[0] = circuit[table_index].input_x;
         inputs[1] = circuit[table_index].input_y;
@@ -124,13 +133,14 @@ contract GarbledCircuit {
         }
         uint256 num_parent_tables;
         for(uint256 i = 0; i < table_relation.length; i++) {
-            num_parent_tables = circuit[table_relation[i][0]].num_parent_tables;
-            circuit[table_relation[i][0]].num_parent_tables = circuit[table_relation[i][0]].num_parent_tables.add(1);
-            circuit[table_relation[i][0]].parent_table_indices[num_parent_tables] = table_relation[i][1];
+            table_index = table_relation[i][0];
+            num_parent_tables = circuit[table_index].num_parent_tables;
+            circuit[table_index].num_parent_tables = circuit[table_index].num_parent_tables.add(1);
+            circuit[table_index].parent_table_indices[num_parent_tables] = table_relation[i][1];
             if(table_relation[i][2] == 1) {
-                circuit[table_relation[i][0]].is_input_x_to_table[num_parent_tables] = true;
+                circuit[table_index].is_input_x_to_table[num_parent_tables] = true;
             } else {
-                circuit[table_relation[i][0]].is_input_x_to_table[num_parent_tables] = false;
+                circuit[table_index].is_input_x_to_table[num_parent_tables] = false;
             }
         }
         for(uint256 i = 0; i < table_index_of_table_entries.length; i++) {
