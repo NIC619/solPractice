@@ -29,6 +29,33 @@ function get_entry_index(x, y) {
 	else throw 'Invalid x,y values';
 }
 
+function get_OR_entry_result(entry) {
+	if(entry == 0) return 0;
+	else return 1;
+}
+
+function garbling_OR_entries(x_0, x_1, y_0, y_1, z_0, z_1) {
+	return [xor(xor(x_0, y_0), z_0), xor(xor(x_0, y_1), z_1), xor(xor(x_1, y_0), z_1), xor(xor(x_1, y_1), z_1)];
+}
+
+function get_AND_entry_result(entry) {
+	if(entry == 3) return 1;
+	else return 0;
+}
+
+function garbling_AND_entries(x_0, x_1, y_0, y_1, z_0, z_1) {
+	return [xor(xor(x_0, y_0), z_0), xor(xor(x_0, y_1), z_0), xor(xor(x_1, y_0), z_0), xor(xor(x_1, y_1), z_1)];
+}
+
+function get_XOR_entry_result(entry) {
+	if(entry == 0 || entry == 3) return 0;
+	else return 1;
+}
+
+function garbling_XOR_entries(x_0, x_1, y_0, y_1, z_0, z_1) {
+	return [xor(xor(x_0, y_0), z_0), xor(xor(x_0, y_1), z_1), xor(xor(x_1, y_0), z_1), xor(xor(x_1, y_1), z_0)];
+}
+
 function get_NAND_entry_result(entry) {
 	if(entry == 3) return 0;
 	else return 1;
