@@ -34,13 +34,13 @@ function get_NAND_entry_result(entry) {
 	else return 1;
 }
 
-function garbled_NAND_result(x_0, x_1, y_0, y_1, z_0, z_1) {
+function garbling_NAND_entries(x_0, x_1, y_0, y_1, z_0, z_1) {
 	return [xor(xor(x_0, y_0), z_1), xor(xor(x_0, y_1), z_1), xor(xor(x_1, y_0), z_1), xor(xor(x_1, y_1), z_0)];
 }
 
 contract('GarbledCircuit', () => {
 	it('should successfully deploy and decrypt a 7 tables circuit', async () => {
-		const GarbledCircuitInstance = await GarbledCircuit.deployed();
+		const GarbledCircuitInstance = await GarbledCircuit.new();
 
 		// Layout of tables
 		//        t_6
@@ -51,6 +51,7 @@ contract('GarbledCircuit', () => {
 
 		const num_inputs = 4;
 		const num_gttables = 7;
+		var table_indices = [0, 1, 2, 3, 4, 5, 6];
 		const num_results = 1;
 		// Format of table relation entry: [child_table_index, parent_table_index, is_input_x_to_parent_table]
 		// and for is_input_x_to_parent_table, 1 means yes, 0 means
@@ -62,28 +63,60 @@ contract('GarbledCircuit', () => {
 		// paretn table of table 4 is input x of table 6
 		// paretn table of table 5 is input y of table 6
 		var table_relation = [[0, 4, 1], [1, 4, 0], [2, 5, 1], [3, 5, 0], [4, 6, 1], [5, 6, 0]];
+		// entry in same_entry_tables represents two tables that share same input
+		// Format of same_entry_tables entry: [table_1, is_input_x, table_2, is_input_x]
+		// For example: [3, 1, 1, 0] means that input y of table 3 share the same input as input x of table 1
+		var same_entry_tables = [];
 		var indices_of_end_tables = [6];
 		var indices_of_initial_input_tables = [0, 1, 2, 3];
 		var execution_sequence = [0, 1, 2, 3, 4, 5, 6];
 
 		var ttables = new Array(num_gttables);
 		// Generate x,y inputs for each truth tables
-		for (var i = 0; i < num_gttables; i++) {
+		for (var index of table_indices) {
 			var ttable = new Object();
 			ttable.x_0 = gen_key(32);
 			ttable.x_1 = gen_key(32);
 			ttable.y_0 = gen_key(32);
 			ttable.y_1 = gen_key(32);
+			// Fix tables' inputs that share the same input
+			for (var pair of same_entry_tables) {
+				var table_index_1 = pair[0];
+				if(index == table_index_1) {
+					var table_1_is_input_x = pair[1];
+					var table_index_2 = pair[2];
+					var table_2_is_input_x = pair[3];
+					var entries = new Array(2);
+					if(table_2_is_input_x == 1) {
+						entries[0] = ttables[table_index_2].x_0;
+						entries[1] = ttables[table_index_2].x_1;
+					} else {
+						entries[0] = ttables[table_index_2].y_0;
+						entries[1] = ttables[table_index_2].y_1;
+					}
+					if(table_1_is_input_x == 1) {
+						ttables[table_index_2].x_0 = entries[0];
+						ttables[table_index_2].x_1 = entries[1];
+					} else {
+						ttables[table_index_2].y_0 = entries[0];
+						ttables[table_index_2].y_1 = entries[1];
+					}
+				}
+			}
 			// shuffled sequence:;
 			ttable.shuffled_sequence = [0, 1, 2, 3];
 			ttable.fn_get_entry_result = get_NAND_entry_result;
-			ttables[i] = ttable;
+			ttables[index] = ttable;
 		}
 		// Build relation between tables
 		for (var i = 0; i < table_relation.length; i++) {
 			var ttable = ttables[table_relation[i][0]];
-			ttable.parent_table_index = table_relation[i][1];
-			var parent_table = ttables[ttable.parent_table_index];
+			if(ttable.parent_table_indices !== undefined) {
+				ttable.parent_table_indices.push(table_relation[i][1]);
+			} else {
+				ttable.parent_table_indices = [table_relation[i][1]];
+			}
+			var parent_table = ttables[table_relation[i][1]];
 			if(table_relation[i][2] == 1) {
 				ttable.input_x = 1;
 				ttable.z_0 = parent_table.x_0;
@@ -101,17 +134,16 @@ contract('GarbledCircuit', () => {
 			ttable.z_1 = gen_key(32);
 		}
 		// Generate garbled truth tables
-		var table_indices = [0, 1, 2, 3, 4, 5, 6];
 		var gttables = new Array(num_gttables);
 		for (var i = 0; i < num_gttables; i++) {
 			var ttable = ttables[i];
-			gttable = garbled_NAND_result(ttable.x_0, ttable.x_1, ttable.y_0, ttable.y_1, ttable.z_0, ttable.z_1);
+			gttable = garbling_NAND_entries(ttable.x_0, ttable.x_1, ttable.y_0, ttable.y_1, ttable.z_0, ttable.z_1);
 			gttables[i] = gttable;
 		}
 
 		// Sample half of initial inputs
 		var half_inputs = new Array(num_inputs);
-		var inputs_to_each_table = new Array(num_gttables);
+		var inputs_to_each_table = new Object();
 		for (var i = 0; i < indices_of_initial_input_tables.length; i++) {
 			var table_index = indices_of_initial_input_tables[i];
 			var bit_index = Math.floor((Math.random() * 2));
@@ -145,16 +177,16 @@ contract('GarbledCircuit', () => {
 		);
 
 		// Verify content of deployed circuit
-		for (var i = 0; i < indices_of_initial_input_tables.length; i++) {
-			var table_index = indices_of_initial_input_tables[i];
-			var input = await GarbledCircuitInstance.read_inputs_of_table.call(table_index);
-			assert.equal(input[1], web3.utils.bytesToHex(half_inputs[i]), "Incorrect half of inputs");
-		}
 		for (var i = 0; i < num_gttables; i++) {
 			var gtt = await GarbledCircuitInstance.read_gtt.call(i);
 			for (var j = 0; j < 4; j++) {
 				assert.equal(gtt[j], web3.utils.bytesToHex(gttables[i][j]), "Incorrect entry content");
 			}
+		}
+		for (var i = 0; i < indices_of_initial_input_tables.length; i++) {
+			var table_index = indices_of_initial_input_tables[i];
+			var input = await GarbledCircuitInstance.read_inputs_of_table.call(table_index);
+			assert.equal(input[1], web3.utils.bytesToHex(half_inputs[i]), "Incorrect half of inputs");
 		}
 		for (var i = 0; i < indices_of_end_tables.length; i++) {
 			var table_index = indices_of_end_tables[i];
@@ -183,7 +215,6 @@ contract('GarbledCircuit', () => {
 		for (var i = 0; i < execution_sequence.length; i++) {
 			var table_index = execution_sequence[i];
 			var ttable = ttables[table_index];
-			var parent_table_index = ttable.parent_table_index;
 			var entry_index = get_entry_index(inputs_to_each_table[i].x, inputs_to_each_table[i].y);
 			entry_sequence[i] = [execution_sequence[i], ttable.shuffled_sequence.indexOf(entry_index)];
 			var entry_result = ttable.fn_get_entry_result(entry_index);
@@ -192,7 +223,8 @@ contract('GarbledCircuit', () => {
 				entry_result_of_end_tables[table_index] = entry_result;
 			}
 			// Fill in entry result for parent table if this is not an end table
-			if(parent_table_index !== undefined) {
+			if(ttable.parent_table_indices === undefined) continue;
+			for (var parent_table_index of ttable.parent_table_indices) {
 				if(inputs_to_each_table[parent_table_index] === undefined) {
 					inputs_to_each_table[parent_table_index] = new Object();
 				}
