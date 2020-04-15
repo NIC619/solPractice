@@ -122,11 +122,11 @@ contract('GarbledCircuit', () => {
 						entries[1] = ttables[table_index_2].y_1;
 					}
 					if(table_1_is_input_x == 1) {
-						ttables[table_index_2].x_0 = entries[0];
-						ttables[table_index_2].x_1 = entries[1];
+						ttable.x_0 = entries[0];
+						ttable.x_1 = entries[1];
 					} else {
-						ttables[table_index_2].y_0 = entries[0];
-						ttables[table_index_2].y_1 = entries[1];
+						ttable.y_0 = entries[0];
+						ttable.y_1 = entries[1];
 					}
 				}
 			}
@@ -237,20 +237,19 @@ contract('GarbledCircuit', () => {
 		}
 
 		// Compute final entry sequence
-		var entry_sequence = new Array(execution_sequence.length);
+		var entry_sequence = new Array();
 		var entry_result_of_end_tables = new Object();
-		for (var i = 0; i < execution_sequence.length; i++) {
-			var table_index = execution_sequence[i];
+		for (var table_index of execution_sequence) {
 			var ttable = ttables[table_index];
-			var entry_index = get_entry_index(inputs_to_each_table[i].x, inputs_to_each_table[i].y);
-			entry_sequence[i] = [execution_sequence[i], ttable.shuffled_sequence.indexOf(entry_index)];
+			var entry_index = get_entry_index(inputs_to_each_table[table_index].x, inputs_to_each_table[table_index].y);
+			entry_sequence.push([table_index, ttable.shuffled_sequence.indexOf(entry_index)]);
 			var entry_result = ttable.fn_get_entry_result(entry_index);
 			// Record entry result for end tables
 			if(indices_of_end_tables.indexOf(table_index) >= 0) {
 				entry_result_of_end_tables[table_index] = entry_result;
 			}
-			// Fill in entry result for parent table if this is not an end table
 			if(ttable.parent_table_indices === undefined) continue;
+			// Fill in entry result for parent table if this is not an end table
 			for (var parent_table_index of ttable.parent_table_indices) {
 				if(inputs_to_each_table[parent_table_index] === undefined) {
 					inputs_to_each_table[parent_table_index] = new Object();
