@@ -92,9 +92,9 @@ contract GarbledCircuit {
             }
             if(is_end_table == true) {
                 if(result == uint256(outputs[table_index].bit_zero)) {
-                    decrpytion_result[i] = 1;
+                    decrpytion_result[table_index] = 1;
                 } else if(result == uint256(outputs[table_index].bit_one)) {
-                    decrpytion_result[i] = 2;
+                    decrpytion_result[table_index] = 2;
                 } else {
                     revert("Incorrect result.");
                 }
