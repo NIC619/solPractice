@@ -159,4 +159,38 @@ contract GarbledCircuit {
             outputs[table_index].bit_one = _outputs[i][1];
         }
     }
+
+    function redeploy(
+        uint256[] memory table_index_of_table_entries,
+        bytes32[4][] memory all_table_entries,
+        uint256[] memory table_index_of_garbled_inputs,
+        bytes32[] memory garbled_inputs,
+        uint256[] memory table_index_of_outputs,
+        bytes32[2][] memory _outputs) public {
+        require(garbled_inputs.length == num_inputs, "Mismatched number of inputs.");
+        require(all_table_entries.length == num_tables, "Mismatched number of tables.");
+        require(all_table_entries.length > num_inputs, "Number of tables should be greater than number of inputs.");
+        require(_outputs.length == num_results, "Mismatched number of outputs.");
+        require(table_index_of_table_entries.length == all_table_entries.length, "Mismatch between number of table indices and number of tables");
+        require(table_index_of_garbled_inputs.length == garbled_inputs.length, "Mismatch between number of table indices and number of garbled inputs");
+        require(table_index_of_outputs.length == _outputs.length, "Mismatch between number of table indices and number of outputs");
+
+        uint256 table_index;
+        for(uint256 i = 0; i < garbled_inputs.length; i++) {
+            table_index = table_index_of_garbled_inputs[i];
+            circuit[table_index].input_y = garbled_inputs[i];
+        }
+        for(uint256 i = 0; i < table_index_of_table_entries.length; i++) {
+            table_index = table_index_of_table_entries[i];
+            circuit[table_index].entry[0] = all_table_entries[i][0];
+            circuit[table_index].entry[1] = all_table_entries[i][1];
+            circuit[table_index].entry[2] = all_table_entries[i][2];
+            circuit[table_index].entry[3] = all_table_entries[i][3];
+        }
+        for(uint256 i = 0; i < table_index_of_outputs.length; i++) {
+            table_index = table_index_of_outputs[i];
+            outputs[table_index].bit_zero = _outputs[i][0];
+            outputs[table_index].bit_one = _outputs[i][1];
+        }
+    }
 }
