@@ -521,5 +521,177 @@ contract('GarbledCircuit', () => {
 			var decryption_result = await GarbledCircuitInstance.read_decryption_result.call(table_index);
 			assert.equal(decryption_result.toNumber(), entry_result_of_end_tables[table_index], "Incorrect results");
 		}
+
+		// Re-deploy with new circuit entries and inputs
+
+		// Generate x,y inputs for each truth tables
+		for (var index of table_indices) {
+			var ttable = ttables[index];
+			ttable.x_0 = gen_key(32);
+			ttable.x_1 = gen_key(32);
+			ttable.y_0 = gen_key(32);
+			ttable.y_1 = gen_key(32);
+			// Fix tables' inputs that share the same input
+			for (var pair of same_entry_tables) {
+				var table_index_1 = pair[0];
+				if(index == table_index_1) {
+					var table_1_is_input_x = pair[1];
+					var table_index_2 = pair[2];
+					var table_2_is_input_x = pair[3];
+					var entries = new Array(2);
+					if(table_2_is_input_x == 1) {
+						entries[0] = ttables[table_index_2].x_0;
+						entries[1] = ttables[table_index_2].x_1;
+					} else {
+						entries[0] = ttables[table_index_2].y_0;
+						entries[1] = ttables[table_index_2].y_1;
+					}
+					if(table_1_is_input_x == 1) {
+						ttable.x_0 = entries[0];
+						ttable.x_1 = entries[1];
+					} else {
+						ttable.y_0 = entries[0];
+						ttable.y_1 = entries[1];
+					}
+				}
+			}
+			// shuffled sequence:;
+			ttable.shuffled_sequence = [0, 1, 2, 3];
+		}
+
+		// Fill in child table's outputs(i.e., parent table's input)
+		for (var i = 0; i < table_relation.length; i++) {
+			var ttable = ttables[table_relation[i][0]];
+			var parent_table = ttables[table_relation[i][1]];
+			if(table_relation[i][2] == 1) {
+				ttable.z_0 = parent_table.x_0;
+				ttable.z_1 = parent_table.x_1;
+			} else {
+				ttable.z_0 = parent_table.y_0;
+				ttable.z_1 = parent_table.y_1;
+			}
+		}
+		// Generate z(output of table) for end tables
+		for (var i = 0; i < indices_of_end_tables.length; i++) {
+			var ttable = ttables[indices_of_end_tables[i]];
+			ttable.z_0 = gen_key(32);
+			ttable.z_1 = gen_key(32);
+		}
+		// Generate garbled truth tables
+		for (var i of table_indices) {
+			var ttable = ttables[i];
+			gttables[i] = ttable.fn_garbling(ttable.x_0, ttable.x_1, ttable.y_0, ttable.y_1, ttable.z_0, ttable.z_1);
+		}
+
+		// Generate half of initial inputs
+		// Generate half of initial inputs according to inputs in /4_pos_redeploy_circuit_result_example.png
+		// This time the input bits are shuffled and so are different from inputs in /4_pos_circuit_result_example.png
+		bit_in_each_input = [0, 1, 1, 0, 1, 0];
+		for (var i = 0; i < indices_of_initial_input_tables.length; i++) {
+			var table_index = indices_of_initial_input_tables[i];
+			var bit_index = bit_in_each_input[i];
+			if(bit_index == 0) {
+				half_inputs[i] = ttables[table_index].y_0;
+				inputs_to_each_table[table_index].y = 0;
+			} else {
+				half_inputs[i] = ttables[table_index].y_1;
+				inputs_to_each_table[table_index].y = 1;
+			}
+		}
+
+		// Garbled circuit results
+		for (var i = 0; i < indices_of_end_tables.length; i++) {
+			var table_index = indices_of_end_tables[i];
+			outputs[i] = [ttables[table_index].z_0, ttables[table_index].z_1];
+		}
+
+		gttables_array = Object.values(gttables);
+		// Deploy the circuit
+		await GarbledCircuitInstance.redeploy(
+			table_indices,
+			gttables_array,
+			indices_of_initial_input_tables,
+			half_inputs,
+			indices_of_end_tables,
+			outputs,
+		);
+
+		// Verify content of deployed circuit
+		for (var index of table_indices) {
+			var gtt = await GarbledCircuitInstance.read_gtt.call(index);
+			for (var j = 0; j < 4; j++) {
+				assert.equal(gtt[j], web3.utils.bytesToHex(gttables[index][j]), "Incorrect entry content");
+			}
+		}
+		for (var index of table_indices) {
+			var parent_table_indices = await GarbledCircuitInstance.read_parent_table_indices.call(index);
+			if(indices_of_end_tables.indexOf(index) >= 0) {
+				assert.equal(parent_table_indices.length, 0, "End table should not have parent table");
+				continue;
+			}
+			for (var i = 0; i < ttables[index].parent_table_indices.length; i++) {
+				assert.equal(ttables[index].parent_table_indices[i], parent_table_indices[i].toNumber(), "Incorrect parent table indices");
+			}
+		}
+		for (var i = 0; i < indices_of_initial_input_tables.length; i++) {
+			var table_index = indices_of_initial_input_tables[i];
+			var input = await GarbledCircuitInstance.read_inputs_of_table.call(table_index);
+			assert.equal(input[1], web3.utils.bytesToHex(half_inputs[i]), "Incorrect half of inputs");
+		}
+		for (var i = 0; i < indices_of_end_tables.length; i++) {
+			var table_index = indices_of_end_tables[i];
+			var results = await GarbledCircuitInstance.read_outputs_of_table.call(table_index);
+			assert.equal(results[0], web3.utils.bytesToHex(outputs[i][0]), "Incorrect bit results");
+			assert.equal(results[1], web3.utils.bytesToHex(outputs[i][1]), "Incorrect bit results");
+		}
+
+		// Generate other half of inputs according to inputs in /4_pos_circuit_result_example.png
+		bit_in_each_input = [0, 0, 0, 1, 1, 1];
+		for (var i = 0; i < indices_of_initial_input_tables.length; i++) {
+			var table_index = indices_of_initial_input_tables[i];
+			var bit_index = bit_in_each_input[i];
+			if(bit_index == 0) {
+				other_half_inputs[i] = ttables[table_index].x_0;
+				inputs_to_each_table[table_index].x = 0;
+			} else {
+				other_half_inputs[i] = ttables[table_index].x_1;
+				inputs_to_each_table[table_index].x = 1;
+			}
+		}
+
+		// Compute final entry sequence
+		for (var table_index of execution_sequence) {
+			var ttable = ttables[table_index];
+			var entry_index = get_entry_index(inputs_to_each_table[table_index].x, inputs_to_each_table[table_index].y);
+			entry_sequence[execution_sequence.indexOf(table_index)] = [table_index, ttable.shuffled_sequence.indexOf(entry_index)];
+			var entry_result = ttable.fn_get_entry_result(entry_index);
+			// Record entry result for end tables
+			if(indices_of_end_tables.indexOf(table_index) >= 0) {
+				entry_result_of_end_tables[table_index] = entry_result;
+			}
+			if(ttable.parent_table_indices === undefined) continue;
+			// Fill in entry result for parent table if this is not an end table
+			for (var parent_table_index of ttable.parent_table_indices) {
+				if(ttable.input_x == undefined) throw 'No indication of x or y input';
+				else if(ttable.input_x == 1) {
+					inputs_to_each_table[parent_table_index].x = entry_result;
+				} else {
+					inputs_to_each_table[parent_table_index].y = entry_result;
+				}
+			}
+		}
+
+		// Decrypt
+		await GarbledCircuitInstance.decrypt(
+			indices_of_initial_input_tables,
+			other_half_inputs,
+			entry_sequence,
+			indices_of_end_tables,
+		);
+		// Verify that result is correct
+		for (table_index in entry_result_of_end_tables) {
+			var decryption_result = await GarbledCircuitInstance.read_decryption_result.call(table_index);
+			assert.equal(decryption_result.toNumber(), entry_result_of_end_tables[table_index], "Incorrect results");
+		}
 	});
 });
