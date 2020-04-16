@@ -51,8 +51,8 @@ t_0       t_1
     - these outputs are for comparison, i.e., to determine decryption result is bit 0 or bit 1
 - `function read_decryption_result(uint256 table_index)`
   - read decryption result of end table
-- `function deploy(uint256 _num_inputs, uint256[3][] memory table_relation, bytes32[4][] memory all_table_entries, uint256[] memory table_index_of_garbled_inputs, bytes32[] memory garbled_inputs, uint256[] memory table_index_of_outputs, bytes32[2][] memory _outputs)`
-  - deploy circuit
+- `function initial_deploy(uint256 _num_inputs, uint256[3][] memory table_relation, bytes32[4][] memory all_table_entries, uint256[] memory table_index_of_garbled_inputs, bytes32[] memory garbled_inputs, uint256[] memory table_index_of_outputs, bytes32[2][] memory _outputs)`
+  - initial deployment of circuit
   - entry in `table_relation` represents relation between a child table and its parent table, e.g., t_0(child) -> t_4(parent)
     - also need to include info of which input is the child to parent, e.g., t_0's output is x(bit 0)) input of t_4 and t_5's output is y(bit 1)) input of t_6
   - `all_table_entries` represents (shuffled) entries of each table

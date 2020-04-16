@@ -110,7 +110,7 @@ contract GarbledCircuit {
         }
     }
 
-    function deploy(
+    function initial_deploy(
         uint256 _num_inputs,
         uint256[3][] memory table_relation,
         uint256[] memory table_index_of_table_entries,
@@ -120,9 +120,11 @@ contract GarbledCircuit {
         uint256[] memory table_index_of_outputs,
         bytes32[2][] memory _outputs) public {
         require(_num_inputs > 0, "Invalid number of bits for the circuit.");
-        require(garbled_inputs.length == _num_inputs, "Mismatched number of inputs.");
-        require(table_index_of_garbled_inputs.length == garbled_inputs.length, "Mismatch between number of table indices and number of garbled inputs");
         require(all_table_entries.length > _num_inputs, "Number of tables should be greater than number of inputs.");
+        require(garbled_inputs.length == _num_inputs, "Mismatched number of inputs.");
+        require(table_index_of_table_entries.length == all_table_entries.length, "Mismatch between number of table indices and number of tables");
+        require(table_index_of_garbled_inputs.length == garbled_inputs.length, "Mismatch between number of table indices and number of garbled inputs");
+        require(table_index_of_outputs.length == _outputs.length, "Mismatch between number of table indices and number of outputs");
         num_inputs = _num_inputs;
         num_tables = all_table_entries.length;
 

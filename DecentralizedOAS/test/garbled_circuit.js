@@ -192,7 +192,7 @@ contract('GarbledCircuit', () => {
 		}
 
 		// Deploy the circuit
-		await GarbledCircuitInstance.deploy(
+		await GarbledCircuitInstance.initial_deploy(
 			num_inputs,
 			table_relation,
 			table_indices,
@@ -427,7 +427,7 @@ contract('GarbledCircuit', () => {
 
 		var gttables_array = Object.values(gttables);
 		// Deploy the circuit
-		await GarbledCircuitInstance.deploy(
+		await GarbledCircuitInstance.initial_deploy(
 			num_inputs,
 			table_relation,
 			table_indices,
