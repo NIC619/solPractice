@@ -68,7 +68,7 @@ contract GarbledCircuit {
         uint256[] memory table_index_of_end_tables) public {
         require(garbled_inputs.length == num_inputs, "Mismatched number of garbled inputs.");
         require(table_index_of_garbled_inputs.length == garbled_inputs.length, "Mismatch between number of table indices and number of garbled inputs");
-        require(entries_chosen.length == num_tables, "Mismatched number of chosen entries(should match the number of tables).");
+        require(entries_chosen.length <= num_tables, "Number of chosen entries should be less than the number of tables.");
         require(table_index_of_end_tables.length == num_results, "Mismatched number of end tables.");
 
         // Fill in the given inputs

@@ -155,8 +155,8 @@ contract('GarbledCircuit', () => {
 			}
 		}
 		// Generate z(output of table) for end tables
-		for (var i = 0; i < indices_of_end_tables.length; i++) {
-			var ttable = ttables[indices_of_end_tables[i]];
+		for (var index of indices_of_end_tables) {
+			var ttable = ttables[index];
 			ttable.z_0 = gen_key(32);
 			ttable.z_1 = gen_key(32);
 		}
@@ -283,35 +283,36 @@ contract('GarbledCircuit', () => {
 
 		// Layout of tables in /4_pos_circuit_example.png
 
-		const num_inputs = 6;
-		const num_gttables = 11;
-		var table_indices = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
+		const num_inputs = 8;
+		const num_gttables = 13;
+		var table_indices = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13];
+		var indices_of_dummy_tables = [4, 8];
 		const num_results = 2;
 		var table_type = new Object()
-		table_type["XOR"] = [1, 2, 3, 4, 5, 6];
-		table_type["OR"] = [7, 8, 9];
-		table_type["AND"] = [10, 11];
+		table_type["XOR"] = [1, 2, 3, 4, 5, 6, 7, 8];
+		table_type["OR"] = [9, 10, 11];
+		table_type["AND"] = [12, 13];
 		// Format of table relation entry: [child_table_index, parent_table_index, is_input_x_to_parent_table]
 		// and for is_input_x_to_parent_table, 1 means yes, 0 means
 		var table_relation = [
-			[1, 7, 1],
-			[2, 8, 1],
-			[3, 9, 1],
-			[4, 7, 0],
-			[5, 8, 0],
-			[6, 9, 0],
-			[7, 10 ,1],
-			[7, 11, 1],
-			[8, 10, 0],
-			[9, 11, 0],
+			[1, 9, 1],
+			[2, 10, 1],
+			[3, 11, 1],
+			[5, 9, 0],
+			[6, 10, 0],
+			[7, 11 ,0],
+			[9, 12, 1],
+			[9, 13, 1],
+			[10, 12, 0],
+			[11, 13, 0],
 		];
 		// entry in same_entry_tables represents two tables that share same input
 		// Format of same_entry_tables entry: [table_1, is_input_x, table_2, is_input_x]
 		// For example: [3, 1, 1, 0] means that input y of table 3 share the same input as input x of table 1
-		var same_entry_tables = [[11, 1, 10, 1]];
-		var indices_of_end_tables = [10, 11];
-		var indices_of_initial_input_tables = [1, 2, 3, 4, 5, 6];
-		var execution_sequence = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
+		var same_entry_tables = [[13, 1, 12, 1]];
+		var indices_of_end_tables = [12, 13];
+		var indices_of_initial_input_tables = [1, 2, 3, 4, 5, 6, 7, 8];
+		var execution_sequence = [1, 2, 3, 5, 6, 7, 9, 10, 11, 12, 13];
 
 		var ttables = new Object();
 		// Generate x,y inputs for each truth tables
@@ -387,9 +388,15 @@ contract('GarbledCircuit', () => {
 				ttable.z_1 = parent_table.y_1;
 			}
 		}
+		// Generate z(output of table) for dummy tables
+		for (var index of indices_of_dummy_tables) {
+			var ttable = ttables[index];
+			ttable.z_0 = gen_key(32);
+			ttable.z_1 = gen_key(32);
+		}
 		// Generate z(output of table) for end tables
-		for (var i = 0; i < indices_of_end_tables.length; i++) {
-			var ttable = ttables[indices_of_end_tables[i]];
+		for (var index of indices_of_end_tables) {
+			var ttable = ttables[index];
 			ttable.z_0 = gen_key(32);
 			ttable.z_1 = gen_key(32);
 		}
@@ -402,7 +409,7 @@ contract('GarbledCircuit', () => {
 		}
 
 		// Generate half of initial inputs according to inputs in /4_pos_circuit_result_example.png
-		var bit_in_each_input = [1, 1, 0, 1, 0, 1];
+		var bit_in_each_input = [1, 1, 0, 0, 1, 0, 1, 0];
 		var half_inputs = new Array(num_inputs);
 		var inputs_to_each_table = new Object();
 		for (var i = 0; i < indices_of_initial_input_tables.length; i++) {
@@ -447,6 +454,10 @@ contract('GarbledCircuit', () => {
 		}
 		for (var index of table_indices) {
 			var parent_table_indices = await GarbledCircuitInstance.read_parent_table_indices.call(index);
+			if(indices_of_dummy_tables.indexOf(index) >= 0) {
+				assert.equal(parent_table_indices.length, 0, "Dummy table does not have parent table");
+				continue;
+			}
 			if(indices_of_end_tables.indexOf(index) >= 0) {
 				assert.equal(parent_table_indices.length, 0, "End table should not have parent table");
 				continue;
@@ -468,7 +479,7 @@ contract('GarbledCircuit', () => {
 		}
 
 		// Generate other half of inputs according to inputs in /4_pos_circuit_result_example.png
-		bit_in_each_input = [0, 0, 0, 1, 1, 1];
+		bit_in_each_input = [0, 0, 0, 0, 1, 1, 1, 1];
 		var other_half_inputs = new Array(num_inputs);
 		for (var i = 0; i < indices_of_initial_input_tables.length; i++) {
 			var table_index = indices_of_initial_input_tables[i];
@@ -571,9 +582,15 @@ contract('GarbledCircuit', () => {
 				ttable.z_1 = parent_table.y_1;
 			}
 		}
+		// Generate z(output of table) for dummy tables
+		for (var index of indices_of_dummy_tables) {
+			var ttable = ttables[index];
+			ttable.z_0 = gen_key(32);
+			ttable.z_1 = gen_key(32);
+		}
 		// Generate z(output of table) for end tables
-		for (var i = 0; i < indices_of_end_tables.length; i++) {
-			var ttable = ttables[indices_of_end_tables[i]];
+		for (var index of indices_of_end_tables) {
+			var ttable = ttables[index];
 			ttable.z_0 = gen_key(32);
 			ttable.z_1 = gen_key(32);
 		}
@@ -625,6 +642,10 @@ contract('GarbledCircuit', () => {
 		}
 		for (var index of table_indices) {
 			var parent_table_indices = await GarbledCircuitInstance.read_parent_table_indices.call(index);
+			if(indices_of_dummy_tables.indexOf(index) >= 0) {
+				assert.equal(parent_table_indices.length, 0, "Dummy table does not have parent table");
+				continue;
+			}
 			if(indices_of_end_tables.indexOf(index) >= 0) {
 				assert.equal(parent_table_indices.length, 0, "End table should not have parent table");
 				continue;
