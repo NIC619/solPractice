@@ -409,12 +409,12 @@ contract('GarbledCircuit', () => {
 		}
 
 		// Generate half of initial inputs according to inputs in /4_pos_circuit_result_example.png
-		var bit_in_each_input = [1, 1, 0, 0, 1, 0, 1, 0];
+		var bit_in_each_y_input = [1, 1, 0, 0, 1, 0, 1, 0];
 		var half_inputs = new Array(num_inputs);
 		var inputs_to_each_table = new Object();
 		for (var i = 0; i < indices_of_initial_input_tables.length; i++) {
 			var table_index = indices_of_initial_input_tables[i];
-			var bit_index = bit_in_each_input[i];
+			var bit_index = bit_in_each_y_input[i];
 			inputs_to_each_table[table_index] = new Object();
 			if(bit_index == 0) {
 				half_inputs[i] = ttables[table_index].y_0;
@@ -479,11 +479,11 @@ contract('GarbledCircuit', () => {
 		}
 
 		// Generate other half of inputs according to inputs in /4_pos_circuit_result_example.png
-		bit_in_each_input = [0, 0, 0, 0, 1, 1, 1, 1];
+		var bit_in_each_x_input = [0, 0, 0, 0, 1, 1, 1, 1];
 		var other_half_inputs = new Array(num_inputs);
 		for (var i = 0; i < indices_of_initial_input_tables.length; i++) {
 			var table_index = indices_of_initial_input_tables[i];
-			var bit_index = bit_in_each_input[i];
+			var bit_index = bit_in_each_x_input[i];
 			if(bit_index == 0) {
 				other_half_inputs[i] = ttables[table_index].x_0;
 				inputs_to_each_table[table_index].x = 0;
@@ -601,12 +601,10 @@ contract('GarbledCircuit', () => {
 		}
 
 		// Generate half of initial inputs
-		// Generate half of initial inputs according to inputs in /4_pos_redeploy_circuit_result_example.png
-		// This time the input bits are shuffled and so are different from inputs in /4_pos_circuit_result_example.png
-		bit_in_each_input = [0, 1, 1, 0, 1, 0];
+		// The inputs generated are not yet shuffled 
 		for (var i = 0; i < indices_of_initial_input_tables.length; i++) {
 			var table_index = indices_of_initial_input_tables[i];
-			var bit_index = bit_in_each_input[i];
+			var bit_index = bit_in_each_y_input[i];
 			if(bit_index == 0) {
 				half_inputs[i] = ttables[table_index].y_0;
 				inputs_to_each_table[table_index].y = 0;
@@ -631,6 +629,26 @@ contract('GarbledCircuit', () => {
 			half_inputs,
 			indices_of_end_tables,
 			outputs,
+		);
+
+		// Generate half of initial inputs according to inputs in /4_pos_redeploy_circuit_result_example.png
+		// This time the input bits are shuffled and so are different from inputs in /4_pos_circuit_result_example.png
+		bit_in_each_y_input = [0, 1, 1, 0, 1, 0];
+		for (var i = 0; i < indices_of_initial_input_tables.length; i++) {
+			var table_index = indices_of_initial_input_tables[i];
+			var bit_index = bit_in_each_y_input[i];
+			if(bit_index == 0) {
+				half_inputs[i] = ttables[table_index].y_0;
+				inputs_to_each_table[table_index].y = 0;
+			} else {
+				half_inputs[i] = ttables[table_index].y_1;
+				inputs_to_each_table[table_index].y = 1;
+			}
+		}
+		// Shuffle the garbled inputs
+		await GarbledCircuitInstance.shuffle_garbled_inputs(
+			indices_of_initial_input_tables,
+			half_inputs,
 		);
 
 		// Verify content of deployed circuit
@@ -667,10 +685,10 @@ contract('GarbledCircuit', () => {
 		}
 
 		// Generate other half of inputs according to inputs in /4_pos_circuit_result_example.png
-		bit_in_each_input = [0, 0, 0, 1, 1, 1];
+		bit_in_each_x_input = [0, 0, 0, 1, 1, 1];
 		for (var i = 0; i < indices_of_initial_input_tables.length; i++) {
 			var table_index = indices_of_initial_input_tables[i];
-			var bit_index = bit_in_each_input[i];
+			var bit_index = bit_in_each_x_input[i];
 			if(bit_index == 0) {
 				other_half_inputs[i] = ttables[table_index].x_0;
 				inputs_to_each_table[table_index].x = 0;
