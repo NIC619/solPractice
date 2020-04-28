@@ -13,6 +13,7 @@ contract GarbledCircuit {
         mapping(uint256 => bytes32) entry;
         bytes32 input_x;
         bytes32 input_y;
+        bytes32[2] output_hash_digests;
     }
 
     uint256 public num_inputs;
@@ -48,6 +49,11 @@ contract GarbledCircuit {
         inputs[1] = circuit[table_index].input_y;
     }
 
+    function read_output_hash_digests_of_table(uint256 table_index) public view returns(bytes32[2] memory _hash_digests) {
+        _hash_digests[0] = circuit[table_index].output_hash_digests[0];
+        _hash_digests[1] = circuit[table_index].output_hash_digests[1];
+    }
+
     function read_outputs_of_table(uint256 table_index) public view returns(bytes32[2] memory _outputs) {
         _outputs[0] = outputs[table_index].bit_zero;
         _outputs[1] = outputs[table_index].bit_one;
@@ -64,11 +70,11 @@ contract GarbledCircuit {
     function decrypt(
         uint256[] memory table_index_of_garbled_inputs,
         bytes32[] memory garbled_inputs,
-        uint256[2][] memory entries_chosen,
+        uint256[] memory execution_sequence,
         uint256[] memory table_index_of_end_tables) public {
         require(garbled_inputs.length == num_inputs, "Mismatched number of garbled inputs.");
         require(table_index_of_garbled_inputs.length == garbled_inputs.length, "Mismatch between number of table indices and number of garbled inputs");
-        require(entries_chosen.length <= num_tables, "Number of chosen entries should be less than the number of tables.");
+        require(execution_sequence.length <= num_tables, "Number of execution sequence should be less than the number of tables.");
         require(table_index_of_end_tables.length == num_results, "Mismatched number of end tables.");
 
         // Fill in the given inputs
@@ -78,12 +84,20 @@ contract GarbledCircuit {
 
         uint256 table_index;
         bytes32 entry;
-        uint256 result;
+        bytes32 result;
         bool is_end_table;
-        for(uint256 i = 0; i < entries_chosen.length; i++) {
-            table_index = entries_chosen[i][0];
-            entry = circuit[table_index].entry[entries_chosen[i][1]];
-            result = uint256(entry) ^ uint256(circuit[table_index].input_x) ^ uint256(circuit[table_index].input_y);
+        for(uint256 i = 0; i < execution_sequence.length; i++) {
+            table_index = execution_sequence[i];
+            // Iterate through all four entries and try decrypting
+            for(uint256 k = 0; k < 4; k++) {
+                entry = circuit[table_index].entry[k];
+                result = bytes32(uint256(entry) ^ uint256(circuit[table_index].input_x) ^ uint256(circuit[table_index].input_y));
+                // Compare hash of result against given digests
+                if(
+                    (keccak256(abi.encode(result)) != circuit[table_index].output_hash_digests[0]) && (keccak256(abi.encode(result)) != circuit[table_index].output_hash_digests[1])
+                ) continue;
+                else break;
+            }
             is_end_table = false;
             for(uint256 j = 0; j < table_index_of_end_tables.length; j++) {
                 if(table_index == table_index_of_end_tables[j]) {
@@ -91,9 +105,9 @@ contract GarbledCircuit {
                 }
             }
             if(is_end_table == true) {
-                if(result == uint256(outputs[table_index].bit_zero)) {
+                if(result == outputs[table_index].bit_zero) {
                     decrpytion_result[table_index] = 1;
-                } else if(result == uint256(outputs[table_index].bit_one)) {
+                } else if(result == outputs[table_index].bit_one) {
                     decrpytion_result[table_index] = 2;
                 } else {
                     revert("Incorrect result.");
@@ -101,9 +115,9 @@ contract GarbledCircuit {
             } else {
                 for(uint256 j = 0; j < circuit[table_index].num_parent_tables; j++) {
                     if(circuit[table_index].is_input_x_to_table[j] == true) {
-                        circuit[circuit[table_index].parent_table_indices[j]].input_x = bytes32(result);
+                        circuit[circuit[table_index].parent_table_indices[j]].input_x = result;
                     } else {
-                        circuit[circuit[table_index].parent_table_indices[j]].input_y = bytes32(result);
+                        circuit[circuit[table_index].parent_table_indices[j]].input_y = result;
                     }
                 }
             }
@@ -115,12 +129,14 @@ contract GarbledCircuit {
         uint256[3][] memory table_relation,
         uint256[] memory table_index_of_table_entries,
         bytes32[4][] memory all_table_entries,
+        bytes32[2][] memory all_table_output_hash_digests,
         uint256[] memory table_index_of_garbled_inputs,
         bytes32[] memory garbled_inputs,
         uint256[] memory table_index_of_outputs,
         bytes32[2][] memory _outputs) public {
         require(_num_inputs > 0, "Invalid number of bits for the circuit.");
         require(all_table_entries.length > _num_inputs, "Number of tables should be greater than number of inputs.");
+        require(all_table_entries.length == all_table_output_hash_digests.length);
         require(garbled_inputs.length == _num_inputs, "Mismatched number of inputs.");
         require(table_index_of_table_entries.length == all_table_entries.length, "Mismatch between number of table indices and number of tables");
         require(table_index_of_garbled_inputs.length == garbled_inputs.length, "Mismatch between number of table indices and number of garbled inputs");
@@ -151,6 +167,8 @@ contract GarbledCircuit {
             circuit[table_index].entry[1] = all_table_entries[i][1];
             circuit[table_index].entry[2] = all_table_entries[i][2];
             circuit[table_index].entry[3] = all_table_entries[i][3];
+            circuit[table_index].output_hash_digests[0] = all_table_output_hash_digests[i][0];
+            circuit[table_index].output_hash_digests[1] = all_table_output_hash_digests[i][1];
         }
         num_results = table_index_of_outputs.length;
         for(uint256 i = 0; i < table_index_of_outputs.length; i++) {
@@ -163,6 +181,7 @@ contract GarbledCircuit {
     function redeploy(
         uint256[] memory table_index_of_table_entries,
         bytes32[4][] memory all_table_entries,
+        bytes32[2][] memory all_table_output_hash_digests,
         uint256[] memory table_index_of_garbled_inputs,
         bytes32[] memory garbled_inputs,
         uint256[] memory table_index_of_outputs,
@@ -170,6 +189,7 @@ contract GarbledCircuit {
         require(garbled_inputs.length == num_inputs, "Mismatched number of inputs.");
         require(all_table_entries.length == num_tables, "Mismatched number of tables.");
         require(all_table_entries.length > num_inputs, "Number of tables should be greater than number of inputs.");
+        require(all_table_entries.length == all_table_output_hash_digests.length);
         require(_outputs.length == num_results, "Mismatched number of outputs.");
         require(table_index_of_table_entries.length == all_table_entries.length, "Mismatch between number of table indices and number of tables");
         require(table_index_of_garbled_inputs.length == garbled_inputs.length, "Mismatch between number of table indices and number of garbled inputs");
@@ -186,6 +206,8 @@ contract GarbledCircuit {
             circuit[table_index].entry[1] = all_table_entries[i][1];
             circuit[table_index].entry[2] = all_table_entries[i][2];
             circuit[table_index].entry[3] = all_table_entries[i][3];
+            circuit[table_index].output_hash_digests[0] = all_table_output_hash_digests[i][0];
+            circuit[table_index].output_hash_digests[1] = all_table_output_hash_digests[i][1];
         }
         for(uint256 i = 0; i < table_index_of_outputs.length; i++) {
             table_index = table_index_of_outputs[i];
