@@ -153,12 +153,20 @@ contract('GarbledCircuit', () => {
 				ttable.z_0 = parent_table.y_0;
 				ttable.z_1 = parent_table.y_1;
 			}
+			ttable.output_hash_digests = [
+				web3.utils.keccak256(web3.utils.bytesToHex(ttable.z_0)),
+				web3.utils.keccak256(web3.utils.bytesToHex(ttable.z_1)),
+			];
 		}
 		// Generate z(output of table) for end tables
 		for (var index of indices_of_end_tables) {
 			var ttable = ttables[index];
 			ttable.z_0 = gen_key(32);
 			ttable.z_1 = gen_key(32);
+			ttable.output_hash_digests = [
+				web3.utils.keccak256(web3.utils.bytesToHex(ttable.z_0)),
+				web3.utils.keccak256(web3.utils.bytesToHex(ttable.z_1)),
+			];
 		}
 		// Generate garbled truth tables
 		var gttables = new Array(num_gttables);
@@ -191,12 +199,19 @@ contract('GarbledCircuit', () => {
 			outputs[i] = [ttables[table_index].z_0, ttables[table_index].z_1];
 		}
 
+		var table_output_hash_digests = new Array();
+		for (var index of table_indices) {
+			var ttable = ttables[index];
+			table_output_hash_digests.push(ttable.output_hash_digests);
+		}
+
 		// Deploy the circuit
 		await GarbledCircuitInstance.initial_deploy(
 			num_inputs,
 			table_relation,
 			table_indices,
 			gttables,
+			table_output_hash_digests,
 			indices_of_initial_input_tables,
 			half_inputs,
 			indices_of_end_tables,
@@ -208,6 +223,10 @@ contract('GarbledCircuit', () => {
 			var gtt = await GarbledCircuitInstance.read_gtt.call(i);
 			for (var j = 0; j < 4; j++) {
 				assert.equal(gtt[j], web3.utils.bytesToHex(gttables[i][j]), "Incorrect entry content");
+			}
+			var output_hash_digests = await GarbledCircuitInstance.read_output_hash_digests_of_table.call(i);
+			for (var j = 0; j < 2; j++) {
+				assert.equal(output_hash_digests[j], ttables[i].output_hash_digests[j], "Incorrect entry content");
 			}
 		}
 		for (var i = 0; i < indices_of_initial_input_tables.length; i++) {
@@ -237,12 +256,10 @@ contract('GarbledCircuit', () => {
 		}
 
 		// Compute final entry sequence
-		var entry_sequence = new Array();
 		var entry_result_of_end_tables = new Object();
 		for (var table_index of execution_sequence) {
 			var ttable = ttables[table_index];
 			var entry_index = get_entry_index(inputs_to_each_table[table_index].x, inputs_to_each_table[table_index].y);
-			entry_sequence.push([table_index, ttable.shuffled_sequence.indexOf(entry_index)]);
 			var entry_result = ttable.fn_get_entry_result(entry_index);
 			// Record entry result for end tables
 			if(indices_of_end_tables.indexOf(table_index) >= 0) {
@@ -267,7 +284,7 @@ contract('GarbledCircuit', () => {
 		await GarbledCircuitInstance.decrypt(
 			indices_of_initial_input_tables,
 			other_half_inputs,
-			entry_sequence,
+			execution_sequence,
 			indices_of_end_tables,
 		);
 		// Verify that result is correct
@@ -387,18 +404,30 @@ contract('GarbledCircuit', () => {
 				ttable.z_0 = parent_table.y_0;
 				ttable.z_1 = parent_table.y_1;
 			}
+			ttable.output_hash_digests = [
+				web3.utils.keccak256(web3.utils.bytesToHex(ttable.z_0)),
+				web3.utils.keccak256(web3.utils.bytesToHex(ttable.z_1)),
+			];
 		}
 		// Generate z(output of table) for dummy tables
 		for (var index of indices_of_dummy_tables) {
 			var ttable = ttables[index];
 			ttable.z_0 = gen_key(32);
 			ttable.z_1 = gen_key(32);
+			ttable.output_hash_digests = [
+				web3.utils.keccak256(web3.utils.bytesToHex(ttable.z_0)),
+				web3.utils.keccak256(web3.utils.bytesToHex(ttable.z_1)),
+			];
 		}
 		// Generate z(output of table) for end tables
 		for (var index of indices_of_end_tables) {
 			var ttable = ttables[index];
 			ttable.z_0 = gen_key(32);
 			ttable.z_1 = gen_key(32);
+			ttable.output_hash_digests = [
+				web3.utils.keccak256(web3.utils.bytesToHex(ttable.z_0)),
+				web3.utils.keccak256(web3.utils.bytesToHex(ttable.z_1)),
+			];
 		}
 		// Generate garbled truth tables
 		var gttables = new Object();
@@ -433,12 +462,19 @@ contract('GarbledCircuit', () => {
 		}
 
 		var gttables_array = Object.values(gttables);
+		var table_output_hash_digests = new Array();
+		for (var index of table_indices) {
+			var ttable = ttables[index];
+			table_output_hash_digests.push(ttable.output_hash_digests);
+		}
+
 		// Deploy the circuit
 		await GarbledCircuitInstance.initial_deploy(
 			num_inputs,
 			table_relation,
 			table_indices,
 			gttables_array,
+			table_output_hash_digests,
 			indices_of_initial_input_tables,
 			half_inputs,
 			indices_of_end_tables,
@@ -494,12 +530,10 @@ contract('GarbledCircuit', () => {
 		}
 
 		// Compute final entry sequence
-		var entry_sequence = new Array();
 		var entry_result_of_end_tables = new Object();
 		for (var table_index of execution_sequence) {
 			var ttable = ttables[table_index];
 			var entry_index = get_entry_index(inputs_to_each_table[table_index].x, inputs_to_each_table[table_index].y);
-			entry_sequence.push([table_index, ttable.shuffled_sequence.indexOf(entry_index)]);
 			var entry_result = ttable.fn_get_entry_result(entry_index);
 			// Record entry result for end tables
 			if(indices_of_end_tables.indexOf(table_index) >= 0) {
@@ -524,7 +558,7 @@ contract('GarbledCircuit', () => {
 		await GarbledCircuitInstance.decrypt(
 			indices_of_initial_input_tables,
 			other_half_inputs,
-			entry_sequence,
+			execution_sequence,
 			indices_of_end_tables,
 		);
 		// Verify that result is correct
@@ -581,18 +615,30 @@ contract('GarbledCircuit', () => {
 				ttable.z_0 = parent_table.y_0;
 				ttable.z_1 = parent_table.y_1;
 			}
+			ttable.output_hash_digests = [
+				web3.utils.keccak256(web3.utils.bytesToHex(ttable.z_0)),
+				web3.utils.keccak256(web3.utils.bytesToHex(ttable.z_1)),
+			];
 		}
 		// Generate z(output of table) for dummy tables
 		for (var index of indices_of_dummy_tables) {
 			var ttable = ttables[index];
 			ttable.z_0 = gen_key(32);
 			ttable.z_1 = gen_key(32);
+			ttable.output_hash_digests = [
+				web3.utils.keccak256(web3.utils.bytesToHex(ttable.z_0)),
+				web3.utils.keccak256(web3.utils.bytesToHex(ttable.z_1)),
+			];
 		}
 		// Generate z(output of table) for end tables
 		for (var index of indices_of_end_tables) {
 			var ttable = ttables[index];
 			ttable.z_0 = gen_key(32);
 			ttable.z_1 = gen_key(32);
+			ttable.output_hash_digests = [
+				web3.utils.keccak256(web3.utils.bytesToHex(ttable.z_0)),
+				web3.utils.keccak256(web3.utils.bytesToHex(ttable.z_1)),
+			];
 		}
 		// Generate garbled truth tables
 		for (var i of table_indices) {
@@ -621,10 +667,17 @@ contract('GarbledCircuit', () => {
 		}
 
 		gttables_array = Object.values(gttables);
+		var table_output_hash_digests = new Array();
+		for (var index of table_indices) {
+			var ttable = ttables[index];
+			table_output_hash_digests.push(ttable.output_hash_digests);
+		}
+
 		// Deploy the circuit
 		await GarbledCircuitInstance.redeploy(
 			table_indices,
 			gttables_array,
+			table_output_hash_digests,
 			indices_of_initial_input_tables,
 			half_inputs,
 			indices_of_end_tables,
@@ -702,7 +755,6 @@ contract('GarbledCircuit', () => {
 		for (var table_index of execution_sequence) {
 			var ttable = ttables[table_index];
 			var entry_index = get_entry_index(inputs_to_each_table[table_index].x, inputs_to_each_table[table_index].y);
-			entry_sequence[execution_sequence.indexOf(table_index)] = [table_index, ttable.shuffled_sequence.indexOf(entry_index)];
 			var entry_result = ttable.fn_get_entry_result(entry_index);
 			// Record entry result for end tables
 			if(indices_of_end_tables.indexOf(table_index) >= 0) {
@@ -724,7 +776,7 @@ contract('GarbledCircuit', () => {
 		await GarbledCircuitInstance.decrypt(
 			indices_of_initial_input_tables,
 			other_half_inputs,
-			entry_sequence,
+			execution_sequence,
 			indices_of_end_tables,
 		);
 		// Verify that result is correct
