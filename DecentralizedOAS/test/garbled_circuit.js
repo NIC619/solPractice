@@ -65,6 +65,30 @@ function garbling_NAND_entries(x_0, x_1, y_0, y_1, z_0, z_1) {
 	return [xor(xor(x_0, y_0), z_1), xor(xor(x_0, y_1), z_1), xor(xor(x_1, y_0), z_1), xor(xor(x_1, y_1), z_0)];
 }
 
+function gen_update_label_table(new_0, new_1, old_0, old_1) {
+	return [
+		xor(old_0, new_0),
+		xor(old_1, new_1),
+		web3.utils.keccak256(web3.utils.bytesToHex(new_0)),
+		web3.utils.keccak256(web3.utils.bytesToHex(new_1)),
+	];
+}
+
+function decrypt_update_lable_entries(entry_0, entry_1, input, hash_digest_0, hash_digest_1) {
+	var result = xor(input, entry_0);
+	var result_hash_digest = web3.utils.keccak256(web3.utils.bytesToHex((result)));
+	if((result_hash_digest == hash_digest_0) || (result_hash_digest == hash_digest_1)) {
+		return result
+	}
+	result = xor(input, entry_1);
+	result_hash_digest = web3.utils.keccak256(web3.utils.bytesToHex((result)));
+	if((result_hash_digest == hash_digest_0) || (result_hash_digest == hash_digest_1)) {
+		return result
+	} else {
+		throw 'Decrypt update lable entries failed: hash digest of result does not match';
+	}
+}
+
 contract('GarbledCircuit', () => {
 	it('should successfully deploy and decrypt a 7 tables circuit', async () => {
 		const GarbledCircuitInstance = await GarbledCircuit.new();
@@ -293,6 +317,19 @@ contract('GarbledCircuit', () => {
 			assert.equal(decryption_result, entry_result_of_end_tables[table_index], "Incorrect results");
 		}
 
+	});
+
+	it('should successfully run update input label circuit', async () => {
+		var old_0 = gen_key(32);
+		var old_1 = gen_key(32);
+		var new_0 = gen_key(32);
+		var new_1 = gen_key(32);
+
+		ttable = gen_update_label_table(new_0, new_1, old_0, old_1);
+		var result = decrypt_update_lable_entries(ttable[0], ttable[1], old_0, ttable[2], ttable[3]);
+		assert.equal(web3.utils.bytesToHex(result), web3.utils.bytesToHex(new_0), "Incorrect decrypt result");
+		result = decrypt_update_lable_entries(ttable[0], ttable[1], old_1, ttable[2], ttable[3]);
+		assert.equal(web3.utils.bytesToHex(result), web3.utils.bytesToHex(new_1), "Incorrect decrypt result");
 	});
 
 	it('should successfully deploy and decrypt the 4 pos example circuit', async () => {
