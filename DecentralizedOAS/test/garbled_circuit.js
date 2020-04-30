@@ -65,7 +65,7 @@ function garbling_NAND_entries(x_0, x_1, y_0, y_1, z_0, z_1) {
 	return [xor(xor(x_0, y_0), z_1), xor(xor(x_0, y_1), z_1), xor(xor(x_1, y_0), z_1), xor(xor(x_1, y_1), z_0)];
 }
 
-function gen_update_label_table(new_0, new_1, old_0, old_1) {
+function gen_update_label_table(old_0, old_1, new_0, new_1) {
 	return [
 		xor(old_0, new_0),
 		xor(old_1, new_1),
@@ -325,10 +325,10 @@ contract('GarbledCircuit', () => {
 		var new_0 = gen_key(32);
 		var new_1 = gen_key(32);
 
-		ttable = gen_update_label_table(new_0, new_1, old_0, old_1);
-		var result = decrypt_update_lable_entries(ttable[0], ttable[1], old_0, ttable[2], ttable[3]);
+		[entry_0, entry_1, output_hash_digest_0, output_hash_digest_1] = gen_update_label_table(old_0, old_1, new_0, new_1);
+		var result = decrypt_update_lable_entries(entry_0, entry_1, old_0, output_hash_digest_0, output_hash_digest_1);
 		assert.equal(web3.utils.bytesToHex(result), web3.utils.bytesToHex(new_0), "Incorrect decrypt result");
-		result = decrypt_update_lable_entries(ttable[0], ttable[1], old_1, ttable[2], ttable[3]);
+		result = decrypt_update_lable_entries(entry_0, entry_1, old_1, output_hash_digest_0, output_hash_digest_1);
 		assert.equal(web3.utils.bytesToHex(result), web3.utils.bytesToHex(new_1), "Incorrect decrypt result");
 	});
 
@@ -403,6 +403,21 @@ contract('GarbledCircuit', () => {
 			// shuffled sequence:;
 			ttable.shuffled_sequence = [0, 1, 2, 3];
 			ttables[index] = ttable;
+		}
+		// Generate input label update gttable for next round
+		var update_input_label_gttable = new Object();
+		for (var i = 0; i < indices_of_initial_input_tables.length; i++) {
+			var table_index = indices_of_initial_input_tables[i];
+			var ttable = ttables[table_index];
+			var new_y_0 = gen_key(32);
+			var new_y_1 = gen_key(32);
+
+			[entry_0, entry_1, output_hash_digest_0, output_hash_digest_1] = gen_update_label_table(ttable.y_0, ttable.y_1, new_y_0, new_y_1);
+			update_input_label_gttable[table_index] = new Object();
+			update_input_label_gttable[table_index].entry_0 = entry_0;
+			update_input_label_gttable[table_index].entry_1 = entry_1;
+			update_input_label_gttable[table_index].output_hash_digest_0 = output_hash_digest_0;
+			update_input_label_gttable[table_index].output_hash_digest_1 = output_hash_digest_1;
 		}
 		// Fill in table type
 		for (var type in table_type) {
@@ -611,8 +626,15 @@ contract('GarbledCircuit', () => {
 			var ttable = ttables[index];
 			ttable.x_0 = gen_key(32);
 			ttable.x_1 = gen_key(32);
-			ttable.y_0 = gen_key(32);
-			ttable.y_1 = gen_key(32);
+			// Update input label
+			if(indices_of_initial_input_tables.indexOf(index) >= 0) {
+				var gttable = update_input_label_gttable[index];
+				ttable.y_0 = decrypt_update_lable_entries(gttable.entry_0, gttable.entry_1, ttable.y_0, gttable.output_hash_digest_0, gttable.output_hash_digest_1);
+				ttable.y_1 = decrypt_update_lable_entries(gttable.entry_0, gttable.entry_1, ttable.y_1, gttable.output_hash_digest_0, gttable.output_hash_digest_1);
+			} else {
+				ttable.y_0 = gen_key(32);
+				ttable.y_1 = gen_key(32);
+			}
 			// Fix tables' inputs that share the same input
 			for (var pair of same_entry_tables) {
 				var table_index_1 = pair[0];
@@ -640,7 +662,19 @@ contract('GarbledCircuit', () => {
 			// shuffled sequence:;
 			ttable.shuffled_sequence = [0, 1, 2, 3];
 		}
+		// Generate input label update gttable for next round
+		for (var i = 0; i < indices_of_initial_input_tables.length; i++) {
+			var table_index = indices_of_initial_input_tables[i];
+			var ttable = ttables[table_index];
+			var new_y_0 = gen_key(32);
+			var new_y_1 = gen_key(32);
 
+			[entry_0, entry_1, output_hash_digest_0, output_hash_digest_1] = gen_update_label_table(ttable.y_0, ttable.y_1, new_y_0, new_y_1);
+			update_input_label_gttable[table_index].entry_0 = entry_0;
+			update_input_label_gttable[table_index].entry_1 = entry_1;
+			update_input_label_gttable[table_index].output_hash_digest_0 = output_hash_digest_0;
+			update_input_label_gttable[table_index].output_hash_digest_1 = output_hash_digest_1;
+		}
 		// Fill in child table's outputs(i.e., parent table's input)
 		for (var i = 0; i < table_relation.length; i++) {
 			var ttable = ttables[table_relation[i][0]];
