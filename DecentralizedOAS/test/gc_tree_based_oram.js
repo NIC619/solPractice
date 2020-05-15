@@ -16,14 +16,14 @@ contract('GC_tree_based_ORAM', (accounts) => {
 
 		assert.equal(owner, accounts[0], "Incorrect owner");
 	});
-	it('should successfully update nodes', async () => {
+	it('should successfully update nodes and leaf indices', async () => {
 		const GC_tree_based_ORAMInstance = await GC_tree_based_ORAM.deployed();
 		const tree_height = await GC_tree_based_ORAMInstance.TREE_HEIGHT.call();
 		const num_nodes = 2**tree_height - 1;
 		const num_buckets = await GC_tree_based_ORAMInstance.NUM_BUCKETS.call();
 		const num_leaf_nodes = await GC_tree_based_ORAMInstance.NUM_LEAF_NODES.call();
 
-		// Update nodes
+		// Update all nodes in the tree
 		var nodes = new Object();
 		for (var i = 1; i <= num_nodes; i++) {
 			nodes[i] = new Array(num_buckets);
@@ -43,7 +43,7 @@ contract('GC_tree_based_ORAM', (accounts) => {
 		}
 
 		// Choose data nodes
-		// Assume number of data nodes is `num_leaf_nodes`
+		// Assume the number of data nodes is the same as `num_leaf_nodes`
 		var data_node_indices = new Array(num_leaf_nodes);
 		var index;
 		for (var i = 0; i < num_leaf_nodes; i++) {
