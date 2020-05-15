@@ -1,8 +1,9 @@
 pragma solidity ^0.5.15;
 
 import "./SafeMath.sol";
+import "./GarbledCircuit.sol";
 
-contract GC_tree_based_ORAM {
+contract GC_tree_based_ORAM is GarbledCircuit{
     using SafeMath for uint256;
     address public owner;
 
