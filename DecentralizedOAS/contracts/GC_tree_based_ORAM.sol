@@ -38,6 +38,22 @@ contract GC_tree_based_ORAM is GarbledCircuit{
         }
     }
 
+    function get_index_from_decryption_result(uint256[] memory table_indices) public view returns(uint256 index) {
+        require(table_indices.length > 0, "No table indices provided.");
+
+        uint256 table_index;
+        uint256 num_bits = table_indices.length;
+        uint256 exp = num_bits - 1;
+        for(uint i = 0; i < num_bits; i++) {
+            table_index = table_indices[i];
+            require(decrpytion_result[table_index] > 0, "Decryption result is not set");
+            if(decrpytion_result[table_index] == 2) {
+                index += 2**exp;
+            }
+            exp -= 1;
+        }
+    }
+
     function update_leaf_node_indices(uint256[] memory indices, uint256[] memory _leaf_node_indices) public onlyOwner {
         require(indices.length == _leaf_node_indices.length, "Input array not of the same length.");
 
