@@ -3,6 +3,7 @@ const GC_tree_based_ORAM = artifacts.require("GC_tree_based_ORAM");
 const utils = require('./utils');
 gen_key = utils.gen_key;
 gen_node = gen_key;
+get_entry_index = utils.get_entry_index;
 get_OR_entry_result = utils.get_OR_entry_result;
 garbling_OR_entries = utils.garbling_OR_entries;
 get_AND_entry_result = utils.get_AND_entry_result;
@@ -83,7 +84,7 @@ contract('GC_tree_based_ORAM', (accounts) => {
 			assert.equal(leaf_node_index.toNumber(), leaf_node_indices_of_data_nodes[index], "Incorrect leaf node index");
 		}
 	});
-	it('should successfully update circuits', async () => {
+	it('should successfully update and decrypt circuits', async () => {
 		const GC_tree_based_ORAMInstance = await GC_tree_based_ORAM.deployed();
 		const tree_height = await GC_tree_based_ORAMInstance.TREE_HEIGHT.call();
 		const num_nodes = 2**tree_height - 1;
@@ -243,7 +244,7 @@ contract('GC_tree_based_ORAM', (accounts) => {
 			gttables[i] = gttable;
 		}
 
-		// Generate half of initial inputs according to inputs in /4_pos_circuit_result_example.png
+		// Generate half of initial inputs according to inputs in /4_pos_circuit_result_simplified_example.png
 		var bit_in_each_y_input = [1, 1, 1, 0, 0, 1];
 		var half_inputs = new Array(num_inputs);
 		var inputs_to_each_table = new Object();
@@ -319,5 +320,63 @@ contract('GC_tree_based_ORAM', (accounts) => {
 			assert.equal(results[0], web3.utils.bytesToHex(outputs[i][0]), "Incorrect bit results");
 			assert.equal(results[1], web3.utils.bytesToHex(outputs[i][1]), "Incorrect bit results");
 		}
+
+		// Generate other half of inputs according to inputs in /4_pos_circuit_result_simplified_example.png
+		var bit_in_each_x_input = [0, 1, 0, 1, 0, 1];
+		var result_index = 2;  // decryption result in /4_pos_circuit_result_simplified_example.png
+		var other_half_inputs = new Array(num_inputs);
+		for (var i = 0; i < indices_of_initial_input_tables.length; i++) {
+			var table_index = indices_of_initial_input_tables[i];
+			var bit_index = bit_in_each_x_input[i];
+			if(bit_index == 0) {
+				other_half_inputs[i] = ttables[table_index].x_0;
+				inputs_to_each_table[table_index].x = 0;
+			} else {
+				other_half_inputs[i] = ttables[table_index].x_1;
+				inputs_to_each_table[table_index].x = 1;
+			}
+		}
+
+		// Compute final entry sequence
+		var entry_result_of_end_tables = new Object();
+		for (var table_index of execution_sequence) {
+			var ttable = ttables[table_index];
+			var entry_index = get_entry_index(inputs_to_each_table[table_index].x, inputs_to_each_table[table_index].y);
+			var entry_result = ttable.fn_get_entry_result(entry_index);
+			// Record entry result for end tables
+			if(indices_of_end_tables.indexOf(table_index) >= 0) {
+				entry_result_of_end_tables[table_index] = entry_result;
+			}
+			if(ttable.parent_table_indices === undefined) continue;
+			// Fill in entry result for parent table if this is not an end table
+			for (var parent_table_index of ttable.parent_table_indices) {
+				if(inputs_to_each_table[parent_table_index] === undefined) {
+					inputs_to_each_table[parent_table_index] = new Object();
+				}
+				if(ttable.input_x == undefined) throw 'No indication of x or y input';
+				else if(ttable.input_x == 1) {
+					inputs_to_each_table[parent_table_index].x = entry_result;
+				} else {
+					inputs_to_each_table[parent_table_index].y = entry_result;
+				}
+			}
+		}
+
+		// Decrypt
+		await GC_tree_based_ORAMInstance.decrypt(
+			indices_of_initial_input_tables,
+			other_half_inputs,
+			execution_sequence,
+			indices_of_end_tables,
+		);
+		// Verify that result is correct
+		for (table_index in entry_result_of_end_tables) {
+			var decryption_result = await GC_tree_based_ORAMInstance.read_decryption_result.call(table_index);
+			assert.equal(decryption_result.toNumber(), entry_result_of_end_tables[table_index], "Incorrect results");
+		}
+
+		var index_from_decryption_result = await GC_tree_based_ORAMInstance.get_index_from_decryption_result.call(indices_of_end_tables);
+		assert.equal(index_from_decryption_result.toNumber(), result_index, "Incorrect results");
+
 	});
 });
