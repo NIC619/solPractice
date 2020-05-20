@@ -99,6 +99,22 @@ contract('GC_tree_based_ORAM', (accounts) => {
 			var leaf_node_index = await GC_tree_based_ORAMInstance.read_leaf_node_index.call(index);
 			assert.equal(leaf_node_index.toNumber(), leaf_node_indices_of_data_nodes[index], "Incorrect leaf node index");
 		}
+
+		// Read whole branch and check if data node is contained in the branch
+		for(var data_node_index of data_node_indices) {
+			var leaf_node_index = leaf_node_indices_of_data_nodes[data_node_index];
+			var branch = await GC_tree_based_ORAMInstance.read_branch.call(leaf_node_index);
+			var found_match = false;
+			for(node of branch) {
+				for (var j = 0; j < num_buckets; j++) {
+					if(node[j] != web3.utils.bytesToHex(nodes[data_node_index][j])) break;
+					else {
+						if(j == num_buckets - 1) found_match = true;
+					}
+				}
+			}
+			assert.equal(found_match, true, "Data not found in the branch");
+		}
 	});
 	it('should successfully deploy and decrypt circuits', async () => {
 		const GC_tree_based_ORAMInstance = await GC_tree_based_ORAM.deployed();

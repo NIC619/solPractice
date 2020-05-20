@@ -25,8 +25,8 @@ contract GC_tree_based_ORAM is GarbledCircuit{
         _;
     }
 
-    function read_leaf_node_index(uint256 index) public view returns(uint256) {
-        return leaf_node_indices[index];
+    function read_leaf_node_index(uint256 i) public view returns(uint256 leaf_node_index) {
+        leaf_node_index = leaf_node_indices[i];
     }
 
     function read_node(uint256 node_index) public view returns(bytes32[NUM_BUCKETS] memory node) {
@@ -35,6 +35,19 @@ contract GC_tree_based_ORAM is GarbledCircuit{
 
         for(uint i = 0; i < NUM_BUCKETS; i++) {
             node[i] = nodes[node_index][i];
+        }
+    }
+
+    function read_branch(uint256 leaf_node_index) public view returns(bytes32[NUM_BUCKETS][TREE_HEIGHT] memory branch) {
+        require(FIRST_LEAF_NODE_INDEX <= leaf_node_index, "Invalid leaf node index.");
+        require(leaf_node_index <= LAST_LEAF_NODE_INDEX, "Invalid leaf node index.");
+
+        uint256 node_index = leaf_node_index;
+        for(uint i = 0; i < TREE_HEIGHT; i++) {
+            for(uint j = 0; j < NUM_BUCKETS; j++) {
+                branch[i][j] = nodes[node_index][j];
+            }
+            node_index = node_index.div(2);
         }
     }
 
