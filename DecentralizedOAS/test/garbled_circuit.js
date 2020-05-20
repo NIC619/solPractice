@@ -735,7 +735,7 @@ contract('GarbledCircuit', () => {
 			assert.equal(results[1], web3.utils.bytesToHex(outputs[i][1]), "Incorrect bit results");
 		}
 
-		// Generate other half of inputs according to inputs in /4_pos_circuit_result_example.png
+		// Generate other half of inputs according to inputs in /4_pos_redeploy_circuit_result_example.png
 		bit_in_each_x_input = [0, 0, 0, 1, 1, 1];
 		for (var i = 0; i < indices_of_initial_input_tables.length; i++) {
 			var table_index = indices_of_initial_input_tables[i];
