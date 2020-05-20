@@ -570,7 +570,8 @@ contract('GC_tree_based_ORAM', (accounts) => {
 		}
 
 		// Generate other half of inputs according to inputs in /4_pos_redeploy_circuit_result_simplified_example.png
-		bit_in_each_x_input = [0, 0, 0, 1, 1, 1];
+		bit_in_each_x_input = [1, 0, 1, 0, 1, 0];
+		var result_index = 3;  // decryption result in /4_pos_circuit_result_simplified_example.png
 		var other_half_inputs = new Array(num_inputs);
 		for (var i = 0; i < indices_of_initial_input_tables.length; i++) {
 			var table_index = indices_of_initial_input_tables[i];
@@ -621,5 +622,8 @@ contract('GC_tree_based_ORAM', (accounts) => {
 			var decryption_result = await GC_tree_based_ORAMInstance.read_decryption_result.call(table_index);
 			assert.equal(decryption_result.toNumber(), entry_result_of_end_tables[table_index], "Incorrect results");
 		}
+
+		var index_from_decryption_result = await GC_tree_based_ORAMInstance.get_index_from_decryption_result.call(indices_of_end_tables);
+		assert.equal(index_from_decryption_result.toNumber(), result_index, "Incorrect results");
 	});
 });
