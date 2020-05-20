@@ -91,15 +91,6 @@ contract('GC_tree_based_ORAM', (accounts) => {
 			leaf_node_indices_of_data_nodes[data_node_index] = cur_node_index;
 		}
 
-		var leaf_node_indices_array = Object.keys(leaf_node_indices_of_data_nodes);;
-		var leaf_node_indices = Object.values(leaf_node_indices_of_data_nodes);
-		await GC_tree_based_ORAMInstance.update_leaf_node_indices(leaf_node_indices_array, leaf_node_indices);
-
-		for (var index of leaf_node_indices_array) {
-			var leaf_node_index = await GC_tree_based_ORAMInstance.read_leaf_node_index.call(index);
-			assert.equal(leaf_node_index.toNumber(), leaf_node_indices_of_data_nodes[index], "Incorrect leaf node index");
-		}
-
 		// Read whole branch and check if data node is contained in the branch
 		for(var data_node_index of data_node_indices) {
 			var leaf_node_index = leaf_node_indices_of_data_nodes[data_node_index];

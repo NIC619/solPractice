@@ -17,16 +17,15 @@ contract GC_tree_based_ORAM is GarbledCircuit{
     // mapping of (node_index -> node)
     mapping(uint256 => bytes32[NUM_BUCKETS]) public nodes;
 
-    // mapping of (garbled circuit result -> leaf_node_index)
-    mapping(uint256 => uint256) public leaf_node_indices;
-
     modifier onlyOwner {
         require(msg.sender == owner, "Not onwer.");
         _;
     }
 
-    function read_leaf_node_index(uint256 i) public view returns(uint256 leaf_node_index) {
-        leaf_node_index = leaf_node_indices[i];
+    // `i` should be the output of GC
+    function read_leaf_node_index(uint256 i) public pure returns(uint256 leaf_node_index) {
+        require(i < NUM_LEAF_NODES, "Invalid leaf node index.");
+        leaf_node_index = FIRST_LEAF_NODE_INDEX + i;
     }
 
     function read_node(uint256 node_index) public view returns(bytes32[NUM_BUCKETS] memory node) {
@@ -64,21 +63,6 @@ contract GC_tree_based_ORAM is GarbledCircuit{
                 index += 2**exp;
             }
             exp -= 1;
-        }
-    }
-
-    function update_leaf_node_indices(uint256[] memory indices, uint256[] memory _leaf_node_indices) public onlyOwner {
-        require(indices.length == _leaf_node_indices.length, "Input array not of the same length.");
-
-        uint256 index;
-        uint256 leaf_node_index;
-        for(uint i = 0; i < indices.length; i++) {
-            index = indices[i];
-            leaf_node_index = _leaf_node_indices[i];
-            require(FIRST_LEAF_NODE_INDEX <= leaf_node_index, "Invalid leaf node index.");
-            require(leaf_node_index <= LAST_LEAF_NODE_INDEX, "Invalid leaf node index.");
-
-            leaf_node_indices[index] = leaf_node_index;
         }
     }
 
