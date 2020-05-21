@@ -22,12 +22,6 @@ contract GC_tree_based_ORAM is GarbledCircuit{
         _;
     }
 
-    // `i` should be the output of GC
-    function read_leaf_node_index(uint256 i) public pure returns(uint256 leaf_node_index) {
-        require(i < NUM_LEAF_NODES, "Invalid leaf node index.");
-        leaf_node_index = FIRST_LEAF_NODE_INDEX + i;
-    }
-
     function read_node(uint256 node_index) public view returns(bytes32[NUM_BUCKETS] memory node) {
         require(node_index >= 1, "Invalid node index.");
         require(node_index <= (2**TREE_HEIGHT - 1), "Invalid node index.");
