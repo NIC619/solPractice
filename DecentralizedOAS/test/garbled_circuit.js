@@ -95,12 +95,15 @@ contract('GarbledCircuit', () => {
 				ttable.parent_table_indices = [table_relation[i][1]];
 			}
 			var parent_table = ttables[table_relation[i][1]];
+			if(ttable.input_x === undefined) {
+				ttable.input_x = new Object();
+			}
 			if(table_relation[i][2] == 1) {
-				ttable.input_x = 1;
+				ttable.input_x[table_relation[i][1]] = 1;
 				ttable.z_0 = parent_table.x_0;
 				ttable.z_1 = parent_table.x_1;
 			} else {
-				ttable.input_x = 0;
+				ttable.input_x[table_relation[i][1]] = 0;
 				ttable.z_0 = parent_table.y_0;
 				ttable.z_1 = parent_table.y_1;
 			}
@@ -222,8 +225,8 @@ contract('GarbledCircuit', () => {
 				if(inputs_to_each_table[parent_table_index] === undefined) {
 					inputs_to_each_table[parent_table_index] = new Object();
 				}
-				if(ttable.input_x == undefined) throw 'No indication of x or y input';
-				else if(ttable.input_x == 1) {
+				if(ttable.input_x[parent_table_index] == undefined) throw 'No indication of x or y input';
+				else if(ttable.input_x[parent_table_index] == 1) {
 					inputs_to_each_table[parent_table_index].x = entry_result;
 				} else {
 					inputs_to_each_table[parent_table_index].y = entry_result;
@@ -374,12 +377,15 @@ contract('GarbledCircuit', () => {
 				ttable.parent_table_indices = [table_relation[i][1]];
 			}
 			var parent_table = ttables[table_relation[i][1]];
+			if(ttable.input_x === undefined) {
+				ttable.input_x = new Object();
+			}
 			if(table_relation[i][2] == 1) {
-				ttable.input_x = 1;
+				ttable.input_x[table_relation[i][1]] = 1;
 				ttable.z_0 = parent_table.x_0;
 				ttable.z_1 = parent_table.x_1;
 			} else {
-				ttable.input_x = 0;
+				ttable.input_x[table_relation[i][1]] = 0;
 				ttable.z_0 = parent_table.y_0;
 				ttable.z_1 = parent_table.y_1;
 			}
@@ -524,8 +530,8 @@ contract('GarbledCircuit', () => {
 				if(inputs_to_each_table[parent_table_index] === undefined) {
 					inputs_to_each_table[parent_table_index] = new Object();
 				}
-				if(ttable.input_x == undefined) throw 'No indication of x or y input';
-				else if(ttable.input_x == 1) {
+				if(ttable.input_x[parent_table_index] == undefined) throw 'No indication of x or y input';
+				else if(ttable.input_x[parent_table_index] == 1) {
 					inputs_to_each_table[parent_table_index].x = entry_result;
 				} else {
 					inputs_to_each_table[parent_table_index].y = entry_result;
@@ -761,8 +767,8 @@ contract('GarbledCircuit', () => {
 			if(ttable.parent_table_indices === undefined) continue;
 			// Fill in entry result for parent table if this is not an end table
 			for (var parent_table_index of ttable.parent_table_indices) {
-				if(ttable.input_x == undefined) throw 'No indication of x or y input';
-				else if(ttable.input_x == 1) {
+				if(ttable.input_x[parent_table_index] == undefined) throw 'No indication of x or y input';
+				else if(ttable.input_x[parent_table_index] == 1) {
 					inputs_to_each_table[parent_table_index].x = entry_result;
 				} else {
 					inputs_to_each_table[parent_table_index].y = entry_result;
