@@ -14,6 +14,7 @@ gen_update_label_table = utils.gen_update_label_table;
 decrypt_update_lable_entries = utils.decrypt_update_lable_entries;
 
 contract('GC_tree_based_ORAM', (accounts) => {
+	var GC_tree_based_ORAMInstance;
 	var num_inputs;
 	var num_gttables;
 	var table_indices;
@@ -31,13 +32,12 @@ contract('GC_tree_based_ORAM', (accounts) => {
 	var gttables;
 
 	it('should set correct owner', async () => {
-		const GC_tree_based_ORAMInstance = await GC_tree_based_ORAM.deployed();
+		GC_tree_based_ORAMInstance = await GC_tree_based_ORAM.deployed();
 		const owner = await GC_tree_based_ORAMInstance.owner.call();
 
 		assert.equal(owner, accounts[0], "Incorrect owner");
 	});
 	it('should successfully update nodes and leaf indices', async () => {
-		const GC_tree_based_ORAMInstance = await GC_tree_based_ORAM.deployed();
 		const tree_height = await GC_tree_based_ORAMInstance.TREE_HEIGHT.call();
 		const num_nodes = 2**tree_height - 1;
 		const num_buckets = await GC_tree_based_ORAMInstance.NUM_BUCKETS.call();
@@ -108,7 +108,6 @@ contract('GC_tree_based_ORAM', (accounts) => {
 		}
 	});
 	it('should successfully deploy and decrypt circuits', async () => {
-		const GC_tree_based_ORAMInstance = await GC_tree_based_ORAM.deployed();
 		const tree_height = await GC_tree_based_ORAMInstance.TREE_HEIGHT.call();
 
 		// Layout of tables in /4_pos_circuit_simplified_example.png
@@ -403,8 +402,6 @@ contract('GC_tree_based_ORAM', (accounts) => {
 
 	});
 	it('should successfully update and decrypt circuits', async () => {
-		const GC_tree_based_ORAMInstance = await GC_tree_based_ORAM.deployed();
-
 		// Re-deploy with new circuit entries and inputs
 
 		// Generate x,y inputs for each truth tables
@@ -637,7 +634,7 @@ contract('GC_tree_based_ORAM', (accounts) => {
 		assert.equal(index_from_decryption_result.toNumber(), result_index, "Incorrect results");
 	});
 	it('should successfully deploy and decrypt 8 pos circuits', async () => {
-		const GC_tree_based_ORAMInstance = await GC_tree_based_ORAM.deployed();
+		GC_tree_based_ORAMInstance = await GC_tree_based_ORAM.new();
 		const tree_height = await GC_tree_based_ORAMInstance.TREE_HEIGHT.call();
 
 		// Layout of tables in /8_pos_circuit_simplified_example.png
@@ -976,8 +973,6 @@ contract('GC_tree_based_ORAM', (accounts) => {
 
 	});
 	it('should successfully update and decrypt 8 pos circuits', async () => {
-		const GC_tree_based_ORAMInstance = await GC_tree_based_ORAM.deployed();
-
 		// Re-deploy with new circuit entries and inputs
 
 		// Generate x,y inputs for each truth tables
