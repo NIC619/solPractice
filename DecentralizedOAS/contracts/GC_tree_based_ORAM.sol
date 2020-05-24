@@ -7,10 +7,10 @@ contract GC_tree_based_ORAM is GarbledCircuit{
     using SafeMath for uint256;
     address public owner;
 
-    uint256 constant public TREE_HEIGHT = 3;
-    uint256 constant public NUM_LEAF_NODES = 2**(TREE_HEIGHT - 1);
-    uint256 constant public FIRST_LEAF_NODE_INDEX = 2**TREE_HEIGHT - NUM_LEAF_NODES;
-    uint256 constant public LAST_LEAF_NODE_INDEX = 2**TREE_HEIGHT - 1;
+    uint256 public TREE_HEIGHT;
+    uint256 public NUM_LEAF_NODES;
+    uint256 public FIRST_LEAF_NODE_INDEX;
+    uint256 public LAST_LEAF_NODE_INDEX;
     uint256 constant public NUM_BUCKETS = 4;
 
     // node index starts from 1
@@ -31,10 +31,11 @@ contract GC_tree_based_ORAM is GarbledCircuit{
         }
     }
 
-    function read_branch(uint256 leaf_node_index) public view returns(bytes32[NUM_BUCKETS][TREE_HEIGHT] memory branch) {
+    function read_branch(uint256 leaf_node_index) public view returns(bytes32[NUM_BUCKETS][] memory) {
         require(FIRST_LEAF_NODE_INDEX <= leaf_node_index, "Invalid leaf node index.");
         require(leaf_node_index <= LAST_LEAF_NODE_INDEX, "Invalid leaf node index.");
 
+        bytes32[NUM_BUCKETS][] memory branch = new bytes32[NUM_BUCKETS][](TREE_HEIGHT);
         uint256 node_index = leaf_node_index;
         for(uint i = 0; i < TREE_HEIGHT; i++) {
             for(uint j = 0; j < NUM_BUCKETS; j++) {
@@ -42,6 +43,7 @@ contract GC_tree_based_ORAM is GarbledCircuit{
             }
             node_index = node_index.div(2);
         }
+        return branch;
     }
 
     function get_index_from_decryption_result(uint256[] memory table_indices) public view returns(uint256 index) {
@@ -76,7 +78,11 @@ contract GC_tree_based_ORAM is GarbledCircuit{
         }
     }
 
-    constructor() public {
-      owner = msg.sender;
+    constructor(uint256 _TREE_HEIGHT) public {
+        owner = msg.sender;
+        TREE_HEIGHT = _TREE_HEIGHT;
+        NUM_LEAF_NODES = 2**(TREE_HEIGHT - 1);
+        FIRST_LEAF_NODE_INDEX = 2**TREE_HEIGHT - NUM_LEAF_NODES;
+        LAST_LEAF_NODE_INDEX = 2**TREE_HEIGHT - 1;
     }
 }

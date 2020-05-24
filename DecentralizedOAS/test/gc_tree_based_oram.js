@@ -634,7 +634,7 @@ contract('GC_tree_based_ORAM', (accounts) => {
 		assert.equal(index_from_decryption_result.toNumber(), result_index, "Incorrect results");
 	});
 	it('should successfully deploy and decrypt 8 pos circuits', async () => {
-		GC_tree_based_ORAMInstance = await GC_tree_based_ORAM.new();
+		GC_tree_based_ORAMInstance = await GC_tree_based_ORAM.new(4);
 		const tree_height = await GC_tree_based_ORAMInstance.TREE_HEIGHT.call();
 
 		// Layout of tables in /8_pos_circuit_simplified_example.png

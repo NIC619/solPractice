@@ -7,5 +7,5 @@ module.exports = function (deployer, network, accounts) {
 	deployer.deploy(SORAM, 3);
 	deployer.deploy(XOREncrypt);
 	deployer.deploy(GarbledCircuit);
-	deployer.deploy(GC_tree_based_ORAM);
+	deployer.deploy(GC_tree_based_ORAM, 3);
 };
