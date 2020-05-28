@@ -424,6 +424,7 @@ contract('GarbledCircuit', () => {
 
 		// Generate half of initial inputs according to inputs in /4_pos_circuit_result_example.png
 		var bit_in_each_y_input = [1, 1, 0, 0, 1, 0, 1, 0];
+		var expected_result = [1, 0];
 		var half_inputs = new Array(num_inputs);
 		var inputs_to_each_table = new Object();
 		for (var i = 0; i < indices_of_initial_input_tables.length; i++) {
@@ -547,9 +548,9 @@ contract('GarbledCircuit', () => {
 			indices_of_end_tables,
 		);
 		// Verify that result is correct
-		for (table_index in entry_result_of_end_tables) {
+		for (table_index of indices_of_end_tables) {
 			var decryption_result = await GarbledCircuitInstance.read_decryption_result.call(table_index);
-			assert.equal(decryption_result.toNumber(), entry_result_of_end_tables[table_index], "Incorrect results");
+			assert.equal(decryption_result.toNumber(), expected_result[indices_of_end_tables.indexOf(table_index)], "Incorrect results");
 		}
 
 		// Re-deploy with new circuit entries and inputs
@@ -688,9 +689,10 @@ contract('GarbledCircuit', () => {
 			outputs,
 		);
 
-		// Generate half of initial inputs according to inputs in /4_pos_redeploy_circuit_result_example.png
+		// Generate half of initial inputs according to inputs in /4_pos_redeploy_circuit_example.png
 		// This time the input bits are shuffled and so are different from inputs in /4_pos_circuit_result_example.png
-		bit_in_each_y_input = [0, 1, 1, 0, 1, 0];
+		bit_in_each_y_input = [0, 1, 1, 0, 0, 1, 0, 1];
+		expected_result = [1, 1];
 		for (var i = 0; i < indices_of_initial_input_tables.length; i++) {
 			var table_index = indices_of_initial_input_tables[i];
 			var bit_index = bit_in_each_y_input[i];
@@ -742,7 +744,7 @@ contract('GarbledCircuit', () => {
 		}
 
 		// Generate other half of inputs according to inputs in /4_pos_redeploy_circuit_result_example.png
-		bit_in_each_x_input = [0, 0, 0, 1, 1, 1];
+		bit_in_each_x_input = [0, 0, 0, 0, 1, 1, 1, 1];
 		for (var i = 0; i < indices_of_initial_input_tables.length; i++) {
 			var table_index = indices_of_initial_input_tables[i];
 			var bit_index = bit_in_each_x_input[i];
@@ -784,9 +786,9 @@ contract('GarbledCircuit', () => {
 			indices_of_end_tables,
 		);
 		// Verify that result is correct
-		for (table_index in entry_result_of_end_tables) {
+		for (table_index of indices_of_end_tables) {
 			var decryption_result = await GarbledCircuitInstance.read_decryption_result.call(table_index);
-			assert.equal(decryption_result.toNumber(), entry_result_of_end_tables[table_index], "Incorrect results");
+			assert.equal(decryption_result.toNumber(), expected_result[indices_of_end_tables.indexOf(table_index)], "Incorrect results");
 		}
 	});
 });
