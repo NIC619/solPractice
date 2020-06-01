@@ -335,19 +335,14 @@ contract('GarbledCircuit', () => {
 			ttables[index] = ttable;
 		}
 		// Generate input label update gttable for next round
-		var update_input_label_gttable = new Object();
+		var label_updates = new Array(num_inputs);
 		for (var i = 0; i < indices_of_initial_input_tables.length; i++) {
 			var table_index = indices_of_initial_input_tables[i];
 			var ttable = ttables[table_index];
 			var new_y_0 = gen_key(32);
 			var new_y_1 = gen_key(32);
 
-			[entry_0, entry_1, output_hash_digest_0, output_hash_digest_1] = gen_update_label_table(ttable.y_0, ttable.y_1, new_y_0, new_y_1);
-			update_input_label_gttable[table_index] = new Object();
-			update_input_label_gttable[table_index].entry_0 = entry_0;
-			update_input_label_gttable[table_index].entry_1 = entry_1;
-			update_input_label_gttable[table_index].output_hash_digest_0 = output_hash_digest_0;
-			update_input_label_gttable[table_index].output_hash_digest_1 = output_hash_digest_1;
+			label_updates[i] = [entry_0, entry_1, output_hash_digest_0, output_hash_digest_1] = gen_update_label_table(ttable.y_0, ttable.y_1, new_y_0, new_y_1);
 		}
 		// Fill in table type
 		for (var type in table_type) {
@@ -500,6 +495,27 @@ contract('GarbledCircuit', () => {
 			assert.equal(results[1], web3.utils.bytesToHex(outputs[i][1]), "Incorrect bit results");
 		}
 
+		// Upload label updates info
+		await GarbledCircuitInstance.update_labels(indices_of_initial_input_tables, label_updates);
+
+		// Verify label updates
+		var update_input_label_gttable = new Object();
+		var uploaded_label_updates = await GarbledCircuitInstance.read_label_updates.call(indices_of_initial_input_tables);
+		for (var i = 0; i < indices_of_initial_input_tables.length; i++) {
+			var table_index = indices_of_initial_input_tables[i];
+			for (var j = 0; j < 2; j++) {
+				assert.equal(uploaded_label_updates[i][j], web3.utils.bytesToHex(label_updates[i][j]), "Incorrect label");
+			}
+			for (var j = 2; j < 4; j++) {
+				assert.equal(uploaded_label_updates[i][j], label_updates[i][j], "Incorrect label hash digest");
+			}
+			update_input_label_gttable[table_index] = new Object();
+			update_input_label_gttable[table_index].entry_0 = web3.utils.hexToBytes(uploaded_label_updates[i][0]);
+			update_input_label_gttable[table_index].entry_1 = web3.utils.hexToBytes(uploaded_label_updates[i][1]);
+			update_input_label_gttable[table_index].output_hash_digest_0 = uploaded_label_updates[i][2];
+			update_input_label_gttable[table_index].output_hash_digest_1 = uploaded_label_updates[i][3];
+		}
+
 		// Generate other half of inputs according to inputs in /4_pos_circuit_result_example.png
 		var bit_in_each_x_input = [0, 0, 0, 0, 1, 1, 1, 1];
 		var other_half_inputs = new Array(num_inputs);
@@ -603,11 +619,7 @@ contract('GarbledCircuit', () => {
 			var new_y_0 = gen_key(32);
 			var new_y_1 = gen_key(32);
 
-			[entry_0, entry_1, output_hash_digest_0, output_hash_digest_1] = gen_update_label_table(ttable.y_0, ttable.y_1, new_y_0, new_y_1);
-			update_input_label_gttable[table_index].entry_0 = entry_0;
-			update_input_label_gttable[table_index].entry_1 = entry_1;
-			update_input_label_gttable[table_index].output_hash_digest_0 = output_hash_digest_0;
-			update_input_label_gttable[table_index].output_hash_digest_1 = output_hash_digest_1;
+			label_updates[i] = [entry_0, entry_1, output_hash_digest_0, output_hash_digest_1] = gen_update_label_table(ttable.y_0, ttable.y_1, new_y_0, new_y_1);
 		}
 		// Fill in child table's outputs(i.e., parent table's input)
 		for (var i = 0; i < table_relation.length; i++) {
@@ -688,6 +700,9 @@ contract('GarbledCircuit', () => {
 			indices_of_end_tables,
 			outputs,
 		);
+
+		// Upload label updates info
+		await GarbledCircuitInstance.update_labels(indices_of_initial_input_tables, label_updates);
 
 		// Generate half of initial inputs according to inputs in /4_pos_redeploy_circuit_example.png
 		// This time the input bits are shuffled and so are different from inputs in /4_pos_circuit_result_example.png
