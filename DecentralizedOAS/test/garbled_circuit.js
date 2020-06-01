@@ -704,6 +704,22 @@ contract('GarbledCircuit', () => {
 		// Upload label updates info
 		await GarbledCircuitInstance.update_labels(indices_of_initial_input_tables, label_updates);
 
+		// Verify label updates
+		uploaded_label_updates = await GarbledCircuitInstance.read_label_updates.call(indices_of_initial_input_tables);
+		for (var i = 0; i < indices_of_initial_input_tables.length; i++) {
+			var table_index = indices_of_initial_input_tables[i];
+			for (var j = 0; j < 2; j++) {
+				assert.equal(uploaded_label_updates[i][j], web3.utils.bytesToHex(label_updates[i][j]), "Incorrect label");
+			}
+			for (var j = 2; j < 4; j++) {
+				assert.equal(uploaded_label_updates[i][j], label_updates[i][j], "Incorrect label hash digest");
+			}
+			update_input_label_gttable[table_index].entry_0 = web3.utils.hexToBytes(uploaded_label_updates[i][0]);
+			update_input_label_gttable[table_index].entry_1 = web3.utils.hexToBytes(uploaded_label_updates[i][1]);
+			update_input_label_gttable[table_index].output_hash_digest_0 = uploaded_label_updates[i][2];
+			update_input_label_gttable[table_index].output_hash_digest_1 = uploaded_label_updates[i][3];
+		}
+
 		// Generate half of initial inputs according to inputs in /4_pos_redeploy_circuit_example.png
 		// This time the input bits are shuffled and so are different from inputs in /4_pos_circuit_result_example.png
 		bit_in_each_y_input = [0, 1, 1, 0, 0, 1, 0, 1];
