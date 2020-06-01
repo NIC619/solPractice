@@ -28,6 +28,15 @@ contract GarbledCircuit {
         bytes32 bit_one;
     }
 
+    struct LabelUpdate {
+        bytes32 encrypted_y_0;
+        bytes32 encrypted_y_1;
+        bytes32 hash_digest_y_0;
+        bytes32 hash_digest_y_1;
+    }
+    mapping(uint256 => LabelUpdate) label_updates;
+
+    
     function read_gtt(uint256 table_index) public view returns(bytes32[4] memory gtt) {
         gtt[0] = circuit[table_index].entry[0];
         gtt[1] = circuit[table_index].entry[1];
@@ -65,6 +74,21 @@ contract GarbledCircuit {
         // 0: not set
         require(decrpytion_result[table_index] > 0, "Decryption result is not set");
         return decrpytion_result[table_index] - 1;
+    }
+
+    function read_label_updates(uint256[] memory table_indices) public view returns(bytes32[4][] memory) {
+        require(table_indices.length > 0, "No table index provided.");
+
+        uint256 table_index;
+        bytes32[4][] memory l_updates = new bytes32[4][](table_indices.length);
+        for(uint256 i = 0; i < table_indices.length; i++) {
+            table_index = table_indices[i];
+            l_updates[i][0] = label_updates[table_index].encrypted_y_0;
+            l_updates[i][1] = label_updates[table_index].encrypted_y_1;
+            l_updates[i][2] = label_updates[table_index].hash_digest_y_0;
+            l_updates[i][3] = label_updates[table_index].hash_digest_y_1;
+        }
+        return l_updates;
     }
 
     function decrypt(
@@ -178,6 +202,17 @@ contract GarbledCircuit {
         }
     }
 
+    function update_labels(uint256[] memory table_index_of_labels, bytes32[4][] memory _label_updates) public {
+        uint256 table_index;
+        for(uint256 i = 0; i < table_index_of_labels.length; i++) {
+            table_index = table_index_of_labels[i];
+            label_updates[table_index].encrypted_y_0 = _label_updates[i][0];
+            label_updates[table_index].encrypted_y_1 = _label_updates[i][1];
+            label_updates[table_index].hash_digest_y_0 = _label_updates[i][2];
+            label_updates[table_index].hash_digest_y_1 = _label_updates[i][3];
+        }
+    }
+    
     function redeploy(
         uint256[] memory table_index_of_table_entries,
         bytes32[4][] memory all_table_entries,
