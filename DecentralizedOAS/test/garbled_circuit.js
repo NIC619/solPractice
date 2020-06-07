@@ -13,7 +13,7 @@ garbling_XOR_entries = utils.garbling_XOR_entries;
 get_NAND_entry_result = utils.get_NAND_entry_result;
 garbling_NAND_entries = utils.garbling_NAND_entries;
 gen_update_label_table = utils.gen_update_label_table;
-decrypt_update_lable_entries = utils.decrypt_update_lable_entries;
+decrypt_update_label_entries = utils.decrypt_update_label_entries;
 
 
 contract('GarbledCircuit', () => {
@@ -256,9 +256,9 @@ contract('GarbledCircuit', () => {
 		var new_1 = gen_key(32);
 
 		[entry_0, entry_1, output_hash_digest_0, output_hash_digest_1] = gen_update_label_table(old_0, old_1, new_0, new_1);
-		var result = decrypt_update_lable_entries(entry_0, entry_1, old_0, output_hash_digest_0, output_hash_digest_1);
+		var result = decrypt_update_label_entries(entry_0, entry_1, old_0, output_hash_digest_0, output_hash_digest_1);
 		assert.equal(web3.utils.bytesToHex(result), web3.utils.bytesToHex(new_0), "Incorrect decrypt result");
-		result = decrypt_update_lable_entries(entry_0, entry_1, old_1, output_hash_digest_0, output_hash_digest_1);
+		result = decrypt_update_label_entries(entry_0, entry_1, old_1, output_hash_digest_0, output_hash_digest_1);
 		assert.equal(web3.utils.bytesToHex(result), web3.utils.bytesToHex(new_1), "Incorrect decrypt result");
 	});
 
@@ -579,8 +579,8 @@ contract('GarbledCircuit', () => {
 			// Update input label
 			if(indices_of_initial_input_tables.indexOf(index) >= 0) {
 				var gttable = update_input_label_gttable[index];
-				ttable.y_0 = decrypt_update_lable_entries(gttable.entry_0, gttable.entry_1, ttable.y_0, gttable.output_hash_digest_0, gttable.output_hash_digest_1);
-				ttable.y_1 = decrypt_update_lable_entries(gttable.entry_0, gttable.entry_1, ttable.y_1, gttable.output_hash_digest_0, gttable.output_hash_digest_1);
+				ttable.y_0 = decrypt_update_label_entries(gttable.entry_0, gttable.entry_1, ttable.y_0, gttable.output_hash_digest_0, gttable.output_hash_digest_1);
+				ttable.y_1 = decrypt_update_label_entries(gttable.entry_0, gttable.entry_1, ttable.y_1, gttable.output_hash_digest_0, gttable.output_hash_digest_1);
 			} else {
 				ttable.y_0 = gen_key(32);
 				ttable.y_1 = gen_key(32);

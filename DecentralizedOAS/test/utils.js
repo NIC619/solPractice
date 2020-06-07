@@ -72,7 +72,7 @@ function gen_update_label_table(old_0, old_1, new_0, new_1) {
 	];
 }
 
-function decrypt_update_lable_entries(entry_0, entry_1, input, hash_digest_0, hash_digest_1) {
+function decrypt_update_label_entries(entry_0, entry_1, input, hash_digest_0, hash_digest_1) {
 	var result = xor(input, entry_0);
 	var result_hash_digest = web3.utils.keccak256(web3.utils.bytesToHex((result)));
 	if((result_hash_digest == hash_digest_0) || (result_hash_digest == hash_digest_1)) {
@@ -100,5 +100,5 @@ module.exports = {
     get_NAND_entry_result: get_NAND_entry_result,
     garbling_NAND_entries: garbling_NAND_entries,
     gen_update_label_table: gen_update_label_table,
-    decrypt_update_lable_entries: decrypt_update_lable_entries,
+    decrypt_update_label_entries: decrypt_update_label_entries,
 }

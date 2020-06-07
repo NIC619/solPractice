@@ -11,7 +11,7 @@ garbling_AND_entries = utils.garbling_AND_entries;
 get_XOR_entry_result = utils.get_XOR_entry_result;
 garbling_XOR_entries = utils.garbling_XOR_entries;
 gen_update_label_table = utils.gen_update_label_table;
-decrypt_update_lable_entries = utils.decrypt_update_lable_entries;
+decrypt_update_label_entries = utils.decrypt_update_label_entries;
 
 contract('GC_tree_based_ORAM', (accounts) => {
 	var GC_tree_based_ORAMInstance;
@@ -429,8 +429,8 @@ contract('GC_tree_based_ORAM', (accounts) => {
 			// Update input label
 			if(indices_of_initial_input_tables.indexOf(index) >= 0) {
 				var gttable = update_input_label_gttable[index];
-				ttable.y_0 = decrypt_update_lable_entries(gttable.entry_0, gttable.entry_1, ttable.y_0, gttable.output_hash_digest_0, gttable.output_hash_digest_1);
-				ttable.y_1 = decrypt_update_lable_entries(gttable.entry_0, gttable.entry_1, ttable.y_1, gttable.output_hash_digest_0, gttable.output_hash_digest_1);
+				ttable.y_0 = decrypt_update_label_entries(gttable.entry_0, gttable.entry_1, ttable.y_0, gttable.output_hash_digest_0, gttable.output_hash_digest_1);
+				ttable.y_1 = decrypt_update_label_entries(gttable.entry_0, gttable.entry_1, ttable.y_1, gttable.output_hash_digest_0, gttable.output_hash_digest_1);
 			} else {
 				ttable.y_0 = gen_key(32);
 				ttable.y_1 = gen_key(32);
@@ -1031,8 +1031,8 @@ contract('GC_tree_based_ORAM', (accounts) => {
 			// Update input label
 			if(indices_of_initial_input_tables.indexOf(index) >= 0) {
 				var gttable = update_input_label_gttable[index];
-				ttable.y_0 = decrypt_update_lable_entries(gttable.entry_0, gttable.entry_1, ttable.y_0, gttable.output_hash_digest_0, gttable.output_hash_digest_1);
-				ttable.y_1 = decrypt_update_lable_entries(gttable.entry_0, gttable.entry_1, ttable.y_1, gttable.output_hash_digest_0, gttable.output_hash_digest_1);
+				ttable.y_0 = decrypt_update_label_entries(gttable.entry_0, gttable.entry_1, ttable.y_0, gttable.output_hash_digest_0, gttable.output_hash_digest_1);
+				ttable.y_1 = decrypt_update_label_entries(gttable.entry_0, gttable.entry_1, ttable.y_1, gttable.output_hash_digest_0, gttable.output_hash_digest_1);
 			} else {
 				ttable.y_0 = gen_key(32);
 				ttable.y_1 = gen_key(32);
