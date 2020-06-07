@@ -496,7 +496,7 @@ contract('GarbledCircuit', () => {
 		}
 
 		// Upload label updates info
-		await GarbledCircuitInstance.update_labels(indices_of_initial_input_tables, label_updates);
+		await GarbledCircuitInstance.upload_label_updates_info(indices_of_initial_input_tables, label_updates);
 
 		// Verify label updates
 		var update_input_label_gttable = new Object();
@@ -702,7 +702,7 @@ contract('GarbledCircuit', () => {
 		);
 
 		// Upload label updates info
-		await GarbledCircuitInstance.update_labels(indices_of_initial_input_tables, label_updates);
+		await GarbledCircuitInstance.upload_label_updates_info(indices_of_initial_input_tables, label_updates);
 
 		// Verify label updates
 		uploaded_label_updates = await GarbledCircuitInstance.read_label_updates.call(indices_of_initial_input_tables);

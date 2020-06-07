@@ -202,7 +202,7 @@ contract GarbledCircuit {
         }
     }
 
-    function update_labels(uint256[] memory table_index_of_labels, bytes32[4][] memory _label_updates) public {
+    function upload_label_updates_info(uint256[] memory table_index_of_labels, bytes32[4][] memory _label_updates) public {
         uint256 table_index;
         for(uint256 i = 0; i < table_index_of_labels.length; i++) {
             table_index = table_index_of_labels[i];

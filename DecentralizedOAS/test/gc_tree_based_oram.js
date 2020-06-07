@@ -340,7 +340,7 @@ contract('GC_tree_based_ORAM', (accounts) => {
 		}
 
 		// Upload label updates info
-		await GC_tree_based_ORAMInstance.update_labels(indices_of_initial_input_tables, label_updates);
+		await GC_tree_based_ORAMInstance.upload_label_updates_info(indices_of_initial_input_tables, label_updates);
 
 		// Verify label updates
 		update_input_label_gttable = new Object();
@@ -590,7 +590,7 @@ contract('GC_tree_based_ORAM', (accounts) => {
 		}
 
 		// Upload label updates info
-		await GC_tree_based_ORAMInstance.update_labels(indices_of_initial_input_tables, label_updates);
+		await GC_tree_based_ORAMInstance.upload_label_updates_info(indices_of_initial_input_tables, label_updates);
 
 		// Verify label updates
 		var uploaded_label_updates = await GC_tree_based_ORAMInstance.read_label_updates.call(indices_of_initial_input_tables);
@@ -942,7 +942,7 @@ contract('GC_tree_based_ORAM', (accounts) => {
 		}
 
 		// Upload label updates info
-		await GC_tree_based_ORAMInstance.update_labels(indices_of_initial_input_tables, label_updates);
+		await GC_tree_based_ORAMInstance.upload_label_updates_info(indices_of_initial_input_tables, label_updates);
 
 		// Verify label updates
 		update_input_label_gttable = new Object();
@@ -1193,7 +1193,7 @@ contract('GC_tree_based_ORAM', (accounts) => {
 		}
 
 		// Upload label updates info
-		await GC_tree_based_ORAMInstance.update_labels(indices_of_initial_input_tables, label_updates);
+		await GC_tree_based_ORAMInstance.upload_label_updates_info(indices_of_initial_input_tables, label_updates);
 
 		// Verify label updates
 		var uploaded_label_updates = await GC_tree_based_ORAMInstance.read_label_updates.call(indices_of_initial_input_tables);
