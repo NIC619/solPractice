@@ -35,9 +35,79 @@ contract('GC_tree_based_ORAM', (accounts) => {
 	var half_inputs;
 	var inputs_to_each_table;
 
-	it('initial deploy of 4 pos circuits', async () => {
+	it('1st Write/Flush of 4 pos circuit', async () => {
 		GC_tree_based_ORAMInstance = await GC_tree_based_ORAM.deployed();
+		const tree_height = await GC_tree_based_ORAMInstance.TREE_HEIGHT.call();
+		const num_nodes = 2**tree_height - 1;
+		const num_buckets = await GC_tree_based_ORAMInstance.NUM_BUCKETS.call();
+		const num_leaf_nodes = await GC_tree_based_ORAMInstance.NUM_LEAF_NODES.call();
 
+		// Update all nodes in the tree
+		var nodes = new Object();
+		for (var i = 1; i <= num_nodes; i++) {
+			nodes[i] = new Array(num_buckets);
+			for (var j = 0; j < num_buckets; j++) {
+				nodes[i][j] = gen_node(32);
+			}
+		}
+		var node_indices = Object.keys(nodes);
+		var nodes_array = Object.values(nodes);
+		tx = await GC_tree_based_ORAMInstance.update_nodes(node_indices, nodes_array);
+		console.log("Gas used for 1st `Write/Flush` of a 4 pos circuit:", tx['receipt']['gasUsed']);
+
+		for (var i = 1; i <= num_nodes; i++) {
+			var node = await GC_tree_based_ORAMInstance.read_node.call(i);
+			for (var j = 0; j < num_buckets; j++) {
+				assert.equal(node[j], web3.utils.bytesToHex(nodes[i][j]), "Incorrect node content");
+			}
+		}
+
+		// Choose data nodes
+		// Assume the number of data nodes is the same as `num_leaf_nodes`
+		var data_node_indices = new Array(num_leaf_nodes);
+		var index;
+		for (var i = 0; i < num_leaf_nodes; i++) {
+			index = Math.floor((Math.random() * num_nodes)) + 1;
+			while(data_node_indices.indexOf(index) >= 0) {
+				index = Math.floor((Math.random() * num_nodes)) + 1;
+			}
+			data_node_indices[i] = index;
+		}
+		// Choose leaf node for each data node
+		const first_leaf_node_index = await GC_tree_based_ORAMInstance.FIRST_LEAF_NODE_INDEX.call();
+		const last_leaf_node_index = await GC_tree_based_ORAMInstance.LAST_LEAF_NODE_INDEX.call();
+		var leaf_node_indices_of_data_nodes = new Object();
+		for(var data_node_index of data_node_indices) {
+			var leaf_or_right;
+			var cur_node_index = data_node_index;
+			while(cur_node_index < first_leaf_node_index) {
+				var leaf_or_right = Math.floor(Math.random() * 2);
+				if(leaf_or_right == 0) {
+					cur_node_index = cur_node_index * 2;
+				} else {
+					cur_node_index = cur_node_index * 2 + 1;
+				}
+			}
+			leaf_node_indices_of_data_nodes[data_node_index] = cur_node_index;
+		}
+
+		// Read whole branch and check if data node is contained in the branch
+		for(var data_node_index of data_node_indices) {
+			var leaf_node_index = leaf_node_indices_of_data_nodes[data_node_index];
+			var branch = await GC_tree_based_ORAMInstance.read_branch.call(leaf_node_index);
+			var found_match = false;
+			for(node of branch) {
+				for (var j = 0; j < num_buckets; j++) {
+					if(node[j] != web3.utils.bytesToHex(nodes[data_node_index][j])) break;
+					else {
+						if(j == num_buckets - 1) found_match = true;
+					}
+				}
+			}
+			assert.equal(found_match, true, "Data not found in the branch");
+		}
+	});
+	it('initial deploy of 4 pos circuits', async () => {
 		// Layout of tables in /4_pos_circuit_simplified_example.png
 		num_inputs = 6;
 		num_gttables = 11;
@@ -347,6 +417,77 @@ contract('GC_tree_based_ORAM', (accounts) => {
 
 		var index_from_decryption_result = await GC_tree_based_ORAMInstance.get_index_from_decryption_result.call(indices_of_end_tables);
 		assert.equal(index_from_decryption_result.toNumber(), result_index, "Incorrect results");
+	});
+	it('2nd Write/Flush of 4 pos circuit', async () => {
+		const tree_height = await GC_tree_based_ORAMInstance.TREE_HEIGHT.call();
+		const num_nodes = 2**tree_height - 1;
+		const num_buckets = await GC_tree_based_ORAMInstance.NUM_BUCKETS.call();
+		const num_leaf_nodes = await GC_tree_based_ORAMInstance.NUM_LEAF_NODES.call();
+
+		// Update all nodes in the tree
+		var nodes = new Object();
+		for (var i = 1; i <= num_nodes; i++) {
+			nodes[i] = new Array(num_buckets);
+			for (var j = 0; j < num_buckets; j++) {
+				nodes[i][j] = gen_node(32);
+			}
+		}
+		var node_indices = Object.keys(nodes);
+		var nodes_array = Object.values(nodes);
+		tx = await GC_tree_based_ORAMInstance.update_nodes(node_indices, nodes_array);
+		console.log("Gas used for 1st `Write/Flush` of a 4 pos circuit:", tx['receipt']['gasUsed']);
+
+		for (var i = 1; i <= num_nodes; i++) {
+			var node = await GC_tree_based_ORAMInstance.read_node.call(i);
+			for (var j = 0; j < num_buckets; j++) {
+				assert.equal(node[j], web3.utils.bytesToHex(nodes[i][j]), "Incorrect node content");
+			}
+		}
+
+		// Choose data nodes
+		// Assume the number of data nodes is the same as `num_leaf_nodes`
+		var data_node_indices = new Array(num_leaf_nodes);
+		var index;
+		for (var i = 0; i < num_leaf_nodes; i++) {
+			index = Math.floor((Math.random() * num_nodes)) + 1;
+			while(data_node_indices.indexOf(index) >= 0) {
+				index = Math.floor((Math.random() * num_nodes)) + 1;
+			}
+			data_node_indices[i] = index;
+		}
+		// Choose leaf node for each data node
+		const first_leaf_node_index = await GC_tree_based_ORAMInstance.FIRST_LEAF_NODE_INDEX.call();
+		const last_leaf_node_index = await GC_tree_based_ORAMInstance.LAST_LEAF_NODE_INDEX.call();
+		var leaf_node_indices_of_data_nodes = new Object();
+		for(var data_node_index of data_node_indices) {
+			var leaf_or_right;
+			var cur_node_index = data_node_index;
+			while(cur_node_index < first_leaf_node_index) {
+				var leaf_or_right = Math.floor(Math.random() * 2);
+				if(leaf_or_right == 0) {
+					cur_node_index = cur_node_index * 2;
+				} else {
+					cur_node_index = cur_node_index * 2 + 1;
+				}
+			}
+			leaf_node_indices_of_data_nodes[data_node_index] = cur_node_index;
+		}
+
+		// Read whole branch and check if data node is contained in the branch
+		for(var data_node_index of data_node_indices) {
+			var leaf_node_index = leaf_node_indices_of_data_nodes[data_node_index];
+			var branch = await GC_tree_based_ORAMInstance.read_branch.call(leaf_node_index);
+			var found_match = false;
+			for(node of branch) {
+				for (var j = 0; j < num_buckets; j++) {
+					if(node[j] != web3.utils.bytesToHex(nodes[data_node_index][j])) break;
+					else {
+						if(j == num_buckets - 1) found_match = true;
+					}
+				}
+			}
+			assert.equal(found_match, true, "Data not found in the branch");
+		}
 	});
 	it('ReplaceGC of 4 pos circuits', async () => {
 		// Re-deploy with new circuit entries and inputs
