@@ -52,8 +52,11 @@ contract('GC_tree_based_ORAM', (accounts) => {
 		}
 		var node_indices = Object.keys(nodes);
 		var nodes_array = Object.values(nodes);
+		startTime =new Date().getTime();
 		tx = await GC_tree_based_ORAMInstance.update_nodes(node_indices, nodes_array);
-		console.log("Gas used for 1st `Write/Flush` of a 4 pos circuit:", tx['receipt']['gasUsed']);
+		endTime = new Date().getTime();
+		console.log("\nGas used for 1st `Write/Flush` of a 4 pos circuit:", tx['receipt']['gasUsed']);
+		console.debug('Elapsed time:', (endTime - startTime), 'ms');
 
 		for (var i = 1; i <= num_nodes; i++) {
 			var node = await GC_tree_based_ORAMInstance.read_node.call(i);
@@ -291,6 +294,7 @@ contract('GC_tree_based_ORAM', (accounts) => {
 		}
 
 		// Deploy the circuit
+		startTime =new Date().getTime();
 		tx = await GC_tree_based_ORAMInstance.initial_deploy(
 			num_inputs,
 			table_relation,
@@ -302,7 +306,9 @@ contract('GC_tree_based_ORAM', (accounts) => {
 			indices_of_end_tables,
 			outputs,
 		);
-		console.log("Gas used for `initial_deploy` of a 4 pos circuit:", tx['receipt']['gasUsed']);
+		endTime = new Date().getTime();
+		console.log("\nGas used for `initial_deploy` of a 4 pos circuit:", tx['receipt']['gasUsed']);
+		console.debug('Elapsed time:', (endTime - startTime), 'ms');
 
 		// Verify content of deployed circuit
 		for (var index of table_indices) {
@@ -338,8 +344,11 @@ contract('GC_tree_based_ORAM', (accounts) => {
 		}
 
 		// Upload label updates info
+		startTime =new Date().getTime();
 		tx = await GC_tree_based_ORAMInstance.upload_label_updates_info(indices_of_initial_input_tables, label_updates);
-		console.log("Gas used for 1st `upload_label_updates_info` of a 4 pos circuit:", tx['receipt']['gasUsed']);
+		endTime = new Date().getTime();
+		console.log("\nGas used for 1st `upload_label_updates_info` of a 4 pos circuit:", tx['receipt']['gasUsed']);
+		console.debug('Elapsed time:', (endTime - startTime), 'ms');
 
 		// Verify label updates
 		update_input_label_gttable = new Object();
@@ -402,13 +411,16 @@ contract('GC_tree_based_ORAM', (accounts) => {
 		}
 
 		// Decrypt
+		startTime =new Date().getTime();
 		tx = await GC_tree_based_ORAMInstance.decrypt(
 			indices_of_initial_input_tables,
 			other_half_inputs,
 			execution_sequence,
 			indices_of_end_tables,
 		);
-		console.log("Gas used for 1st `EvalGC` of a 4 pos circuit:", tx['receipt']['gasUsed']);
+		endTime = new Date().getTime();
+		console.log("\nGas used for 1st `EvalGC` of a 4 pos circuit:", tx['receipt']['gasUsed']);
+		console.debug('Elapsed time:', (endTime - startTime), 'ms');
 		// Verify that result is correct
 		for (table_index in entry_result_of_end_tables) {
 			var decryption_result = await GC_tree_based_ORAMInstance.read_decryption_result.call(table_index);
@@ -434,8 +446,11 @@ contract('GC_tree_based_ORAM', (accounts) => {
 		}
 		var node_indices = Object.keys(nodes);
 		var nodes_array = Object.values(nodes);
+		startTime =new Date().getTime();
 		tx = await GC_tree_based_ORAMInstance.update_nodes(node_indices, nodes_array);
-		console.log("Gas used for 1st `Write/Flush` of a 4 pos circuit:", tx['receipt']['gasUsed']);
+		endTime = new Date().getTime();
+		console.log("\nGas used for 1st `Write/Flush` of a 4 pos circuit:", tx['receipt']['gasUsed']);
+		console.debug('Elapsed time:', (endTime - startTime), 'ms');
 
 		for (var i = 1; i <= num_nodes; i++) {
 			var node = await GC_tree_based_ORAMInstance.read_node.call(i);
@@ -617,6 +632,7 @@ contract('GC_tree_based_ORAM', (accounts) => {
 		}
 
 		// Deploy the circuit
+		startTime =new Date().getTime();
 		tx = await GC_tree_based_ORAMInstance.redeploy(
 			table_indices,
 			gttables_array,
@@ -626,7 +642,9 @@ contract('GC_tree_based_ORAM', (accounts) => {
 			indices_of_end_tables,
 			outputs,
 		);
-		console.log("Gas used for `ReplaceGC:redeploy` of a 4 pos circuit:", tx['receipt']['gasUsed']);
+		endTime = new Date().getTime();
+		console.log("\nGas used for `ReplaceGC:redeploy` of a 4 pos circuit:", tx['receipt']['gasUsed']);
+		console.debug('Elapsed time:', (endTime - startTime), 'ms');
 
 		// Verify content of deployed circuit
 		for (var index of table_indices) {
@@ -662,8 +680,11 @@ contract('GC_tree_based_ORAM', (accounts) => {
 		}
 
 		// Upload label updates info
+		startTime =new Date().getTime();
 		tx = await GC_tree_based_ORAMInstance.upload_label_updates_info(indices_of_initial_input_tables, label_updates);
-		console.log("Gas used for `ReplaceGC:upload_label_updates_info` of a 4 pos circuit:", tx['receipt']['gasUsed']);
+		endTime = new Date().getTime();
+		console.log("\nGas used for `ReplaceGC:upload_label_updates_info` of a 4 pos circuit:", tx['receipt']['gasUsed']);
+		console.debug('Elapsed time:', (endTime - startTime), 'ms');
 
 		// Verify label updates
 		var uploaded_label_updates = await GC_tree_based_ORAMInstance.read_label_updates.call(indices_of_initial_input_tables);
@@ -724,13 +745,16 @@ contract('GC_tree_based_ORAM', (accounts) => {
 		}
 
 		// Decrypt
+		startTime =new Date().getTime();
 		tx = await GC_tree_based_ORAMInstance.decrypt(
 			indices_of_initial_input_tables,
 			other_half_inputs,
 			execution_sequence,
 			indices_of_end_tables,
 		);
-		console.log("Gas used for 2nd `EvalGC` of a 4 pos circuit:", tx['receipt']['gasUsed']);
+		endTime = new Date().getTime();
+		console.log("\nGas used for 2nd `EvalGC` of a 4 pos circuit:", tx['receipt']['gasUsed']);
+		console.debug('Elapsed time:', (endTime - startTime), 'ms');
 
 		// Verify that result is correct
 		for (table_index in entry_result_of_end_tables) {
@@ -759,8 +783,11 @@ contract('GC_tree_based_ORAM', (accounts) => {
 		}
 		var node_indices = Object.keys(nodes);
 		var nodes_array = Object.values(nodes);
+		startTime =new Date().getTime();
 		tx = await GC_tree_based_ORAMInstance.update_nodes(node_indices, nodes_array);
-		console.log("Gas used for 1st `Write/Flush` of a 8 pos circuit:", tx['receipt']['gasUsed']);
+		endTime = new Date().getTime();
+		console.log("\nGas used for 1st `Write/Flush` of a 8 pos circuit:", tx['receipt']['gasUsed']);
+		console.debug('Elapsed time:', (endTime - startTime), 'ms');
 
 		for (var i = 1; i <= num_nodes; i++) {
 			var node = await GC_tree_based_ORAMInstance.read_node.call(i);
@@ -1041,6 +1068,7 @@ contract('GC_tree_based_ORAM', (accounts) => {
 		}
 
 		// Deploy the circuit
+		startTime =new Date().getTime();
 		tx = await GC_tree_based_ORAMInstance.initial_deploy(
 			num_inputs,
 			table_relation,
@@ -1053,7 +1081,9 @@ contract('GC_tree_based_ORAM', (accounts) => {
 			outputs,
 			{ gas: 10000000 },
 		);
-		console.log("Gas used for `initial_deploy` of a 8 pos circuit:", tx['receipt']['gasUsed']);
+		endTime = new Date().getTime();
+		console.log("\nGas used for `initial_deploy` of a 8 pos circuit:", tx['receipt']['gasUsed']);
+		console.debug('Elapsed time:', (endTime - startTime), 'ms');
 
 		// Verify content of deployed circuit
 		for (var index of table_indices) {
@@ -1089,8 +1119,11 @@ contract('GC_tree_based_ORAM', (accounts) => {
 		}
 
 		// Upload label updates info
+		startTime =new Date().getTime();
 		tx = await GC_tree_based_ORAMInstance.upload_label_updates_info(indices_of_initial_input_tables, label_updates);
-		console.log("Gas used for 1st `upload_label_updates_info` of a 8 pos circuit:", tx['receipt']['gasUsed']);
+		endTime = new Date().getTime();
+		console.log("\nGas used for 1st `upload_label_updates_info` of a 8 pos circuit:", tx['receipt']['gasUsed']);
+		console.debug('Elapsed time:', (endTime - startTime), 'ms');
 	});
 	it('1st EvalGC of 8 pos circuits', async () => {
 		// Verify label updates
@@ -1153,13 +1186,16 @@ contract('GC_tree_based_ORAM', (accounts) => {
 		}
 
 		// Decrypt
+		startTime =new Date().getTime();
 		tx = await GC_tree_based_ORAMInstance.decrypt(
 			indices_of_initial_input_tables,
 			other_half_inputs,
 			execution_sequence,
 			indices_of_end_tables,
 		);
-		console.log("Gas used for 1st `EvalGC` of a 8 pos circuit:", tx['receipt']['gasUsed']);
+		endTime = new Date().getTime();
+		console.log("\nGas used for 1st `EvalGC` of a 8 pos circuit:", tx['receipt']['gasUsed']);
+		console.debug('Elapsed time:', (endTime - startTime), 'ms');
 		// Verify that result is correct
 		for (table_index in entry_result_of_end_tables) {
 			var decryption_result = await GC_tree_based_ORAMInstance.read_decryption_result.call(table_index);
@@ -1185,8 +1221,11 @@ contract('GC_tree_based_ORAM', (accounts) => {
 		}
 		var node_indices = Object.keys(nodes);
 		var nodes_array = Object.values(nodes);
+		startTime =new Date().getTime();
 		tx = await GC_tree_based_ORAMInstance.update_nodes(node_indices, nodes_array);
-		console.log("Gas used for 2nd `Write/Flush` of a 8 pos circuit:", tx['receipt']['gasUsed']);
+		endTime = new Date().getTime();
+		console.log("\nGas used for 2nd `Write/Flush` of a 8 pos circuit:", tx['receipt']['gasUsed']);
+		console.debug('Elapsed time:', (endTime - startTime), 'ms');
 
 		for (var i = 1; i <= num_nodes; i++) {
 			var node = await GC_tree_based_ORAMInstance.read_node.call(i);
@@ -1369,6 +1408,7 @@ contract('GC_tree_based_ORAM', (accounts) => {
 		}
 
 		// Deploy the circuit
+		startTime =new Date().getTime();
 		tx = await GC_tree_based_ORAMInstance.redeploy(
 			table_indices,
 			gttables_array,
@@ -1378,7 +1418,9 @@ contract('GC_tree_based_ORAM', (accounts) => {
 			indices_of_end_tables,
 			outputs,
 		);
-		console.log("Gas used for `ReplaceGC:redeploy` of a 8 pos circuit:", tx['receipt']['gasUsed']);
+		endTime = new Date().getTime();
+		console.log("\nGas used for `ReplaceGC:redeploy` of a 8 pos circuit:", tx['receipt']['gasUsed']);
+		console.debug('Elapsed time:', (endTime - startTime), 'ms');
 
 		// Verify content of deployed circuit
 		for (var index of table_indices) {
@@ -1414,8 +1456,11 @@ contract('GC_tree_based_ORAM', (accounts) => {
 		}
 
 		// Upload label updates info
+		startTime =new Date().getTime();
 		tx = await GC_tree_based_ORAMInstance.upload_label_updates_info(indices_of_initial_input_tables, label_updates);
-		console.log("Gas used for `ReplaceGC:upload_label_updates_info` of a 8 pos circuit:", tx['receipt']['gasUsed']);
+		endTime = new Date().getTime();
+		console.log("\nGas used for `ReplaceGC:upload_label_updates_info` of a 8 pos circuit:", tx['receipt']['gasUsed']);
+		console.debug('Elapsed time:', (endTime - startTime), 'ms');
 
 		// Verify label updates
 		var uploaded_label_updates = await GC_tree_based_ORAMInstance.read_label_updates.call(indices_of_initial_input_tables);
@@ -1476,13 +1521,16 @@ contract('GC_tree_based_ORAM', (accounts) => {
 		}
 
 		// Decrypt
+		startTime =new Date().getTime();
 		tx = await GC_tree_based_ORAMInstance.decrypt(
 			indices_of_initial_input_tables,
 			other_half_inputs,
 			execution_sequence,
 			indices_of_end_tables,
 		);
-		console.log("Gas used for 2nd `EvalGC` of a 8 pos circuit:", tx['receipt']['gasUsed']);
+		endTime = new Date().getTime();
+		console.log("\nGas used for 2nd `EvalGC` of a 8 pos circuit:", tx['receipt']['gasUsed']);
+		console.debug('Elapsed time:', (endTime - startTime), 'ms');
 		// Verify that result is correct
 		for (table_index in entry_result_of_end_tables) {
 			var decryption_result = await GC_tree_based_ORAMInstance.read_decryption_result.call(table_index);
