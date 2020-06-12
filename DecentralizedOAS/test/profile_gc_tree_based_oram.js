@@ -53,10 +53,13 @@ contract('GC_tree_based_ORAM', (accounts) => {
 		var node_indices = Object.keys(nodes);
 		var nodes_array = Object.values(nodes);
 		startTime =new Date().getTime();
-		tx = await GC_tree_based_ORAMInstance.update_nodes(node_indices, nodes_array);
+		// This tx updates 3 node to benchmark the time and gas usage of updating one branch of nodes
+		tx = await GC_tree_based_ORAMInstance.update_nodes(node_indices.slice(0, 3), nodes_array.slice(0, 3));
 		endTime = new Date().getTime();
 		console.log("\nGas used for 1st `Write/Flush` of a 4 pos circuit:", tx['receipt']['gasUsed']);
 		console.debug('Elapsed time:', (endTime - startTime), 'ms');
+		// This tx updates all the nodes
+		tx = await GC_tree_based_ORAMInstance.update_nodes(node_indices, nodes_array);
 
 		for (var i = 1; i <= num_nodes; i++) {
 			var node = await GC_tree_based_ORAMInstance.read_node.call(i);
@@ -441,10 +444,13 @@ contract('GC_tree_based_ORAM', (accounts) => {
 		var node_indices = Object.keys(nodes);
 		var nodes_array = Object.values(nodes);
 		startTime =new Date().getTime();
-		tx = await GC_tree_based_ORAMInstance.update_nodes(node_indices, nodes_array);
+		// This tx updates 3 node to benchmark the time and gas usage of updating one branch of nodes
+		tx = await GC_tree_based_ORAMInstance.update_nodes(node_indices.slice(0, 3), nodes_array.slice(0, 3));
 		endTime = new Date().getTime();
 		console.log("\nGas used for 2nd `Write/Flush` of a 4 pos circuit:", tx['receipt']['gasUsed']);
 		console.debug('Elapsed time:', (endTime - startTime), 'ms');
+		// This tx updates all the nodes
+		tx = await GC_tree_based_ORAMInstance.update_nodes(node_indices, nodes_array);
 
 		for (var i = 1; i <= num_nodes; i++) {
 			var node = await GC_tree_based_ORAMInstance.read_node.call(i);
@@ -772,10 +778,13 @@ contract('GC_tree_based_ORAM', (accounts) => {
 		var node_indices = Object.keys(nodes);
 		var nodes_array = Object.values(nodes);
 		startTime =new Date().getTime();
-		tx = await GC_tree_based_ORAMInstance.update_nodes(node_indices, nodes_array);
+		// This tx updates 4 node to benchmark the time and gas usage of updating one branch of nodes
+		tx = await GC_tree_based_ORAMInstance.update_nodes(node_indices.slice(0, 4), nodes_array.slice(0, 4));
 		endTime = new Date().getTime();
 		console.log("\nGas used for 1st `Write/Flush` of a 8 pos circuit:", tx['receipt']['gasUsed']);
 		console.debug('Elapsed time:', (endTime - startTime), 'ms');
+		// This tx updates all the nodes
+		tx = await GC_tree_based_ORAMInstance.update_nodes(node_indices, nodes_array);
 
 		for (var i = 1; i <= num_nodes; i++) {
 			var node = await GC_tree_based_ORAMInstance.read_node.call(i);
@@ -1204,10 +1213,13 @@ contract('GC_tree_based_ORAM', (accounts) => {
 		var node_indices = Object.keys(nodes);
 		var nodes_array = Object.values(nodes);
 		startTime =new Date().getTime();
-		tx = await GC_tree_based_ORAMInstance.update_nodes(node_indices, nodes_array);
+		// This tx updates 4 node to benchmark the time and gas usage of updating one branch of nodes
+		tx = await GC_tree_based_ORAMInstance.update_nodes(node_indices.slice(0, 4), nodes_array.slice(0, 4));
 		endTime = new Date().getTime();
 		console.log("\nGas used for 2nd `Write/Flush` of a 8 pos circuit:", tx['receipt']['gasUsed']);
 		console.debug('Elapsed time:', (endTime - startTime), 'ms');
+		// This tx updates all the nodes
+		tx = await GC_tree_based_ORAMInstance.update_nodes(node_indices, nodes_array);
 
 		for (var i = 1; i <= num_nodes; i++) {
 			var node = await GC_tree_based_ORAMInstance.read_node.call(i);
