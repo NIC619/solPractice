@@ -305,6 +305,7 @@ contract('GC_tree_based_ORAM', (accounts) => {
 			half_inputs,
 			indices_of_end_tables,
 			outputs,
+			label_updates,
 		);
 		endTime = new Date().getTime();
 		console.log("\nGas used for `initial_deploy` of a 4 pos circuit:", tx['receipt']['gasUsed']);
@@ -342,13 +343,6 @@ contract('GC_tree_based_ORAM', (accounts) => {
 			assert.equal(results[0], web3.utils.bytesToHex(outputs[i][0]), "Incorrect bit results");
 			assert.equal(results[1], web3.utils.bytesToHex(outputs[i][1]), "Incorrect bit results");
 		}
-
-		// Upload label updates info
-		startTime =new Date().getTime();
-		tx = await GC_tree_based_ORAMInstance.upload_label_updates_info(indices_of_initial_input_tables, label_updates);
-		endTime = new Date().getTime();
-		console.log("\nGas used for 1st `upload_label_updates_info` of a 4 pos circuit:", tx['receipt']['gasUsed']);
-		console.debug('Elapsed time:', (endTime - startTime), 'ms');
 
 		// Verify label updates
 		update_input_label_gttable = new Object();
@@ -449,7 +443,7 @@ contract('GC_tree_based_ORAM', (accounts) => {
 		startTime =new Date().getTime();
 		tx = await GC_tree_based_ORAMInstance.update_nodes(node_indices, nodes_array);
 		endTime = new Date().getTime();
-		console.log("\nGas used for 1st `Write/Flush` of a 4 pos circuit:", tx['receipt']['gasUsed']);
+		console.log("\nGas used for 2nd `Write/Flush` of a 4 pos circuit:", tx['receipt']['gasUsed']);
 		console.debug('Elapsed time:', (endTime - startTime), 'ms');
 
 		for (var i = 1; i <= num_nodes; i++) {
@@ -641,9 +635,10 @@ contract('GC_tree_based_ORAM', (accounts) => {
 			half_inputs,
 			indices_of_end_tables,
 			outputs,
+			label_updates,
 		);
 		endTime = new Date().getTime();
-		console.log("\nGas used for `ReplaceGC:redeploy` of a 4 pos circuit:", tx['receipt']['gasUsed']);
+		console.log("\nGas used for `ReplaceGC` of a 4 pos circuit:", tx['receipt']['gasUsed']);
 		console.debug('Elapsed time:', (endTime - startTime), 'ms');
 
 		// Verify content of deployed circuit
@@ -678,13 +673,6 @@ contract('GC_tree_based_ORAM', (accounts) => {
 			assert.equal(results[0], web3.utils.bytesToHex(outputs[i][0]), "Incorrect bit results");
 			assert.equal(results[1], web3.utils.bytesToHex(outputs[i][1]), "Incorrect bit results");
 		}
-
-		// Upload label updates info
-		startTime =new Date().getTime();
-		tx = await GC_tree_based_ORAMInstance.upload_label_updates_info(indices_of_initial_input_tables, label_updates);
-		endTime = new Date().getTime();
-		console.log("\nGas used for `ReplaceGC:upload_label_updates_info` of a 4 pos circuit:", tx['receipt']['gasUsed']);
-		console.debug('Elapsed time:', (endTime - startTime), 'ms');
 
 		// Verify label updates
 		var uploaded_label_updates = await GC_tree_based_ORAMInstance.read_label_updates.call(indices_of_initial_input_tables);
@@ -1079,7 +1067,8 @@ contract('GC_tree_based_ORAM', (accounts) => {
 			half_inputs,
 			indices_of_end_tables,
 			outputs,
-			{ gas: 10000000 },
+			label_updates,
+			{ gas: 15000000 },
 		);
 		endTime = new Date().getTime();
 		console.log("\nGas used for `initial_deploy` of a 8 pos circuit:", tx['receipt']['gasUsed']);
@@ -1117,13 +1106,6 @@ contract('GC_tree_based_ORAM', (accounts) => {
 			assert.equal(results[0], web3.utils.bytesToHex(outputs[i][0]), "Incorrect bit results");
 			assert.equal(results[1], web3.utils.bytesToHex(outputs[i][1]), "Incorrect bit results");
 		}
-
-		// Upload label updates info
-		startTime =new Date().getTime();
-		tx = await GC_tree_based_ORAMInstance.upload_label_updates_info(indices_of_initial_input_tables, label_updates);
-		endTime = new Date().getTime();
-		console.log("\nGas used for 1st `upload_label_updates_info` of a 8 pos circuit:", tx['receipt']['gasUsed']);
-		console.debug('Elapsed time:', (endTime - startTime), 'ms');
 	});
 	it('1st EvalGC of 8 pos circuits', async () => {
 		// Verify label updates
@@ -1417,9 +1399,10 @@ contract('GC_tree_based_ORAM', (accounts) => {
 			half_inputs,
 			indices_of_end_tables,
 			outputs,
+			label_updates,
 		);
 		endTime = new Date().getTime();
-		console.log("\nGas used for `ReplaceGC:redeploy` of a 8 pos circuit:", tx['receipt']['gasUsed']);
+		console.log("\nGas used for `ReplaceGC` of a 8 pos circuit:", tx['receipt']['gasUsed']);
 		console.debug('Elapsed time:', (endTime - startTime), 'ms');
 
 		// Verify content of deployed circuit
@@ -1454,13 +1437,6 @@ contract('GC_tree_based_ORAM', (accounts) => {
 			assert.equal(results[0], web3.utils.bytesToHex(outputs[i][0]), "Incorrect bit results");
 			assert.equal(results[1], web3.utils.bytesToHex(outputs[i][1]), "Incorrect bit results");
 		}
-
-		// Upload label updates info
-		startTime =new Date().getTime();
-		tx = await GC_tree_based_ORAMInstance.upload_label_updates_info(indices_of_initial_input_tables, label_updates);
-		endTime = new Date().getTime();
-		console.log("\nGas used for `ReplaceGC:upload_label_updates_info` of a 8 pos circuit:", tx['receipt']['gasUsed']);
-		console.debug('Elapsed time:', (endTime - startTime), 'ms');
 
 		// Verify label updates
 		var uploaded_label_updates = await GC_tree_based_ORAMInstance.read_label_updates.call(indices_of_initial_input_tables);

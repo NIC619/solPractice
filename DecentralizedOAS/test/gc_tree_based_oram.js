@@ -304,6 +304,7 @@ contract('GC_tree_based_ORAM', (accounts) => {
 			half_inputs,
 			indices_of_end_tables,
 			outputs,
+			label_updates,
 		);
 
 		// Verify content of deployed circuit
@@ -338,9 +339,6 @@ contract('GC_tree_based_ORAM', (accounts) => {
 			assert.equal(results[0], web3.utils.bytesToHex(outputs[i][0]), "Incorrect bit results");
 			assert.equal(results[1], web3.utils.bytesToHex(outputs[i][1]), "Incorrect bit results");
 		}
-
-		// Upload label updates info
-		await GC_tree_based_ORAMInstance.upload_label_updates_info(indices_of_initial_input_tables, label_updates);
 
 		// Verify label updates
 		update_input_label_gttable = new Object();
@@ -554,6 +552,7 @@ contract('GC_tree_based_ORAM', (accounts) => {
 			half_inputs,
 			indices_of_end_tables,
 			outputs,
+			label_updates,
 		);
 
 		// Verify content of deployed circuit
@@ -588,9 +587,6 @@ contract('GC_tree_based_ORAM', (accounts) => {
 			assert.equal(results[0], web3.utils.bytesToHex(outputs[i][0]), "Incorrect bit results");
 			assert.equal(results[1], web3.utils.bytesToHex(outputs[i][1]), "Incorrect bit results");
 		}
-
-		// Upload label updates info
-		await GC_tree_based_ORAMInstance.upload_label_updates_info(indices_of_initial_input_tables, label_updates);
 
 		// Verify label updates
 		var uploaded_label_updates = await GC_tree_based_ORAMInstance.read_label_updates.call(indices_of_initial_input_tables);
@@ -905,6 +901,7 @@ contract('GC_tree_based_ORAM', (accounts) => {
 			half_inputs,
 			indices_of_end_tables,
 			outputs,
+			label_updates,
 			{ gas: 10000000 },
 		);
 
@@ -940,9 +937,6 @@ contract('GC_tree_based_ORAM', (accounts) => {
 			assert.equal(results[0], web3.utils.bytesToHex(outputs[i][0]), "Incorrect bit results");
 			assert.equal(results[1], web3.utils.bytesToHex(outputs[i][1]), "Incorrect bit results");
 		}
-
-		// Upload label updates info
-		await GC_tree_based_ORAMInstance.upload_label_updates_info(indices_of_initial_input_tables, label_updates);
 
 		// Verify label updates
 		update_input_label_gttable = new Object();
@@ -1157,6 +1151,7 @@ contract('GC_tree_based_ORAM', (accounts) => {
 			half_inputs,
 			indices_of_end_tables,
 			outputs,
+			label_updates,
 		);
 
 		// Verify content of deployed circuit
@@ -1191,9 +1186,6 @@ contract('GC_tree_based_ORAM', (accounts) => {
 			assert.equal(results[0], web3.utils.bytesToHex(outputs[i][0]), "Incorrect bit results");
 			assert.equal(results[1], web3.utils.bytesToHex(outputs[i][1]), "Incorrect bit results");
 		}
-
-		// Upload label updates info
-		await GC_tree_based_ORAMInstance.upload_label_updates_info(indices_of_initial_input_tables, label_updates);
 
 		// Verify label updates
 		var uploaded_label_updates = await GC_tree_based_ORAMInstance.read_label_updates.call(indices_of_initial_input_tables);

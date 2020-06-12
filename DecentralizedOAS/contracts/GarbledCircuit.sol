@@ -157,7 +157,8 @@ contract GarbledCircuit {
         uint256[] memory table_index_of_garbled_inputs,
         bytes32[] memory garbled_inputs,
         uint256[] memory table_index_of_outputs,
-        bytes32[2][] memory _outputs) public {
+        bytes32[2][] memory _outputs,
+        bytes32[4][] memory _label_updates) public {
         require(_num_inputs > 0, "Invalid number of bits for the circuit.");
         require(all_table_entries.length > _num_inputs, "Number of tables should be greater than number of inputs.");
         require(all_table_entries.length == all_table_output_hash_digests.length);
@@ -200,9 +201,12 @@ contract GarbledCircuit {
             outputs[table_index].bit_zero = _outputs[i][0];
             outputs[table_index].bit_one = _outputs[i][1];
         }
+
+        // label updates info
+        upload_label_updates_info(table_index_of_garbled_inputs, _label_updates);
     }
 
-    function upload_label_updates_info(uint256[] memory table_index_of_labels, bytes32[4][] memory _label_updates) public {
+    function upload_label_updates_info(uint256[] memory table_index_of_labels, bytes32[4][] memory _label_updates) internal {
         uint256 table_index;
         for(uint256 i = 0; i < table_index_of_labels.length; i++) {
             table_index = table_index_of_labels[i];
@@ -220,7 +224,8 @@ contract GarbledCircuit {
         uint256[] memory table_index_of_garbled_inputs,
         bytes32[] memory garbled_inputs,
         uint256[] memory table_index_of_outputs,
-        bytes32[2][] memory _outputs) public {
+        bytes32[2][] memory _outputs,
+        bytes32[4][] memory _label_updates) public {
         require(garbled_inputs.length == num_inputs, "Mismatched number of inputs.");
         require(all_table_entries.length == num_tables, "Mismatched number of tables.");
         require(all_table_entries.length > num_inputs, "Number of tables should be greater than number of inputs.");
@@ -249,6 +254,9 @@ contract GarbledCircuit {
             outputs[table_index].bit_zero = _outputs[i][0];
             outputs[table_index].bit_one = _outputs[i][1];
         }
+
+         // label updates info
+        upload_label_updates_info(table_index_of_garbled_inputs, _label_updates);
     }
 
     // This shuffling is just a stub

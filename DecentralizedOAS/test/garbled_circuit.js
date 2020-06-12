@@ -460,6 +460,7 @@ contract('GarbledCircuit', () => {
 			half_inputs,
 			indices_of_end_tables,
 			outputs,
+			label_updates,
 		);
 
 		// Verify content of deployed circuit
@@ -494,10 +495,6 @@ contract('GarbledCircuit', () => {
 			assert.equal(results[0], web3.utils.bytesToHex(outputs[i][0]), "Incorrect bit results");
 			assert.equal(results[1], web3.utils.bytesToHex(outputs[i][1]), "Incorrect bit results");
 		}
-
-		// Upload label updates info
-		await GarbledCircuitInstance.upload_label_updates_info(indices_of_initial_input_tables, label_updates);
-
 		// Verify label updates
 		var update_input_label_gttable = new Object();
 		var uploaded_label_updates = await GarbledCircuitInstance.read_label_updates.call(indices_of_initial_input_tables);
@@ -699,10 +696,8 @@ contract('GarbledCircuit', () => {
 			half_inputs,
 			indices_of_end_tables,
 			outputs,
+			label_updates,
 		);
-
-		// Upload label updates info
-		await GarbledCircuitInstance.upload_label_updates_info(indices_of_initial_input_tables, label_updates);
 
 		// Verify label updates
 		uploaded_label_updates = await GarbledCircuitInstance.read_label_updates.call(indices_of_initial_input_tables);
