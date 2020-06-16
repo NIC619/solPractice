@@ -519,6 +519,12 @@ contract('GC_tree_based_ORAM', (accounts) => {
 				var gttable = update_input_label_gttable[index];
 				ttable.y_0 = decrypt_update_label_entries(gttable.entry_0, gttable.entry_1, ttable.y_0, gttable.output_hash_digest_0, gttable.output_hash_digest_1);
 				ttable.y_1 = decrypt_update_label_entries(gttable.entry_0, gttable.entry_1, ttable.y_1, gttable.output_hash_digest_0, gttable.output_hash_digest_1);
+				var uploaded_label_update = await GC_tree_based_ORAMInstance.read_label_updates.call([index]);
+				var is_correct_label_update_result = false;
+				if((uploaded_label_update[0][4] == web3.utils.bytesToHex(ttable.y_0)) || (uploaded_label_update[0][4] == web3.utils.bytesToHex(ttable.y_1))) {
+					is_correct_label_update_result = true;
+				}
+				assert.equal(is_correct_label_update_result, true, "Incorrect label update");
 			} else {
 				ttable.y_0 = gen_key(32);
 				ttable.y_1 = gen_key(32);
@@ -765,7 +771,7 @@ contract('GC_tree_based_ORAM', (accounts) => {
 	it('1st Write/Flush of 8 pos circuit', async () => {
 		GC_tree_based_ORAMInstance = await GC_tree_based_ORAM.new(4);
 		redeploy_tx_receipt = await web3.eth.getTransactionReceipt(GC_tree_based_ORAMInstance.transactionHash);
-		console.log("\nGas used for deploy height 3 GC tree based ORAM:", redeploy_tx_receipt['gasUsed']);
+		console.log("\nGas used for deploy height 4 GC tree based ORAM:", redeploy_tx_receipt['gasUsed']);
 		const tree_height = await GC_tree_based_ORAMInstance.TREE_HEIGHT.call();
 		const num_nodes = 2**tree_height - 1;
 		const num_buckets = await GC_tree_based_ORAMInstance.NUM_BUCKETS.call();
@@ -1290,6 +1296,12 @@ contract('GC_tree_based_ORAM', (accounts) => {
 				var gttable = update_input_label_gttable[index];
 				ttable.y_0 = decrypt_update_label_entries(gttable.entry_0, gttable.entry_1, ttable.y_0, gttable.output_hash_digest_0, gttable.output_hash_digest_1);
 				ttable.y_1 = decrypt_update_label_entries(gttable.entry_0, gttable.entry_1, ttable.y_1, gttable.output_hash_digest_0, gttable.output_hash_digest_1);
+				var uploaded_label_update = await GC_tree_based_ORAMInstance.read_label_updates.call([index]);
+				var is_correct_label_update_result = false;
+				if((uploaded_label_update[0][4] == web3.utils.bytesToHex(ttable.y_0)) || (uploaded_label_update[0][4] == web3.utils.bytesToHex(ttable.y_1))) {
+					is_correct_label_update_result = true;
+				}
+				assert.equal(is_correct_label_update_result, true, "Incorrect label update");
 			} else {
 				ttable.y_0 = gen_key(32);
 				ttable.y_1 = gen_key(32);
