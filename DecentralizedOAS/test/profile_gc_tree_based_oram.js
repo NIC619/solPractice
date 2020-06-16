@@ -36,7 +36,9 @@ contract('GC_tree_based_ORAM', (accounts) => {
 	var inputs_to_each_table;
 
 	it('1st Write/Flush of 4 pos circuit', async () => {
-		GC_tree_based_ORAMInstance = await GC_tree_based_ORAM.deployed();
+		GC_tree_based_ORAMInstance = await GC_tree_based_ORAM.new(3);
+		redeploy_tx_receipt = await web3.eth.getTransactionReceipt(GC_tree_based_ORAMInstance.transactionHash);
+		console.log("\nGas used for deploy height 3 GC tree based ORAM:", redeploy_tx_receipt['gasUsed']);
 		const tree_height = await GC_tree_based_ORAMInstance.TREE_HEIGHT.call();
 		const num_nodes = 2**tree_height - 1;
 		const num_buckets = await GC_tree_based_ORAMInstance.NUM_BUCKETS.call();
@@ -762,6 +764,8 @@ contract('GC_tree_based_ORAM', (accounts) => {
 
 	it('1st Write/Flush of 8 pos circuit', async () => {
 		GC_tree_based_ORAMInstance = await GC_tree_based_ORAM.new(4);
+		redeploy_tx_receipt = await web3.eth.getTransactionReceipt(GC_tree_based_ORAMInstance.transactionHash);
+		console.log("\nGas used for deploy height 3 GC tree based ORAM:", redeploy_tx_receipt['gasUsed']);
 		const tree_height = await GC_tree_based_ORAMInstance.TREE_HEIGHT.call();
 		const num_nodes = 2**tree_height - 1;
 		const num_buckets = await GC_tree_based_ORAMInstance.NUM_BUCKETS.call();
