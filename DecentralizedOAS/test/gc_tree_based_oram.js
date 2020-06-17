@@ -1,4 +1,4 @@
-const GC_tree_based_ORAM = artifacts.require("GC_tree_based_ORAM");
+const GCTreeBasedORAM = artifacts.require("GCTreeBasedORAM");
 
 const utils = require('./utils');
 gen_key = utils.gen_key;
@@ -13,8 +13,8 @@ garbling_XOR_entries = utils.garbling_XOR_entries;
 gen_update_label_table = utils.gen_update_label_table;
 decrypt_update_label_entries = utils.decrypt_update_label_entries;
 
-contract('GC_tree_based_ORAM', (accounts) => {
-	var GC_tree_based_ORAMInstance;
+contract('GCTreeBasedORAM', (accounts) => {
+	var GCTreeBasedORAMInstance;
 	var num_inputs;
 	var num_gttables;
 	var table_indices;
@@ -33,16 +33,16 @@ contract('GC_tree_based_ORAM', (accounts) => {
 	var gttables;
 
 	it('should set correct owner', async () => {
-		GC_tree_based_ORAMInstance = await GC_tree_based_ORAM.deployed();
-		const owner = await GC_tree_based_ORAMInstance.owner.call();
+		GCTreeBasedORAMInstance = await GCTreeBasedORAM.deployed();
+		const owner = await GCTreeBasedORAMInstance.owner.call();
 
 		assert.equal(owner, accounts[0], "Incorrect owner");
 	});
 	it('should successfully update nodes and leaf indices', async () => {
-		const tree_height = await GC_tree_based_ORAMInstance.TREE_HEIGHT.call();
+		const tree_height = await GCTreeBasedORAMInstance.TREE_HEIGHT.call();
 		const num_nodes = 2**tree_height - 1;
-		const num_buckets = await GC_tree_based_ORAMInstance.NUM_BUCKETS.call();
-		const num_leaf_nodes = await GC_tree_based_ORAMInstance.NUM_LEAF_NODES.call();
+		const num_buckets = await GCTreeBasedORAMInstance.NUM_BUCKETS.call();
+		const num_leaf_nodes = await GCTreeBasedORAMInstance.NUM_LEAF_NODES.call();
 
 		// Update all nodes in the tree
 		var nodes = new Object();
@@ -54,10 +54,10 @@ contract('GC_tree_based_ORAM', (accounts) => {
 		}
 		var node_indices = Object.keys(nodes);
 		var nodes_array = Object.values(nodes);
-		await GC_tree_based_ORAMInstance.update_nodes(node_indices, nodes_array);
+		await GCTreeBasedORAMInstance.update_nodes(node_indices, nodes_array);
 
 		for (var i = 1; i <= num_nodes; i++) {
-			var node = await GC_tree_based_ORAMInstance.read_node.call(i);
+			var node = await GCTreeBasedORAMInstance.read_node.call(i);
 			for (var j = 0; j < num_buckets; j++) {
 				assert.equal(node[j], web3.utils.bytesToHex(nodes[i][j]), "Incorrect node content");
 			}
@@ -75,8 +75,8 @@ contract('GC_tree_based_ORAM', (accounts) => {
 			data_node_indices[i] = index;
 		}
 		// Choose leaf node for each data node
-		const first_leaf_node_index = await GC_tree_based_ORAMInstance.FIRST_LEAF_NODE_INDEX.call();
-		const last_leaf_node_index = await GC_tree_based_ORAMInstance.LAST_LEAF_NODE_INDEX.call();
+		const first_leaf_node_index = await GCTreeBasedORAMInstance.FIRST_LEAF_NODE_INDEX.call();
+		const last_leaf_node_index = await GCTreeBasedORAMInstance.LAST_LEAF_NODE_INDEX.call();
 		var leaf_node_indices_of_data_nodes = new Object();
 		for(var data_node_index of data_node_indices) {
 			var leaf_or_right;
@@ -95,7 +95,7 @@ contract('GC_tree_based_ORAM', (accounts) => {
 		// Read whole branch and check if data node is contained in the branch
 		for(var data_node_index of data_node_indices) {
 			var leaf_node_index = leaf_node_indices_of_data_nodes[data_node_index];
-			var branch = await GC_tree_based_ORAMInstance.read_branch.call(leaf_node_index);
+			var branch = await GCTreeBasedORAMInstance.read_branch.call(leaf_node_index);
 			var found_match = false;
 			for(node of branch) {
 				for (var j = 0; j < num_buckets; j++) {
@@ -109,7 +109,7 @@ contract('GC_tree_based_ORAM', (accounts) => {
 		}
 	});
 	it('should successfully deploy and decrypt 4 pos circuits', async () => {
-		const tree_height = await GC_tree_based_ORAMInstance.TREE_HEIGHT.call();
+		const tree_height = await GCTreeBasedORAMInstance.TREE_HEIGHT.call();
 
 		// Layout of tables in /4_pos_circuit_simplified_example.png
 		num_inputs = 6;
@@ -294,7 +294,7 @@ contract('GC_tree_based_ORAM', (accounts) => {
 		}
 
 		// Deploy the circuit
-		await GC_tree_based_ORAMInstance.initial_deploy(
+		await GCTreeBasedORAMInstance.initial_deploy(
 			num_inputs,
 			table_relation,
 			table_indices,
@@ -309,13 +309,13 @@ contract('GC_tree_based_ORAM', (accounts) => {
 
 		// Verify content of deployed circuit
 		for (var index of table_indices) {
-			var gtt = await GC_tree_based_ORAMInstance.read_gtt.call(index);
+			var gtt = await GCTreeBasedORAMInstance.read_gtt.call(index);
 			for (var j = 0; j < 4; j++) {
 				assert.equal(gtt[j], web3.utils.bytesToHex(gttables[index][j]), "Incorrect entry content");
 			}
 		}
 		for (var index of table_indices) {
-			var parent_table_indices = await GC_tree_based_ORAMInstance.read_parent_table_indices.call(index);
+			var parent_table_indices = await GCTreeBasedORAMInstance.read_parent_table_indices.call(index);
 			if(indices_of_dummy_tables.indexOf(index) >= 0) {
 				assert.equal(parent_table_indices.length, 0, "Dummy table does not have parent table");
 				continue;
@@ -330,19 +330,19 @@ contract('GC_tree_based_ORAM', (accounts) => {
 		}
 		for (var i = 0; i < indices_of_initial_input_tables.length; i++) {
 			var table_index = indices_of_initial_input_tables[i];
-			var input = await GC_tree_based_ORAMInstance.read_inputs_of_table.call(table_index);
+			var input = await GCTreeBasedORAMInstance.read_inputs_of_table.call(table_index);
 			assert.equal(input[1], web3.utils.bytesToHex(half_inputs[i]), "Incorrect half of inputs");
 		}
 		for (var i = 0; i < indices_of_end_tables.length; i++) {
 			var table_index = indices_of_end_tables[i];
-			var results = await GC_tree_based_ORAMInstance.read_outputs_of_table.call(table_index);
+			var results = await GCTreeBasedORAMInstance.read_outputs_of_table.call(table_index);
 			assert.equal(results[0], web3.utils.bytesToHex(outputs[i][0]), "Incorrect bit results");
 			assert.equal(results[1], web3.utils.bytesToHex(outputs[i][1]), "Incorrect bit results");
 		}
 
 		// Verify label updates
 		update_input_label_gttable = new Object();
-		var uploaded_label_updates = await GC_tree_based_ORAMInstance.read_label_updates.call(indices_of_initial_input_tables);
+		var uploaded_label_updates = await GCTreeBasedORAMInstance.read_label_updates.call(indices_of_initial_input_tables);
 		for (var i = 0; i < indices_of_initial_input_tables.length; i++) {
 			var table_index = indices_of_initial_input_tables[i];
 			for (var j = 0; j < 2; j++) {
@@ -400,7 +400,7 @@ contract('GC_tree_based_ORAM', (accounts) => {
 		}
 
 		// Decrypt
-		await GC_tree_based_ORAMInstance.decrypt(
+		await GCTreeBasedORAMInstance.decrypt(
 			indices_of_initial_input_tables,
 			other_half_inputs,
 			execution_sequence,
@@ -408,11 +408,11 @@ contract('GC_tree_based_ORAM', (accounts) => {
 		);
 		// Verify that result is correct
 		for (table_index in entry_result_of_end_tables) {
-			var decryption_result = await GC_tree_based_ORAMInstance.read_decryption_result.call(table_index);
+			var decryption_result = await GCTreeBasedORAMInstance.read_decryption_result.call(table_index);
 			assert.equal(decryption_result.toNumber(), entry_result_of_end_tables[table_index], "Incorrect results");
 		}
 
-		var index_from_decryption_result = await GC_tree_based_ORAMInstance.get_index_from_decryption_result.call(indices_of_end_tables);
+		var index_from_decryption_result = await GCTreeBasedORAMInstance.get_index_from_decryption_result.call(indices_of_end_tables);
 		assert.equal(index_from_decryption_result.toNumber(), result_index, "Incorrect results");
 
 	});
@@ -544,7 +544,7 @@ contract('GC_tree_based_ORAM', (accounts) => {
 		}
 
 		// Deploy the circuit
-		await GC_tree_based_ORAMInstance.redeploy(
+		await GCTreeBasedORAMInstance.redeploy(
 			table_indices,
 			gttables_array,
 			table_output_hash_digests,
@@ -557,13 +557,13 @@ contract('GC_tree_based_ORAM', (accounts) => {
 
 		// Verify content of deployed circuit
 		for (var index of table_indices) {
-			var gtt = await GC_tree_based_ORAMInstance.read_gtt.call(index);
+			var gtt = await GCTreeBasedORAMInstance.read_gtt.call(index);
 			for (var j = 0; j < 4; j++) {
 				assert.equal(gtt[j], web3.utils.bytesToHex(gttables[index][j]), "Incorrect entry content");
 			}
 		}
 		for (var index of table_indices) {
-			var parent_table_indices = await GC_tree_based_ORAMInstance.read_parent_table_indices.call(index);
+			var parent_table_indices = await GCTreeBasedORAMInstance.read_parent_table_indices.call(index);
 			if(indices_of_dummy_tables.indexOf(index) >= 0) {
 				assert.equal(parent_table_indices.length, 0, "Dummy table does not have parent table");
 				continue;
@@ -578,18 +578,18 @@ contract('GC_tree_based_ORAM', (accounts) => {
 		}
 		for (var i = 0; i < indices_of_initial_input_tables.length; i++) {
 			var table_index = indices_of_initial_input_tables[i];
-			var input = await GC_tree_based_ORAMInstance.read_inputs_of_table.call(table_index);
+			var input = await GCTreeBasedORAMInstance.read_inputs_of_table.call(table_index);
 			assert.equal(input[1], web3.utils.bytesToHex(half_inputs[i]), "Incorrect half of inputs");
 		}
 		for (var i = 0; i < indices_of_end_tables.length; i++) {
 			var table_index = indices_of_end_tables[i];
-			var results = await GC_tree_based_ORAMInstance.read_outputs_of_table.call(table_index);
+			var results = await GCTreeBasedORAMInstance.read_outputs_of_table.call(table_index);
 			assert.equal(results[0], web3.utils.bytesToHex(outputs[i][0]), "Incorrect bit results");
 			assert.equal(results[1], web3.utils.bytesToHex(outputs[i][1]), "Incorrect bit results");
 		}
 
 		// Verify label updates
-		var uploaded_label_updates = await GC_tree_based_ORAMInstance.read_label_updates.call(indices_of_initial_input_tables);
+		var uploaded_label_updates = await GCTreeBasedORAMInstance.read_label_updates.call(indices_of_initial_input_tables);
 		for (var i = 0; i < indices_of_initial_input_tables.length; i++) {
 			var table_index = indices_of_initial_input_tables[i];
 			for (var j = 0; j < 2; j++) {
@@ -646,7 +646,7 @@ contract('GC_tree_based_ORAM', (accounts) => {
 		}
 
 		// Decrypt
-		await GC_tree_based_ORAMInstance.decrypt(
+		await GCTreeBasedORAMInstance.decrypt(
 			indices_of_initial_input_tables,
 			other_half_inputs,
 			execution_sequence,
@@ -654,16 +654,16 @@ contract('GC_tree_based_ORAM', (accounts) => {
 		);
 		// Verify that result is correct
 		for (table_index in entry_result_of_end_tables) {
-			var decryption_result = await GC_tree_based_ORAMInstance.read_decryption_result.call(table_index);
+			var decryption_result = await GCTreeBasedORAMInstance.read_decryption_result.call(table_index);
 			assert.equal(decryption_result.toNumber(), entry_result_of_end_tables[table_index], "Incorrect results");
 		}
 
-		var index_from_decryption_result = await GC_tree_based_ORAMInstance.get_index_from_decryption_result.call(indices_of_end_tables);
+		var index_from_decryption_result = await GCTreeBasedORAMInstance.get_index_from_decryption_result.call(indices_of_end_tables);
 		assert.equal(index_from_decryption_result.toNumber(), result_index, "Incorrect results");
 	});
 	it('should successfully deploy and decrypt 8 pos circuits', async () => {
-		GC_tree_based_ORAMInstance = await GC_tree_based_ORAM.new(4);
-		const tree_height = await GC_tree_based_ORAMInstance.TREE_HEIGHT.call();
+		GCTreeBasedORAMInstance = await GCTreeBasedORAM.new(4);
+		const tree_height = await GCTreeBasedORAMInstance.TREE_HEIGHT.call();
 
 		// Layout of tables in /8_pos_circuit_simplified_example.png
 		num_inputs = 21;
@@ -891,7 +891,7 @@ contract('GC_tree_based_ORAM', (accounts) => {
 		}
 
 		// Deploy the circuit
-		await GC_tree_based_ORAMInstance.initial_deploy(
+		await GCTreeBasedORAMInstance.initial_deploy(
 			num_inputs,
 			table_relation,
 			table_indices,
@@ -902,18 +902,18 @@ contract('GC_tree_based_ORAM', (accounts) => {
 			indices_of_end_tables,
 			outputs,
 			label_updates,
-			{ gas: 10000000 },
+			{ gas: 15000000 },
 		);
 
 		// Verify content of deployed circuit
 		for (var index of table_indices) {
-			var gtt = await GC_tree_based_ORAMInstance.read_gtt.call(index);
+			var gtt = await GCTreeBasedORAMInstance.read_gtt.call(index);
 			for (var j = 0; j < 4; j++) {
 				assert.equal(gtt[j], web3.utils.bytesToHex(gttables[index][j]), "Incorrect entry content");
 			}
 		}
 		for (var index of table_indices) {
-			var parent_table_indices = await GC_tree_based_ORAMInstance.read_parent_table_indices.call(index);
+			var parent_table_indices = await GCTreeBasedORAMInstance.read_parent_table_indices.call(index);
 			if(indices_of_dummy_tables.indexOf(index) >= 0) {
 				assert.equal(parent_table_indices.length, 0, "Dummy table does not have parent table");
 				continue;
@@ -928,19 +928,19 @@ contract('GC_tree_based_ORAM', (accounts) => {
 		}
 		for (var i = 0; i < indices_of_initial_input_tables.length; i++) {
 			var table_index = indices_of_initial_input_tables[i];
-			var input = await GC_tree_based_ORAMInstance.read_inputs_of_table.call(table_index);
+			var input = await GCTreeBasedORAMInstance.read_inputs_of_table.call(table_index);
 			assert.equal(input[1], web3.utils.bytesToHex(half_inputs[i]), "Incorrect half of inputs");
 		}
 		for (var i = 0; i < indices_of_end_tables.length; i++) {
 			var table_index = indices_of_end_tables[i];
-			var results = await GC_tree_based_ORAMInstance.read_outputs_of_table.call(table_index);
+			var results = await GCTreeBasedORAMInstance.read_outputs_of_table.call(table_index);
 			assert.equal(results[0], web3.utils.bytesToHex(outputs[i][0]), "Incorrect bit results");
 			assert.equal(results[1], web3.utils.bytesToHex(outputs[i][1]), "Incorrect bit results");
 		}
 
 		// Verify label updates
 		update_input_label_gttable = new Object();
-		var uploaded_label_updates = await GC_tree_based_ORAMInstance.read_label_updates.call(indices_of_initial_input_tables);
+		var uploaded_label_updates = await GCTreeBasedORAMInstance.read_label_updates.call(indices_of_initial_input_tables);
 		for (var i = 0; i < indices_of_initial_input_tables.length; i++) {
 			var table_index = indices_of_initial_input_tables[i];
 			for (var j = 0; j < 2; j++) {
@@ -998,7 +998,7 @@ contract('GC_tree_based_ORAM', (accounts) => {
 		}
 
 		// Decrypt
-		await GC_tree_based_ORAMInstance.decrypt(
+		await GCTreeBasedORAMInstance.decrypt(
 			indices_of_initial_input_tables,
 			other_half_inputs,
 			execution_sequence,
@@ -1006,11 +1006,11 @@ contract('GC_tree_based_ORAM', (accounts) => {
 		);
 		// Verify that result is correct
 		for (table_index in entry_result_of_end_tables) {
-			var decryption_result = await GC_tree_based_ORAMInstance.read_decryption_result.call(table_index);
+			var decryption_result = await GCTreeBasedORAMInstance.read_decryption_result.call(table_index);
 			assert.equal(decryption_result.toNumber(), entry_result_of_end_tables[table_index], "Incorrect results");
 		}
 
-		var index_from_decryption_result = await GC_tree_based_ORAMInstance.get_index_from_decryption_result.call(indices_of_end_tables);
+		var index_from_decryption_result = await GCTreeBasedORAMInstance.get_index_from_decryption_result.call(indices_of_end_tables);
 		assert.equal(index_from_decryption_result.toNumber(), result_index, "Incorrect results");
 
 	});
@@ -1143,7 +1143,7 @@ contract('GC_tree_based_ORAM', (accounts) => {
 		}
 
 		// Deploy the circuit
-		await GC_tree_based_ORAMInstance.redeploy(
+		await GCTreeBasedORAMInstance.redeploy(
 			table_indices,
 			gttables_array,
 			table_output_hash_digests,
@@ -1156,13 +1156,13 @@ contract('GC_tree_based_ORAM', (accounts) => {
 
 		// Verify content of deployed circuit
 		for (var index of table_indices) {
-			var gtt = await GC_tree_based_ORAMInstance.read_gtt.call(index);
+			var gtt = await GCTreeBasedORAMInstance.read_gtt.call(index);
 			for (var j = 0; j < 4; j++) {
 				assert.equal(gtt[j], web3.utils.bytesToHex(gttables[index][j]), "Incorrect entry content");
 			}
 		}
 		for (var index of table_indices) {
-			var parent_table_indices = await GC_tree_based_ORAMInstance.read_parent_table_indices.call(index);
+			var parent_table_indices = await GCTreeBasedORAMInstance.read_parent_table_indices.call(index);
 			if(indices_of_dummy_tables.indexOf(index) >= 0) {
 				assert.equal(parent_table_indices.length, 0, "Dummy table does not have parent table");
 				continue;
@@ -1177,18 +1177,18 @@ contract('GC_tree_based_ORAM', (accounts) => {
 		}
 		for (var i = 0; i < indices_of_initial_input_tables.length; i++) {
 			var table_index = indices_of_initial_input_tables[i];
-			var input = await GC_tree_based_ORAMInstance.read_inputs_of_table.call(table_index);
+			var input = await GCTreeBasedORAMInstance.read_inputs_of_table.call(table_index);
 			assert.equal(input[1], web3.utils.bytesToHex(half_inputs[i]), "Incorrect half of inputs");
 		}
 		for (var i = 0; i < indices_of_end_tables.length; i++) {
 			var table_index = indices_of_end_tables[i];
-			var results = await GC_tree_based_ORAMInstance.read_outputs_of_table.call(table_index);
+			var results = await GCTreeBasedORAMInstance.read_outputs_of_table.call(table_index);
 			assert.equal(results[0], web3.utils.bytesToHex(outputs[i][0]), "Incorrect bit results");
 			assert.equal(results[1], web3.utils.bytesToHex(outputs[i][1]), "Incorrect bit results");
 		}
 
 		// Verify label updates
-		var uploaded_label_updates = await GC_tree_based_ORAMInstance.read_label_updates.call(indices_of_initial_input_tables);
+		var uploaded_label_updates = await GCTreeBasedORAMInstance.read_label_updates.call(indices_of_initial_input_tables);
 		for (var i = 0; i < indices_of_initial_input_tables.length; i++) {
 			var table_index = indices_of_initial_input_tables[i];
 			for (var j = 0; j < 2; j++) {
@@ -1245,7 +1245,7 @@ contract('GC_tree_based_ORAM', (accounts) => {
 		}
 
 		// Decrypt
-		await GC_tree_based_ORAMInstance.decrypt(
+		await GCTreeBasedORAMInstance.decrypt(
 			indices_of_initial_input_tables,
 			other_half_inputs,
 			execution_sequence,
@@ -1253,11 +1253,11 @@ contract('GC_tree_based_ORAM', (accounts) => {
 		);
 		// Verify that result is correct
 		for (table_index in entry_result_of_end_tables) {
-			var decryption_result = await GC_tree_based_ORAMInstance.read_decryption_result.call(table_index);
+			var decryption_result = await GCTreeBasedORAMInstance.read_decryption_result.call(table_index);
 			assert.equal(decryption_result.toNumber(), entry_result_of_end_tables[table_index], "Incorrect results");
 		}
 
-		var index_from_decryption_result = await GC_tree_based_ORAMInstance.get_index_from_decryption_result.call(indices_of_end_tables);
+		var index_from_decryption_result = await GCTreeBasedORAMInstance.get_index_from_decryption_result.call(indices_of_end_tables);
 		assert.equal(index_from_decryption_result.toNumber(), result_index, "Incorrect results");
 	});
 });
