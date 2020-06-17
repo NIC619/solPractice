@@ -282,16 +282,4 @@ contract GarbledCircuit {
          // label updates info
         upload_label_updates_info(table_index_of_garbled_inputs, _label_updates);
     }
-
-    // This shuffling is just a stub
-    function shuffle_garbled_inputs(uint256[] memory table_index_of_garbled_inputs, bytes32[] memory garbled_inputs) public {
-        require(garbled_inputs.length == num_inputs, "Mismatched number of inputs.");
-        require(table_index_of_garbled_inputs.length == garbled_inputs.length, "Mismatch between number of table indices and number of garbled inputs");
-
-        uint256 table_index;
-        for(uint256 i = 0; i < garbled_inputs.length; i++) {
-            table_index = table_index_of_garbled_inputs[i];
-            circuit[table_index].input_y = garbled_inputs[i];
-        }
-    }
 }

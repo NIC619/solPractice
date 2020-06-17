@@ -159,6 +159,17 @@ contract('GarbledCircuit', () => {
 			table_output_hash_digests.push(ttable.output_hash_digests);
 		}
 
+		// Generate dummy input label update
+		var label_updates = new Array(num_inputs);
+		for (var i = 0; i < indices_of_initial_input_tables.length; i++) {
+			var table_index = indices_of_initial_input_tables[i];
+			var ttable = ttables[table_index];
+			var new_y_0 = gen_key(32);
+			var new_y_1 = gen_key(32);
+
+			label_updates[i] = gen_update_label_table(ttable.y_0, ttable.y_1, new_y_0, new_y_1);
+		}
+
 		// Deploy the circuit
 		await GarbledCircuitInstance.initial_deploy(
 			num_inputs,
@@ -170,6 +181,7 @@ contract('GarbledCircuit', () => {
 			half_inputs,
 			indices_of_end_tables,
 			outputs,
+			label_updates,
 		);
 
 		// Verify content of deployed circuit
@@ -687,6 +699,22 @@ contract('GarbledCircuit', () => {
 			table_output_hash_digests.push(ttable.output_hash_digests);
 		}
 
+		// Generate half of initial inputs according to inputs in /4_pos_redeploy_circuit_example.png
+		// This time the input bits are shuffled and so are different from inputs in /4_pos_circuit_result_example.png
+		bit_in_each_y_input = [0, 1, 1, 0, 0, 1, 0, 1];
+		expected_result = [1, 1];
+		for (var i = 0; i < indices_of_initial_input_tables.length; i++) {
+			var table_index = indices_of_initial_input_tables[i];
+			var bit_index = bit_in_each_y_input[i];
+			if(bit_index == 0) {
+				half_inputs[i] = ttables[table_index].y_0;
+				inputs_to_each_table[table_index].y = 0;
+			} else {
+				half_inputs[i] = ttables[table_index].y_1;
+				inputs_to_each_table[table_index].y = 1;
+			}
+		}
+
 		// Deploy the circuit
 		await GarbledCircuitInstance.redeploy(
 			table_indices,
@@ -714,27 +742,6 @@ contract('GarbledCircuit', () => {
 			update_input_label_gttable[table_index].output_hash_digest_0 = uploaded_label_updates[i][2];
 			update_input_label_gttable[table_index].output_hash_digest_1 = uploaded_label_updates[i][3];
 		}
-
-		// Generate half of initial inputs according to inputs in /4_pos_redeploy_circuit_example.png
-		// This time the input bits are shuffled and so are different from inputs in /4_pos_circuit_result_example.png
-		bit_in_each_y_input = [0, 1, 1, 0, 0, 1, 0, 1];
-		expected_result = [1, 1];
-		for (var i = 0; i < indices_of_initial_input_tables.length; i++) {
-			var table_index = indices_of_initial_input_tables[i];
-			var bit_index = bit_in_each_y_input[i];
-			if(bit_index == 0) {
-				half_inputs[i] = ttables[table_index].y_0;
-				inputs_to_each_table[table_index].y = 0;
-			} else {
-				half_inputs[i] = ttables[table_index].y_1;
-				inputs_to_each_table[table_index].y = 1;
-			}
-		}
-		// Shuffle the garbled inputs
-		await GarbledCircuitInstance.shuffle_garbled_inputs(
-			indices_of_initial_input_tables,
-			half_inputs,
-		);
 
 		// Verify content of deployed circuit
 		for (var index of table_indices) {
