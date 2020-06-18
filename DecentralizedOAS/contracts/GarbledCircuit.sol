@@ -33,7 +33,6 @@ contract GarbledCircuit {
         bytes32 encrypted_y_1;
         bytes32 hash_digest_y_0;
         bytes32 hash_digest_y_1;
-        bytes32 new_label;
     }
     mapping(uint256 => LabelUpdate) label_updates;
 
@@ -77,18 +76,17 @@ contract GarbledCircuit {
         return decrpytion_result[table_index] - 1;
     }
 
-    function read_label_updates(uint256[] memory table_indices) public view returns(bytes32[5][] memory) {
+    function read_label_updates(uint256[] memory table_indices) public view returns(bytes32[4][] memory) {
         require(table_indices.length > 0, "No table index provided.");
 
         uint256 table_index;
-        bytes32[5][] memory l_updates = new bytes32[5][](table_indices.length);
+        bytes32[4][] memory l_updates = new bytes32[4][](table_indices.length);
         for(uint256 i = 0; i < table_indices.length; i++) {
             table_index = table_indices[i];
             l_updates[i][0] = label_updates[table_index].encrypted_y_0;
             l_updates[i][1] = label_updates[table_index].encrypted_y_1;
             l_updates[i][2] = label_updates[table_index].hash_digest_y_0;
             l_updates[i][3] = label_updates[table_index].hash_digest_y_1;
-            l_updates[i][4] = label_updates[table_index].new_label;
         }
         return l_updates;
     }
@@ -158,14 +156,14 @@ contract GarbledCircuit {
             result = bytes32(uint256(label_updates[table_index].encrypted_y_0) ^ uint256(circuit[table_index].input_y));
             hash_digets = keccak256(abi.encode(result));
             if((hash_digets == label_updates[table_index].hash_digest_y_0) || (hash_digets == label_updates[table_index].hash_digest_y_1)) {
-                label_updates[table_index].new_label = result;
+                circuit[table_index].input_y = result;
                 continue;
             }
             // Try decrypt with y_1
             result = bytes32(uint256(label_updates[table_index].encrypted_y_1) ^ uint256(circuit[table_index].input_y));
             hash_digets = keccak256(abi.encode(result));
             if((hash_digets == label_updates[table_index].hash_digest_y_0) || (hash_digets == label_updates[table_index].hash_digest_y_1)) {
-                label_updates[table_index].new_label = result;
+                circuit[table_index].input_y = result;
             } else {
                 revert("Incorrect label update.");
             }

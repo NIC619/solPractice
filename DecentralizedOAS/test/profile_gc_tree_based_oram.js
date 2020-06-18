@@ -519,9 +519,9 @@ contract('GCTreeBasedORAM', (accounts) => {
 				var gttable = update_input_label_gttable[index];
 				ttable.y_0 = decrypt_update_label_entries(gttable.entry_0, gttable.entry_1, ttable.y_0, gttable.output_hash_digest_0, gttable.output_hash_digest_1);
 				ttable.y_1 = decrypt_update_label_entries(gttable.entry_0, gttable.entry_1, ttable.y_1, gttable.output_hash_digest_0, gttable.output_hash_digest_1);
-				var uploaded_label_update = await GCTreeBasedORAMInstance.read_label_updates.call([index]);
+				var [_, updated_input_y] = await GCTreeBasedORAMInstance.read_inputs_of_table.call(index);
 				var is_correct_label_update_result = false;
-				if((uploaded_label_update[0][4] == web3.utils.bytesToHex(ttable.y_0)) || (uploaded_label_update[0][4] == web3.utils.bytesToHex(ttable.y_1))) {
+				if((updated_input_y == web3.utils.bytesToHex(ttable.y_0)) || (updated_input_y == web3.utils.bytesToHex(ttable.y_1))) {
 					is_correct_label_update_result = true;
 				}
 				assert.equal(is_correct_label_update_result, true, "Incorrect label update");
@@ -1296,9 +1296,9 @@ contract('GCTreeBasedORAM', (accounts) => {
 				var gttable = update_input_label_gttable[index];
 				ttable.y_0 = decrypt_update_label_entries(gttable.entry_0, gttable.entry_1, ttable.y_0, gttable.output_hash_digest_0, gttable.output_hash_digest_1);
 				ttable.y_1 = decrypt_update_label_entries(gttable.entry_0, gttable.entry_1, ttable.y_1, gttable.output_hash_digest_0, gttable.output_hash_digest_1);
-				var uploaded_label_update = await GCTreeBasedORAMInstance.read_label_updates.call([index]);
+				var [_, updated_input_y] = await GCTreeBasedORAMInstance.read_inputs_of_table.call(index);
 				var is_correct_label_update_result = false;
-				if((uploaded_label_update[0][4] == web3.utils.bytesToHex(ttable.y_0)) || (uploaded_label_update[0][4] == web3.utils.bytesToHex(ttable.y_1))) {
+				if((updated_input_y == web3.utils.bytesToHex(ttable.y_0)) || (updated_input_y == web3.utils.bytesToHex(ttable.y_1))) {
 					is_correct_label_update_result = true;
 				}
 				assert.equal(is_correct_label_update_result, true, "Incorrect label update");

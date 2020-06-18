@@ -32,7 +32,6 @@ contract GarbledCircuitNoDecrypt {
         bytes32 encrypted_y_1;
         bytes32 hash_digest_y_0;
         bytes32 hash_digest_y_1;
-        bytes32 new_label;
     }
     mapping(uint256 => LabelUpdate) label_updates;
 
@@ -79,7 +78,6 @@ contract GarbledCircuitNoDecrypt {
             l_updates[i][1] = label_updates[table_index].encrypted_y_1;
             l_updates[i][2] = label_updates[table_index].hash_digest_y_0;
             l_updates[i][3] = label_updates[table_index].hash_digest_y_1;
-            l_updates[i][4] = label_updates[table_index].new_label;
         }
         return l_updates;
     }
