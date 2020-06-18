@@ -535,7 +535,7 @@ contract('GCNoDecryptTreeBasedORAM', (accounts) => {
 			assert.equal(found_match, true, "Data not found in the branch");
 		}
 	});
-	it('ReplaceGC of 4 pos circuits', async () => {
+	it('UpdateGC of 4 pos circuits', async () => {
 		// Re-deploy with new circuit entries and inputs
 
 		// Generate x,y inputs for each truth tables
@@ -675,7 +675,7 @@ contract('GCNoDecryptTreeBasedORAM', (accounts) => {
 			label_updates,
 		);
 		endTime = new Date().getTime();
-		console.log("\nGas used for `ReplaceGC` of a 4 pos circuit:", tx['receipt']['gasUsed']);
+		console.log("\nGas used for `UpdateGC` of a 4 pos circuit:", tx['receipt']['gasUsed']);
 		console.debug('Elapsed time:', (endTime - startTime), 'ms');
 
 		// Verify content of deployed circuit
@@ -1300,7 +1300,7 @@ contract('GCNoDecryptTreeBasedORAM', (accounts) => {
 			assert.equal(found_match, true, "Data not found in the branch");
 		}
 	});
-	it('ReplaceGC of 8 pos circuits', async () => {
+	it('UpdateGC of 8 pos circuits', async () => {
 		// Re-deploy with new circuit entries and inputs
 
 		// Generate x,y inputs for each truth tables
@@ -1441,7 +1441,7 @@ contract('GCNoDecryptTreeBasedORAM', (accounts) => {
 			label_updates,
 		);
 		endTime = new Date().getTime();
-		console.log("\nGas used for `ReplaceGC` of a 8 pos circuit:", tx['receipt']['gasUsed']);
+		console.log("\nGas used for `UpdateGC` of a 8 pos circuit:", tx['receipt']['gasUsed']);
 		console.debug('Elapsed time:', (endTime - startTime), 'ms');
 
 		// Verify content of deployed circuit
