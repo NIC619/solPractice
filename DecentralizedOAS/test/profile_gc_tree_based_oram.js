@@ -608,23 +608,6 @@ contract('GCTreeBasedORAM', (accounts) => {
 			gttables[i] = ttable.fn_garbling(ttable.x_0, ttable.x_1, ttable.y_0, ttable.y_1, ttable.z_0, ttable.z_1);
 		}
 
-		// Generate half of initial inputs according to inputs in /4_pos_redeploy_circuit_result_simplified_example.png
-		bit_in_each_y_input = [0, 0, 1, 1, 0, 1];
-		half_inputs = new Array(num_inputs);
-		inputs_to_each_table = new Object();
-		for (var i = 0; i < indices_of_initial_input_tables.length; i++) {
-			var table_index = indices_of_initial_input_tables[i];
-			var bit_index = bit_in_each_y_input[i];
-			inputs_to_each_table[table_index] = new Object();
-			if(bit_index == 0) {
-				half_inputs[i] = ttables[table_index].y_0;
-				inputs_to_each_table[table_index].y = 0;
-			} else {
-				half_inputs[i] = ttables[table_index].y_1;
-				inputs_to_each_table[table_index].y = 1;
-			}
-		}
-
 		// Garbled circuit results
 		var outputs = new Array(num_results);
 		for (var i = 0; i < indices_of_end_tables.length; i++) {
@@ -645,10 +628,9 @@ contract('GCTreeBasedORAM', (accounts) => {
 			table_indices,
 			gttables_array,
 			table_output_hash_digests,
-			indices_of_initial_input_tables,
-			half_inputs,
 			indices_of_end_tables,
 			outputs,
+			indices_of_initial_input_tables,
 			label_updates,
 		);
 		endTime = new Date().getTime();
@@ -676,11 +658,6 @@ contract('GCTreeBasedORAM', (accounts) => {
 				assert.equal(ttables[index].parent_table_indices[i], parent_table_indices[i].toNumber(), "Incorrect parent table indices");
 			}
 		}
-		for (var i = 0; i < indices_of_initial_input_tables.length; i++) {
-			var table_index = indices_of_initial_input_tables[i];
-			var input = await GCTreeBasedORAMInstance.read_inputs_of_table.call(table_index);
-			assert.equal(input[1], web3.utils.bytesToHex(half_inputs[i]), "Incorrect half of inputs");
-		}
 		for (var i = 0; i < indices_of_end_tables.length; i++) {
 			var table_index = indices_of_end_tables[i];
 			var results = await GCTreeBasedORAMInstance.read_outputs_of_table.call(table_index);
@@ -705,9 +682,8 @@ contract('GCTreeBasedORAM', (accounts) => {
 		}
 	});
 	it('2nd EvalGC of 4 pos circuits', async () => {
-		// Generate other half of inputs according to inputs in /4_pos_redeploy_circuit_result_simplified_example.png
-		bit_in_each_x_input = [1, 0, 1, 0, 1, 0];
-		var result_index = 3;  // decryption result in /4_pos_circuit_result_simplified_example.png
+		bit_in_each_x_input = [1, 1, 1, 1, 1, 1];
+		var result_index = 0;  // decryption result in /4_pos_circuit_result_simplified_example.png
 		var other_half_inputs = new Array(num_inputs);
 		for (var i = 0; i < indices_of_initial_input_tables.length; i++) {
 			var table_index = indices_of_initial_input_tables[i];
@@ -1385,24 +1361,6 @@ contract('GCTreeBasedORAM', (accounts) => {
 			gttables[i] = ttable.fn_garbling(ttable.x_0, ttable.x_1, ttable.y_0, ttable.y_1, ttable.z_0, ttable.z_1);
 		}
 
-		// Generate half of initial inputs according to inputs in /8_pos_redeploy_circuit_result_example.png
-		bit_in_each_y_input = [1, 0, 1, 0, 0, 1, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0];
-		if(bit_in_each_y_input.length != 21) throw 'Wrong y inputs';
-		half_inputs = new Array(num_inputs);
-		inputs_to_each_table = new Object();
-		for (var i = 0; i < indices_of_initial_input_tables.length; i++) {
-			var table_index = indices_of_initial_input_tables[i];
-			var bit_index = bit_in_each_y_input[i];
-			inputs_to_each_table[table_index] = new Object();
-			if(bit_index == 0) {
-				half_inputs[i] = ttables[table_index].y_0;
-				inputs_to_each_table[table_index].y = 0;
-			} else {
-				half_inputs[i] = ttables[table_index].y_1;
-				inputs_to_each_table[table_index].y = 1;
-			}
-		}
-
 		// Garbled circuit results
 		var outputs = new Array(num_results);
 		for (var i = 0; i < indices_of_end_tables.length; i++) {
@@ -1423,10 +1381,9 @@ contract('GCTreeBasedORAM', (accounts) => {
 			table_indices,
 			gttables_array,
 			table_output_hash_digests,
-			indices_of_initial_input_tables,
-			half_inputs,
 			indices_of_end_tables,
 			outputs,
+			indices_of_initial_input_tables,
 			label_updates,
 		);
 		endTime = new Date().getTime();
@@ -1454,11 +1411,6 @@ contract('GCTreeBasedORAM', (accounts) => {
 				assert.equal(ttables[index].parent_table_indices[i], parent_table_indices[i].toNumber(), "Incorrect parent table indices");
 			}
 		}
-		for (var i = 0; i < indices_of_initial_input_tables.length; i++) {
-			var table_index = indices_of_initial_input_tables[i];
-			var input = await GCTreeBasedORAMInstance.read_inputs_of_table.call(table_index);
-			assert.equal(input[1], web3.utils.bytesToHex(half_inputs[i]), "Incorrect half of inputs");
-		}
 		for (var i = 0; i < indices_of_end_tables.length; i++) {
 			var table_index = indices_of_end_tables[i];
 			var results = await GCTreeBasedORAMInstance.read_outputs_of_table.call(table_index);
@@ -1483,9 +1435,8 @@ contract('GCTreeBasedORAM', (accounts) => {
 		}
 	});
 	it('2nd EvalGC of 8 pos circuits', async () => {
-		// Generate other half of inputs according to inputs in /8_pos_redeploy_circuit_result_example.png
 		bit_in_each_x_input = [1, 1, 1];
-		var result_index = 7;  // decryption result in /8_pos_redeploy_circuit_result_example.png
+		var result_index = 2;  // decryption result in /8_pos_circuit_result_example.png
 		var other_half_inputs = new Array(num_inputs);
 		for (var i = 0; i < indices_of_initial_input_tables.length; i++) {
 			var table_index = indices_of_initial_input_tables[i];

@@ -243,25 +243,19 @@ contract GarbledCircuit {
         uint256[] memory table_index_of_table_entries,
         bytes32[4][] memory all_table_entries,
         bytes32[2][] memory all_table_output_hash_digests,
-        uint256[] memory table_index_of_garbled_inputs,
-        bytes32[] memory garbled_inputs,
         uint256[] memory table_index_of_outputs,
         bytes32[2][] memory _outputs,
+        uint256[] memory table_index_of_garbled_inputs,
         bytes32[4][] memory _label_updates) public {
-        require(garbled_inputs.length == num_inputs, "Mismatched number of inputs.");
         require(all_table_entries.length == num_tables, "Mismatched number of tables.");
         require(all_table_entries.length > num_inputs, "Number of tables should be greater than number of inputs.");
         require(all_table_entries.length == all_table_output_hash_digests.length);
         require(_outputs.length == num_results, "Mismatched number of outputs.");
         require(table_index_of_table_entries.length == all_table_entries.length, "Mismatch between number of table indices and number of tables");
-        require(table_index_of_garbled_inputs.length == garbled_inputs.length, "Mismatch between number of table indices and number of garbled inputs");
+        require(table_index_of_garbled_inputs.length == _label_updates.length, "Mismatch between number of table indices and number of label update info");
         require(table_index_of_outputs.length == _outputs.length, "Mismatch between number of table indices and number of outputs");
 
         uint256 table_index;
-        for(uint256 i = 0; i < garbled_inputs.length; i++) {
-            table_index = table_index_of_garbled_inputs[i];
-            circuit[table_index].input_y = garbled_inputs[i];
-        }
         for(uint256 i = 0; i < table_index_of_table_entries.length; i++) {
             table_index = table_index_of_table_entries[i];
             circuit[table_index].entry[0] = all_table_entries[i][0];
