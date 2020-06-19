@@ -577,6 +577,7 @@ contract('GarbledCircuit', () => {
 			var decryption_result = await GarbledCircuitInstance.read_decryption_result.call(table_index);
 			assert.equal(decryption_result.toNumber(), expected_result[indices_of_end_tables.indexOf(table_index)], "Incorrect results");
 		}
+		await GarbledCircuitInstance.decrypt_label_update(indices_of_initial_input_tables);
 
 		// Re-deploy with new circuit entries and inputs
 
@@ -590,6 +591,12 @@ contract('GarbledCircuit', () => {
 				var gttable = update_input_label_gttable[index];
 				ttable.y_0 = decrypt_update_label_entries(gttable.entry_0, gttable.entry_1, ttable.y_0, gttable.output_hash_digest_0, gttable.output_hash_digest_1);
 				ttable.y_1 = decrypt_update_label_entries(gttable.entry_0, gttable.entry_1, ttable.y_1, gttable.output_hash_digest_0, gttable.output_hash_digest_1);
+				var [_, updated_input_y] = await GarbledCircuitInstance.read_inputs_of_table.call(index);
+				var is_correct_label_update_result = false;
+				if((updated_input_y == web3.utils.bytesToHex(ttable.y_0)) || (updated_input_y == web3.utils.bytesToHex(ttable.y_1))) {
+					is_correct_label_update_result = true;
+				}
+				assert.equal(is_correct_label_update_result, true, "Incorrect label update");
 			} else {
 				ttable.y_0 = gen_key(32);
 				ttable.y_1 = gen_key(32);
@@ -699,9 +706,6 @@ contract('GarbledCircuit', () => {
 			table_output_hash_digests.push(ttable.output_hash_digests);
 		}
 
-		// Generate half of initial inputs according to inputs in /4_pos_redeploy_circuit_example.png
-		// This time the input bits are shuffled and so are different from inputs in /4_pos_circuit_result_example.png
-		bit_in_each_y_input = [0, 1, 1, 0, 0, 1, 0, 1];
 		expected_result = [1, 1];
 		for (var i = 0; i < indices_of_initial_input_tables.length; i++) {
 			var table_index = indices_of_initial_input_tables[i];
@@ -720,10 +724,9 @@ contract('GarbledCircuit', () => {
 			table_indices,
 			gttables_array,
 			table_output_hash_digests,
-			indices_of_initial_input_tables,
-			half_inputs,
 			indices_of_end_tables,
 			outputs,
+			indices_of_initial_input_tables,
 			label_updates,
 		);
 
@@ -777,7 +780,7 @@ contract('GarbledCircuit', () => {
 		}
 
 		// Generate other half of inputs according to inputs in /4_pos_redeploy_circuit_result_example.png
-		bit_in_each_x_input = [0, 0, 0, 0, 1, 1, 1, 1];
+		bit_in_each_x_input = [0, 0, 0, 0, 0, 0, 0, 0];
 		for (var i = 0; i < indices_of_initial_input_tables.length; i++) {
 			var table_index = indices_of_initial_input_tables[i];
 			var bit_index = bit_in_each_x_input[i];

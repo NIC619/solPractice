@@ -148,8 +148,14 @@ contract GarbledCircuit {
                 }
             }
         }
+    }
 
-        // decrypt label updates
+    function decrypt_label_update(uint256[] memory table_index_of_garbled_inputs) public {
+        require(table_index_of_garbled_inputs.length == num_inputs, "Mismatched number of table indices.");
+
+        uint256 table_index;
+        bytes32 result;
+        bytes32 hash_digets;
         for(uint256 i = 0; i < num_inputs; i++) {
             table_index = table_index_of_garbled_inputs[i];
             // Try decrypt with y_0

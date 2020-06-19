@@ -428,6 +428,13 @@ contract('GCTreeBasedORAM', (accounts) => {
 
 		var index_from_decryption_result = await GCTreeBasedORAMInstance.get_index_from_decryption_result.call(indices_of_end_tables);
 		assert.equal(index_from_decryption_result.toNumber(), result_index, "Incorrect results");
+
+		// Decrypt
+		startTime =new Date().getTime();
+		await GCTreeBasedORAMInstance.decrypt_label_update(indices_of_initial_input_tables);
+		endTime = new Date().getTime();
+		console.log("\nGas used for 2nd `ReplaceGC` of a 4 pos circuit:", tx['receipt']['gasUsed']);
+		console.debug('Elapsed time:', (endTime - startTime), 'ms');
 	});
 	it('2nd Write/Flush of 4 pos circuit', async () => {
 		const tree_height = await GCTreeBasedORAMInstance.TREE_HEIGHT.call();
@@ -742,6 +749,13 @@ contract('GCTreeBasedORAM', (accounts) => {
 
 		var index_from_decryption_result = await GCTreeBasedORAMInstance.get_index_from_decryption_result.call(indices_of_end_tables);
 		assert.equal(index_from_decryption_result.toNumber(), result_index, "Incorrect results");
+
+		// Decrypt
+		startTime =new Date().getTime();
+		await GCTreeBasedORAMInstance.decrypt_label_update(indices_of_initial_input_tables);
+		endTime = new Date().getTime();
+		console.log("\nGas used for 2nd `ReplaceGC` of a 4 pos circuit:", tx['receipt']['gasUsed']);
+		console.debug('Elapsed time:', (endTime - startTime), 'ms');
 	});
 
 	it('1st Write/Flush of 8 pos circuit', async () => {
@@ -1181,6 +1195,13 @@ contract('GCTreeBasedORAM', (accounts) => {
 
 		var index_from_decryption_result = await GCTreeBasedORAMInstance.get_index_from_decryption_result.call(indices_of_end_tables);
 		assert.equal(index_from_decryption_result.toNumber(), result_index, "Incorrect results");
+
+		// Decrypt
+		startTime =new Date().getTime();
+		await GCTreeBasedORAMInstance.decrypt_label_update(indices_of_initial_input_tables);
+		endTime = new Date().getTime();
+		console.log("\nGas used for 2nd `ReplaceGC` of a 4 pos circuit:", tx['receipt']['gasUsed']);
+		console.debug('Elapsed time:', (endTime - startTime), 'ms');
 	});
 	it('2nd Write/Flush of 8 pos circuit', async () => {
 		const tree_height = await GCTreeBasedORAMInstance.TREE_HEIGHT.call();
@@ -1494,5 +1515,12 @@ contract('GCTreeBasedORAM', (accounts) => {
 
 		var index_from_decryption_result = await GCTreeBasedORAMInstance.get_index_from_decryption_result.call(indices_of_end_tables);
 		assert.equal(index_from_decryption_result.toNumber(), result_index, "Incorrect results");
+
+		// Decrypt
+		startTime =new Date().getTime();
+		await GCTreeBasedORAMInstance.decrypt_label_update(indices_of_initial_input_tables);
+		endTime = new Date().getTime();
+		console.log("\nGas used for 2nd `ReplaceGC` of a 4 pos circuit:", tx['receipt']['gasUsed']);
+		console.debug('Elapsed time:', (endTime - startTime), 'ms');
 	});
 });
