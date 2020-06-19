@@ -36,7 +36,10 @@ contract('GCNoDecryptTreeBasedORAM', (accounts) => {
 	var inputs_to_each_table;
 
 	it('1st Write/Flush of 4 pos circuit', async () => {
+		startTime =new Date().getTime();
 		GCNoDecryptTreeBasedORAMInstance = await GCNoDecryptTreeBasedORAM.new(3);
+		endTime = new Date().getTime();
+		console.debug('Elapsed time:', (endTime - startTime), 'ms');
 		redeploy_tx_receipt = await web3.eth.getTransactionReceipt(GCNoDecryptTreeBasedORAMInstance.transactionHash);
 		console.log("\nGas used for deploy height 3 GC tree based ORAM:", redeploy_tx_receipt['gasUsed']);
 		const tree_height = await GCNoDecryptTreeBasedORAMInstance.TREE_HEIGHT.call();
@@ -313,7 +316,7 @@ contract('GCNoDecryptTreeBasedORAM', (accounts) => {
 			label_updates,
 		);
 		endTime = new Date().getTime();
-		console.log("\nGas used for `initial_deploy` of a 4 pos circuit:", tx['receipt']['gasUsed']);
+		console.log("\nGas used for 1st `UpdateGC`(initial deploy) of a 4 pos circuit:", tx['receipt']['gasUsed']);
 		console.debug('Elapsed time:', (endTime - startTime), 'ms');
 
 		// Verify content of deployed circuit
@@ -367,97 +370,6 @@ contract('GCNoDecryptTreeBasedORAM', (accounts) => {
 			update_input_label_gttable[table_index].output_hash_digest_1 = uploaded_label_updates[i][3];
 		}
 	});
-	// it('1st EvalGC of 4 pos circuits', async () => {
-	// 	// Generate other half of inputs according to inputs in /4_pos_circuit_result_simplified_example.png
-	// 	var bit_in_each_x_input = [0, 1, 0, 1, 0, 1];
-	// 	var result_index = 2;  // decryption result in /4_pos_circuit_result_simplified_example.png
-	// 	var other_half_inputs = new Array(num_inputs);
-	// 	for (var i = 0; i < indices_of_initial_input_tables.length; i++) {
-	// 		var table_index = indices_of_initial_input_tables[i];
-	// 		var bit_index = bit_in_each_x_input[i];
-	// 		if(bit_index == 0) {
-	// 			other_half_inputs[i] = ttables[table_index].x_0;
-	// 			inputs_to_each_table[table_index].x = 0;
-	// 		} else {
-	// 			other_half_inputs[i] = ttables[table_index].x_1;
-	// 			inputs_to_each_table[table_index].x = 1;
-	// 		}
-	// 	}
-
-	// 	// Compute final entry sequence
-	// 	var entry_result_of_end_tables = new Object();
-	// 	for (var table_index of execution_sequence) {
-	// 		var ttable = ttables[table_index];
-	// 		var entry_index = get_entry_index(inputs_to_each_table[table_index].x, inputs_to_each_table[table_index].y);
-	// 		var entry_result = ttable.fn_get_entry_result(entry_index);
-	// 		// Record entry result for end tables
-	// 		if(indices_of_end_tables.indexOf(table_index) >= 0) {
-	// 			entry_result_of_end_tables[table_index] = entry_result;
-	// 		}
-	// 		if(ttable.parent_table_indices === undefined) continue;
-	// 		// Fill in entry result for parent table if this is not an end table
-	// 		for (var parent_table_index of ttable.parent_table_indices) {
-	// 			if(inputs_to_each_table[parent_table_index] === undefined) {
-	// 				inputs_to_each_table[parent_table_index] = new Object();
-	// 			}
-	// 			if(ttable.input_x[parent_table_index] == undefined) throw 'No indication of x or y input';
-	// 			else if(ttable.input_x[parent_table_index] == 1) {
-	// 				inputs_to_each_table[parent_table_index].x = entry_result;
-	// 			} else {
-	// 				inputs_to_each_table[parent_table_index].y = entry_result;
-	// 			}
-	// 		}
-	// 	}
-
-	// 	// Decrypt
-	// 	// First read the circuit from SC
-	// 	for (var index of table_indices) {
-	// 		var gtt = await GCNoDecryptTreeBasedORAMInstance.read_gtt.call(index);
-	// 		for (var j = 0; j < 4; j++) {
-	// 			assert.equal(gtt[j], web3.utils.bytesToHex(gttables[index][j]), "Incorrect entry content");
-	// 		}
-	// 	}
-	// 	for (var index of table_indices) {
-	// 		var parent_table_indices = await GCNoDecryptTreeBasedORAMInstance.read_parent_table_indices.call(index);
-	// 		if(indices_of_dummy_tables.indexOf(index) >= 0) {
-	// 			assert.equal(parent_table_indices.length, 0, "Dummy table does not have parent table");
-	// 			continue;
-	// 		}
-	// 		if(indices_of_end_tables.indexOf(index) >= 0) {
-	// 			assert.equal(parent_table_indices.length, 0, "End table should not have parent table");
-	// 			continue;
-	// 		}
-	// 		for (var i = 0; i < ttables[index].parent_table_indices.length; i++) {
-	// 			assert.equal(ttables[index].parent_table_indices[i], parent_table_indices[i].toNumber(), "Incorrect parent table indices");
-	// 		}
-	// 	}
-	// 	for (var i = 0; i < indices_of_initial_input_tables.length; i++) {
-	// 		var table_index = indices_of_initial_input_tables[i];
-	// 		var input = await GCNoDecryptTreeBasedORAMInstance.read_inputs_of_table.call(table_index);
-	// 		assert.equal(input[1], web3.utils.bytesToHex(half_inputs[i]), "Incorrect half of inputs");
-	// 	}
-	// 	for (var i = 0; i < indices_of_end_tables.length; i++) {
-	// 		var table_index = indices_of_end_tables[i];
-	// 		var results = await GCNoDecryptTreeBasedORAMInstance.read_outputs_of_table.call(table_index);
-	// 		assert.equal(results[0], web3.utils.bytesToHex(outputs[i][0]), "Incorrect bit results");
-	// 		assert.equal(results[1], web3.utils.bytesToHex(outputs[i][1]), "Incorrect bit results");
-	// 	}
-	// 	startTime =new Date().getTime();
-	// 	tx = await GCNoDecryptTreeBasedORAMInstance.decrypt(
-	// 		indices_of_initial_input_tables,
-	// 		other_half_inputs,
-	// 		execution_sequence,
-	// 		indices_of_end_tables,
-	// 	);
-	// 	endTime = new Date().getTime();
-	// 	console.log("\nGas used for 1st `EvalGC` of a 4 pos circuit:", tx['receipt']['gasUsed']);
-	// 	console.debug('Elapsed time:', (endTime - startTime), 'ms');
-	// 	// Verify that result is correct
-	// 	for (table_index in entry_result_of_end_tables) {
-	// 		var decryption_result = await GCNoDecryptTreeBasedORAMInstance.read_decryption_result.call(table_index);
-	// 		assert.equal(decryption_result.toNumber(), entry_result_of_end_tables[table_index], "Incorrect results");
-	// 	}
-	// });
 	it('2nd Write/Flush of 4 pos circuit', async () => {
 		const tree_height = await GCNoDecryptTreeBasedORAMInstance.TREE_HEIGHT.call();
 		const num_nodes = 2**tree_height - 1;
@@ -675,7 +587,7 @@ contract('GCNoDecryptTreeBasedORAM', (accounts) => {
 			label_updates,
 		);
 		endTime = new Date().getTime();
-		console.log("\nGas used for `UpdateGC` of a 4 pos circuit:", tx['receipt']['gasUsed']);
+		console.log("\nGas used for 2nd `UpdateGC` of a 4 pos circuit:", tx['receipt']['gasUsed']);
 		console.debug('Elapsed time:', (endTime - startTime), 'ms');
 
 		// Verify content of deployed circuit
@@ -727,69 +639,12 @@ contract('GCNoDecryptTreeBasedORAM', (accounts) => {
 			update_input_label_gttable[table_index].output_hash_digest_1 = uploaded_label_updates[i][3];
 		}
 	});
-	// it('2nd EvalGC of 4 pos circuits', async () => {
-	// 	// Generate other half of inputs according to inputs in /4_pos_redeploy_circuit_result_simplified_example.png
-	// 	bit_in_each_x_input = [1, 0, 1, 0, 1, 0];
-	// 	var result_index = 3;  // decryption result in /4_pos_circuit_result_simplified_example.png
-	// 	var other_half_inputs = new Array(num_inputs);
-	// 	for (var i = 0; i < indices_of_initial_input_tables.length; i++) {
-	// 		var table_index = indices_of_initial_input_tables[i];
-	// 		var bit_index = bit_in_each_x_input[i];
-	// 		if(bit_index == 0) {
-	// 			other_half_inputs[i] = ttables[table_index].x_0;
-	// 			inputs_to_each_table[table_index].x = 0;
-	// 		} else {
-	// 			other_half_inputs[i] = ttables[table_index].x_1;
-	// 			inputs_to_each_table[table_index].x = 1;
-	// 		}
-	// 	}
-
-	// 	// Compute final entry sequence
-	// 	var entry_result_of_end_tables = new Object();
-	// 	for (var table_index of execution_sequence) {
-	// 		var ttable = ttables[table_index];
-	// 		var entry_index = get_entry_index(inputs_to_each_table[table_index].x, inputs_to_each_table[table_index].y);
-	// 		var entry_result = ttable.fn_get_entry_result(entry_index);
-	// 		// Record entry result for end tables
-	// 		if(indices_of_end_tables.indexOf(table_index) >= 0) {
-	// 			entry_result_of_end_tables[table_index] = entry_result;
-	// 		}
-	// 		if(ttable.parent_table_indices === undefined) continue;
-	// 		// Fill in entry result for parent table if this is not an end table
-	// 		for (var parent_table_index of ttable.parent_table_indices) {
-	// 			if(inputs_to_each_table[parent_table_index] === undefined) {
-	// 				inputs_to_each_table[parent_table_index] = new Object();
-	// 			}
-	// 			if(ttable.input_x[parent_table_index] == undefined) throw 'No indication of x or y input';
-	// 			else if(ttable.input_x[parent_table_index] == 1) {
-	// 				inputs_to_each_table[parent_table_index].x = entry_result;
-	// 			} else {
-	// 				inputs_to_each_table[parent_table_index].y = entry_result;
-	// 			}
-	// 		}
-	// 	}
-
-	// 	// Decrypt
-	// 	startTime =new Date().getTime();
-	// 	tx = await GCNoDecryptTreeBasedORAMInstance.decrypt(
-	// 		indices_of_initial_input_tables,
-	// 		other_half_inputs,
-	// 		execution_sequence,
-	// 		indices_of_end_tables,
-	// 	);
-	// 	endTime = new Date().getTime();
-	// 	console.log("\nGas used for 2nd `EvalGC` of a 4 pos circuit:", tx['receipt']['gasUsed']);
-	// 	console.debug('Elapsed time:', (endTime - startTime), 'ms');
-
-	// 	// Verify that result is correct
-	// 	for (table_index in entry_result_of_end_tables) {
-	// 		var decryption_result = await GCNoDecryptTreeBasedORAMInstance.read_decryption_result.call(table_index);
-	// 		assert.equal(decryption_result.toNumber(), entry_result_of_end_tables[table_index], "Incorrect results");
-	// 	}
-	// });
 
 	it('1st Write/Flush of 8 pos circuit', async () => {
+		startTime =new Date().getTime();
 		GCNoDecryptTreeBasedORAMInstance = await GCNoDecryptTreeBasedORAM.new(4);
+		endTime = new Date().getTime();
+		console.debug('Elapsed time:', (endTime - startTime), 'ms');
 		redeploy_tx_receipt = await web3.eth.getTransactionReceipt(GCNoDecryptTreeBasedORAMInstance.transactionHash);
 		console.log("\nGas used for deploy height 4 GC tree based ORAM:", redeploy_tx_receipt['gasUsed']);
 		const tree_height = await GCNoDecryptTreeBasedORAMInstance.TREE_HEIGHT.call();
@@ -1110,7 +965,7 @@ contract('GCNoDecryptTreeBasedORAM', (accounts) => {
 			{ gas: 15000000 },
 		);
 		endTime = new Date().getTime();
-		console.log("\nGas used for `initial_deploy` of a 8 pos circuit:", tx['receipt']['gasUsed']);
+		console.log("\nGas used for 1st `UpdateGC`(initial deploy) of a 4 pos circuit:", tx['receipt']['gasUsed']);
 		console.debug('Elapsed time:', (endTime - startTime), 'ms');
 
 		// Verify content of deployed circuit
@@ -1164,65 +1019,6 @@ contract('GCNoDecryptTreeBasedORAM', (accounts) => {
 			update_input_label_gttable[table_index].output_hash_digest_1 = uploaded_label_updates[i][3];
 		}
 	});
-	// it('1st EvalGC of 8 pos circuits', async () => {
-	// 	// Generate other half of inputs according to inputs in /8_pos_circuit_result_example.png
-	// 	var bit_in_each_x_input = [1, 1, 0];
-	// 	var result_index = 5;  // decryption result in /8_pos_circuit_result_example.png
-	// 	var other_half_inputs = new Array(num_inputs);
-	// 	for (var i = 0; i < indices_of_initial_input_tables.length; i++) {
-	// 		var table_index = indices_of_initial_input_tables[i];
-	// 		var bit_index = bit_in_each_x_input[i % 3];
-	// 		if(bit_index == 0) {
-	// 			other_half_inputs[i] = ttables[table_index].x_0;
-	// 			inputs_to_each_table[table_index].x = 0;
-	// 		} else {
-	// 			other_half_inputs[i] = ttables[table_index].x_1;
-	// 			inputs_to_each_table[table_index].x = 1;
-	// 		}
-	// 	}
-
-	// 	// Compute final entry sequence
-	// 	var entry_result_of_end_tables = new Object();
-	// 	for (var table_index of execution_sequence) {
-	// 		var ttable = ttables[table_index];
-	// 		var entry_index = get_entry_index(inputs_to_each_table[table_index].x, inputs_to_each_table[table_index].y);
-	// 		var entry_result = ttable.fn_get_entry_result(entry_index);
-	// 		// Record entry result for end tables
-	// 		if(indices_of_end_tables.indexOf(table_index) >= 0) {
-	// 			entry_result_of_end_tables[table_index] = entry_result;
-	// 		}
-	// 		if(ttable.parent_table_indices === undefined) continue;
-	// 		// Fill in entry result for parent table if this is not an end table
-	// 		for (var parent_table_index of ttable.parent_table_indices) {
-	// 			if(inputs_to_each_table[parent_table_index] === undefined) {
-	// 				inputs_to_each_table[parent_table_index] = new Object();
-	// 			}
-	// 			if(ttable.input_x[parent_table_index] == undefined) throw 'No indication of x or y input';
-	// 			else if(ttable.input_x[parent_table_index] == 1) {
-	// 				inputs_to_each_table[parent_table_index].x = entry_result;
-	// 			} else {
-	// 				inputs_to_each_table[parent_table_index].y = entry_result;
-	// 			}
-	// 		}
-	// 	}
-
-	// 	// Decrypt
-	// 	startTime =new Date().getTime();
-	// 	tx = await GCNoDecryptTreeBasedORAMInstance.decrypt(
-	// 		indices_of_initial_input_tables,
-	// 		other_half_inputs,
-	// 		execution_sequence,
-	// 		indices_of_end_tables,
-	// 	);
-	// 	endTime = new Date().getTime();
-	// 	console.log("\nGas used for 1st `EvalGC` of a 8 pos circuit:", tx['receipt']['gasUsed']);
-	// 	console.debug('Elapsed time:', (endTime - startTime), 'ms');
-	// 	// Verify that result is correct
-	// 	for (table_index in entry_result_of_end_tables) {
-	// 		var decryption_result = await GCNoDecryptTreeBasedORAMInstance.read_decryption_result.call(table_index);
-	// 		assert.equal(decryption_result.toNumber(), entry_result_of_end_tables[table_index], "Incorrect results");
-	// 	}
-	// });
 	it('2nd Write/Flush of 8 pos circuit', async () => {
 		const tree_height = await GCNoDecryptTreeBasedORAMInstance.TREE_HEIGHT.call();
 		const num_nodes = 2**tree_height - 1;
@@ -1396,24 +1192,6 @@ contract('GCNoDecryptTreeBasedORAM', (accounts) => {
 			gttables[i] = ttable.fn_garbling(ttable.x_0, ttable.x_1, ttable.y_0, ttable.y_1, ttable.z_0, ttable.z_1);
 		}
 
-		// Generate half of initial inputs according to inputs in /8_pos_redeploy_circuit_result_example.png
-		bit_in_each_y_input = [1, 0, 1, 0, 0, 1, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0];
-		if(bit_in_each_y_input.length != 21) throw 'Wrong y inputs';
-		half_inputs = new Array(num_inputs);
-		inputs_to_each_table = new Object();
-		for (var i = 0; i < indices_of_initial_input_tables.length; i++) {
-			var table_index = indices_of_initial_input_tables[i];
-			var bit_index = bit_in_each_y_input[i];
-			inputs_to_each_table[table_index] = new Object();
-			if(bit_index == 0) {
-				half_inputs[i] = ttables[table_index].y_0;
-				inputs_to_each_table[table_index].y = 0;
-			} else {
-				half_inputs[i] = ttables[table_index].y_1;
-				inputs_to_each_table[table_index].y = 1;
-			}
-		}
-
 		// Garbled circuit results
 		var outputs = new Array(num_results);
 		for (var i = 0; i < indices_of_end_tables.length; i++) {
@@ -1441,7 +1219,7 @@ contract('GCNoDecryptTreeBasedORAM', (accounts) => {
 			label_updates,
 		);
 		endTime = new Date().getTime();
-		console.log("\nGas used for `UpdateGC` of a 8 pos circuit:", tx['receipt']['gasUsed']);
+		console.log("\nGas used for 2nd `UpdateGC` of a 8 pos circuit:", tx['receipt']['gasUsed']);
 		console.debug('Elapsed time:', (endTime - startTime), 'ms');
 
 		// Verify content of deployed circuit
@@ -1493,63 +1271,4 @@ contract('GCNoDecryptTreeBasedORAM', (accounts) => {
 			update_input_label_gttable[table_index].output_hash_digest_1 = uploaded_label_updates[i][3];
 		}
 	});
-	// it('2nd EvalGC of 8 pos circuits', async () => {
-	// 	// Generate other half of inputs according to inputs in /8_pos_redeploy_circuit_result_example.png
-	// 	bit_in_each_x_input = [1, 1, 1];
-	// 	var result_index = 7;  // decryption result in /8_pos_redeploy_circuit_result_example.png
-	// 	var other_half_inputs = new Array(num_inputs);
-	// 	for (var i = 0; i < indices_of_initial_input_tables.length; i++) {
-	// 		var table_index = indices_of_initial_input_tables[i];
-	// 		var bit_index = bit_in_each_x_input[i % 3];
-	// 		if(bit_index == 0) {
-	// 			other_half_inputs[i] = ttables[table_index].x_0;
-	// 			inputs_to_each_table[table_index].x = 0;
-	// 		} else {
-	// 			other_half_inputs[i] = ttables[table_index].x_1;
-	// 			inputs_to_each_table[table_index].x = 1;
-	// 		}
-	// 	}
-
-	// 	// Compute final entry sequence
-	// 	var entry_result_of_end_tables = new Object();
-	// 	for (var table_index of execution_sequence) {
-	// 		var ttable = ttables[table_index];
-	// 		var entry_index = get_entry_index(inputs_to_each_table[table_index].x, inputs_to_each_table[table_index].y);
-	// 		var entry_result = ttable.fn_get_entry_result(entry_index);
-	// 		// Record entry result for end tables
-	// 		if(indices_of_end_tables.indexOf(table_index) >= 0) {
-	// 			entry_result_of_end_tables[table_index] = entry_result;
-	// 		}
-	// 		if(ttable.parent_table_indices === undefined) continue;
-	// 		// Fill in entry result for parent table if this is not an end table
-	// 		for (var parent_table_index of ttable.parent_table_indices) {
-	// 			if(inputs_to_each_table[parent_table_index] === undefined) {
-	// 				inputs_to_each_table[parent_table_index] = new Object();
-	// 			}
-	// 			if(ttable.input_x[parent_table_index] == undefined) throw 'No indication of x or y input';
-	// 			else if(ttable.input_x[parent_table_index] == 1) {
-	// 				inputs_to_each_table[parent_table_index].x = entry_result;
-	// 			} else {
-	// 				inputs_to_each_table[parent_table_index].y = entry_result;
-	// 			}
-	// 		}
-	// 	}
-
-	// 	// Decrypt
-	// 	startTime =new Date().getTime();
-	// 	tx = await GCNoDecryptTreeBasedORAMInstance.decrypt(
-	// 		indices_of_initial_input_tables,
-	// 		other_half_inputs,
-	// 		execution_sequence,
-	// 		indices_of_end_tables,
-	// 	);
-	// 	endTime = new Date().getTime();
-	// 	console.log("\nGas used for 2nd `EvalGC` of a 8 pos circuit:", tx['receipt']['gasUsed']);
-	// 	console.debug('Elapsed time:', (endTime - startTime), 'ms');
-	// 	// Verify that result is correct
-	// 	for (table_index in entry_result_of_end_tables) {
-	// 		var decryption_result = await GCNoDecryptTreeBasedORAMInstance.read_decryption_result.call(table_index);
-	// 		assert.equal(decryption_result.toNumber(), entry_result_of_end_tables[table_index], "Incorrect results");
-	// 	}
-	// });
 });

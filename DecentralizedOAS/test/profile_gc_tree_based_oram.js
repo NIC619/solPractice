@@ -36,7 +36,10 @@ contract('GCTreeBasedORAM', (accounts) => {
 	var inputs_to_each_table;
 
 	it('1st Write/Flush of 4 pos circuit', async () => {
+		startTime =new Date().getTime();
 		GCTreeBasedORAMInstance = await GCTreeBasedORAM.new(3);
+		endTime = new Date().getTime();
+		console.debug('Elapsed time:', (endTime - startTime), 'ms');
 		redeploy_tx_receipt = await web3.eth.getTransactionReceipt(GCTreeBasedORAMInstance.transactionHash);
 		console.log("\nGas used for deploy height 3 GC tree based ORAM:", redeploy_tx_receipt['gasUsed']);
 		const tree_height = await GCTreeBasedORAMInstance.TREE_HEIGHT.call();
@@ -313,7 +316,7 @@ contract('GCTreeBasedORAM', (accounts) => {
 			label_updates,
 		);
 		endTime = new Date().getTime();
-		console.log("\nGas used for `initial_deploy` of a 4 pos circuit:", tx['receipt']['gasUsed']);
+		console.log("\nGas used for 1st `UpdateGC`(initial deploy) of a 4 pos circuit:", tx['receipt']['gasUsed']);
 		console.debug('Elapsed time:', (endTime - startTime), 'ms');
 
 		// Verify content of deployed circuit
@@ -433,7 +436,7 @@ contract('GCTreeBasedORAM', (accounts) => {
 		startTime =new Date().getTime();
 		await GCTreeBasedORAMInstance.decrypt_label_update(indices_of_initial_input_tables);
 		endTime = new Date().getTime();
-		console.log("\nGas used for 2nd `ReplaceGC` of a 4 pos circuit:", tx['receipt']['gasUsed']);
+		console.log("\nGas used for 1st `ReplaceGC` of a 4 pos circuit:", tx['receipt']['gasUsed']);
 		console.debug('Elapsed time:', (endTime - startTime), 'ms');
 	});
 	it('2nd Write/Flush of 4 pos circuit', async () => {
@@ -641,7 +644,7 @@ contract('GCTreeBasedORAM', (accounts) => {
 			label_updates,
 		);
 		endTime = new Date().getTime();
-		console.log("\nGas used for `UpdateGC` of a 4 pos circuit:", tx['receipt']['gasUsed']);
+		console.log("\nGas used for 2nd `UpdateGC` of a 4 pos circuit:", tx['receipt']['gasUsed']);
 		console.debug('Elapsed time:', (endTime - startTime), 'ms');
 
 		// Verify content of deployed circuit
@@ -759,7 +762,10 @@ contract('GCTreeBasedORAM', (accounts) => {
 	});
 
 	it('1st Write/Flush of 8 pos circuit', async () => {
+		startTime =new Date().getTime();
 		GCTreeBasedORAMInstance = await GCTreeBasedORAM.new(4);
+		endTime = new Date().getTime();
+		console.debug('Elapsed time:', (endTime - startTime), 'ms');
 		redeploy_tx_receipt = await web3.eth.getTransactionReceipt(GCTreeBasedORAMInstance.transactionHash);
 		console.log("\nGas used for deploy height 4 GC tree based ORAM:", redeploy_tx_receipt['gasUsed']);
 		const tree_height = await GCTreeBasedORAMInstance.TREE_HEIGHT.call();
@@ -1080,7 +1086,7 @@ contract('GCTreeBasedORAM', (accounts) => {
 			{ gas: 15000000 },
 		);
 		endTime = new Date().getTime();
-		console.log("\nGas used for `initial_deploy` of a 8 pos circuit:", tx['receipt']['gasUsed']);
+		console.log("\nGas used for 1st `UpdateGC`(initial deploy) of a 4 pos circuit:", tx['receipt']['gasUsed']);
 		console.debug('Elapsed time:', (endTime - startTime), 'ms');
 
 		// Verify content of deployed circuit
@@ -1200,7 +1206,7 @@ contract('GCTreeBasedORAM', (accounts) => {
 		startTime =new Date().getTime();
 		await GCTreeBasedORAMInstance.decrypt_label_update(indices_of_initial_input_tables);
 		endTime = new Date().getTime();
-		console.log("\nGas used for 2nd `ReplaceGC` of a 4 pos circuit:", tx['receipt']['gasUsed']);
+		console.log("\nGas used for 1st `ReplaceGC` of a 4 pos circuit:", tx['receipt']['gasUsed']);
 		console.debug('Elapsed time:', (endTime - startTime), 'ms');
 	});
 	it('2nd Write/Flush of 8 pos circuit', async () => {
@@ -1408,7 +1414,7 @@ contract('GCTreeBasedORAM', (accounts) => {
 			label_updates,
 		);
 		endTime = new Date().getTime();
-		console.log("\nGas used for `UpdateGC` of a 8 pos circuit:", tx['receipt']['gasUsed']);
+		console.log("\nGas used for 2nd `UpdateGC` of a 8 pos circuit:", tx['receipt']['gasUsed']);
 		console.debug('Elapsed time:', (endTime - startTime), 'ms');
 
 		// Verify content of deployed circuit
