@@ -37,14 +37,14 @@ contract GCTreeBasedORAM is GarbledCircuit{
     /**
      * @dev Read the whole branch of nodes by the specified leaf node index.
      *
-     * Example
+     * Example:
      *      node_1
      *      /    \
      *  node_2   node_3 
      *    /         \
      * node_4       node_5
      *
-     * Nodes 1, 3 and 5 will be read for leaf node index 5.
+     * Nodes 1, 3 and 5 will be read if leaf node index is 5.
      */
     function read_branch(uint256 leaf_node_index) public view returns(bytes32[NUM_BUCKETS][] memory) {
         require(FIRST_LEAF_NODE_INDEX <= leaf_node_index, "Invalid leaf node index.");
@@ -81,7 +81,7 @@ contract GCTreeBasedORAM is GarbledCircuit{
     }
 
     /**
-     * @dev Feed the leaf node index read from `get_index_from_decryption_result` to `read_branch`. 
+     * @dev Feed the leaf node index read from `get_index_from_decryption_result` into `read_branch`. 
      */
     function get_nodes_from_decryption_result(uint256[] memory table_indices) public view returns(bytes32[NUM_BUCKETS][] memory) {
         require(table_indices.length > 0, "No table indices provided.");

@@ -10,7 +10,7 @@
 - Implement the proof of concept in [Oblivious Access System on Decentralized Database over Parallel Smart Contract Model]()(link to be updated soon...).
 - Slides for introduction
   - links to be provided soon...
-- Functions list
+- Function list
   - `EvalGC`
     - `GCTreeBasedORAM.decrypt`
   - `ReplaceGC`
