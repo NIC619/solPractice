@@ -22,6 +22,9 @@ contract GCTreeBasedORAM is GarbledCircuit{
         _;
     }
 
+    /**
+     * @dev Read the node by the specified index.
+     */
     function read_node(uint256 node_index) public view returns(bytes32[NUM_BUCKETS] memory node) {
         require(node_index >= 1, "Invalid node index.");
         require(node_index <= (2**TREE_HEIGHT - 1), "Invalid node index.");
@@ -31,6 +34,18 @@ contract GCTreeBasedORAM is GarbledCircuit{
         }
     }
 
+    /**
+     * @dev Read the whole branch of nodes by the specified leaf node index.
+     *
+     * Example
+     *      node_1
+     *      /    \
+     *  node_2   node_3 
+     *    /         \
+     * node_4       node_5
+     *
+     * Nodes 1, 3 and 5 will be read for leaf node index 5.
+     */
     function read_branch(uint256 leaf_node_index) public view returns(bytes32[NUM_BUCKETS][] memory) {
         require(FIRST_LEAF_NODE_INDEX <= leaf_node_index, "Invalid leaf node index.");
         require(leaf_node_index <= LAST_LEAF_NODE_INDEX, "Invalid leaf node index.");
@@ -46,6 +61,9 @@ contract GCTreeBasedORAM is GarbledCircuit{
         return branch;
     }
 
+    /**
+     * @dev Read the decryption result which are bits and turn them into a single number, i.e., the index.
+     */
     function get_index_from_decryption_result(uint256[] memory table_indices) public view returns(uint256 index) {
         require(table_indices.length > 0, "No table indices provided.");
 
@@ -62,6 +80,9 @@ contract GCTreeBasedORAM is GarbledCircuit{
         }
     }
 
+    /**
+     * @dev Feed the leaf node index read from `get_index_from_decryption_result` to `read_branch`. 
+     */
     function get_nodes_from_decryption_result(uint256[] memory table_indices) public view returns(bytes32[NUM_BUCKETS][] memory) {
         require(table_indices.length > 0, "No table indices provided.");
 
@@ -69,6 +90,9 @@ contract GCTreeBasedORAM is GarbledCircuit{
         return read_branch(index);
     }
 
+    /**
+     * @dev Update nodes at the specified indices.
+     */
     function update_nodes(uint256[] memory node_indices, bytes32[NUM_BUCKETS][] memory new_nodes) public onlyOwner {
         require(node_indices.length == new_nodes.length, "Input array not of the same length");
 

@@ -18,6 +18,9 @@ contract SORAM {
         _;
     }
 
+    /**
+     * @dev Write index block and data blocks to the specified layer.
+     */
     function write(uint256 layer, bytes32 index_block, bytes32[] memory data_blocks) public onlyOwner {
         require(layer >= 1, "Invalid layer.");
         require(layer <= max_layer, "Invalid layer.");
@@ -36,6 +39,9 @@ contract SORAM {
         }
     }
 
+    /**
+     * @dev Read index block at the specified layer.
+     */
     function read_index_block(uint256 layer) public view onlyOwner returns(bytes32) {
         require(layer >= 1, "Invalid layer.");
         require(layer <= max_layer, "Invalid layer.");
@@ -43,6 +49,14 @@ contract SORAM {
         return index_block_storage[layer];
     }
 
+    /**
+     * @dev Write index block and data blocks to the specified layer.
+     *
+     * Requirements:
+     *
+     * - `recipient` cannot be the zero address.
+     * - the caller must have a balance of at least `amount`.
+     */
     function read_data_blocks_by(uint256 layer) public view onlyOwner returns(bytes32[] memory) {
         require(layer >= 1, "Invalid layer.");
         require(layer <= max_layer, "Invalid layer.");
@@ -50,7 +64,16 @@ contract SORAM {
         return data_blocks_storage[layer];
     }
 
-    // NOTE: index starts from 1
+    /**
+     * @dev Read data block at the specified index of specified layer.
+     *
+     * Requirements:
+     *
+     * - `index` starts from `1`
+     *      - e.g.,
+     *          - `index of data blocks at layer 1: [1, 2, 3, 4]`
+     *              - `index of data blocks at layer 2: [1, 2, 3, 4, 5, 6, 7, 8]`
+     */
     function read_data_block_at(uint256 layer, uint256 index) public view onlyOwner returns(bytes32) {
         require(layer >= 1, "Invalid layer.");
         require(layer <= max_layer, "Invalid layer.");
@@ -62,6 +85,9 @@ contract SORAM {
         return data_blocks_storage[layer][index];
     }
 
+    /**
+     * @dev When deploying the contract, specify max layer of the storage.
+     */
     constructor(uint256 _max_layer) public {
       owner = msg.sender;
       max_layer = _max_layer;
